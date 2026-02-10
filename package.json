@@ -1,0 +1,20 @@
+{
+    "name": "daltri-menu-monorepo",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "scripts": {
+        "dev": "npm run dev --workspaces --if-present",
+        "build": "npm run build --workspaces --if-present",
+        "test": "npm run test --workspaces --if-present",
+        "lint": "npm run lint --workspaces --if-present"
+    },
+    "devDependencies": {
+        "prettier": "^3.0.0",
+        "eslint": "^8.0.0",
+        "typescript": "^5.0.0"
+    }
+}
