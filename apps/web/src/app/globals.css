@@ -12,6 +12,9 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-beige: var(--brand-beige);
+  --color-gold: var(--brand-gold);
+  --color-gold-dark: #B8860B;
 }
 
 @media (prefers-color-scheme: dark) {

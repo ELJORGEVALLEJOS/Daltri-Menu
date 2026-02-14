@@ -40,34 +40,32 @@ export default function CartPage({ params }: { params: { slug: string } }) {
             </div>
 
             <div className="container mx-auto p-4 max-w-md relative z-10">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
                     {items.map((item, index) => (
-                        <div key={item.id} className={`flex justify-between items-center p-4 ${index !== items.length - 1 ? 'border-b border-gray-50' : ''}`}>
+                        <div key={item.id} className={`flex justify-between items-center p-5 ${index !== items.length - 1 ? 'border-b border-gray-50' : ''}`}>
                             <div>
-                                <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                                <div className="text-sm text-gray-500 mt-1">
+                                <h3 className="font-bold text-gray-800">{item.name}</h3>
+                                <div className="text-sm text-gray-400 mt-1 font-medium">
                                     ${item.price} x {item.quantity}
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <span className="font-bold text-gray-900">${(item.price * item.quantity).toFixed(2)}</span>
-                                <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50">
-                                    <Trash2 className="h-4 w-4" />
+                            <div className="flex items-center gap-4">
+                                <span className="font-serif font-black text-gray-900 text-lg">${(item.price * item.quantity).toFixed(2)}</span>
+                                <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="h-10 w-10 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                                    <Trash2 className="h-5 w-5" />
                                 </Button>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-8">
-                    <div className="flex justify-between text-lg font-bold text-gray-900">
-                        <span>Total</span>
-                        <span>${total.toFixed(2)}</span>
-                    </div>
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 flex justify-between items-center">
+                    <span className="text-gray-500 font-bold uppercase tracking-widest text-xs">Total del pedido</span>
+                    <span className="text-2xl font-serif font-black text-gold-dark">${total.toFixed(2)}</span>
                 </div>
 
                 <Button
-                    className="w-full bg-[#D4AF37] hover:bg-[#c4a132] text-white h-12 text-lg font-medium shadow-lg shadow-yellow-900/10"
+                    className="w-full bg-gray-900 hover:bg-black text-white h-16 text-lg font-bold rounded-2xl shadow-xl shadow-gray-900/10 transition-all active:scale-[0.98]"
                     onClick={() => router.push(`/m/${slug}/checkout`)}
                 >
                     Continuar con el pedido

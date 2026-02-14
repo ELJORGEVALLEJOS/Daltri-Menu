@@ -5,6 +5,7 @@ import { ProductCard } from "@/components/product-card";
 import { CategoryList } from "@/components/category-list";
 import { IconGrid } from "@/components/icon-grid";
 import { SocialLinks, ContactInfo } from "@/components/social-contact";
+import { FloatingCart } from "@/components/floating-cart";
 
 export default async function MerchantPage({ params }: { params: { slug: string } }) {
     const { slug } = params;
@@ -19,18 +20,27 @@ export default async function MerchantPage({ params }: { params: { slug: string 
     return (
         <main className="min-h-screen bg-gray-50">
             {/* Hero Section */}
-            <div className="bg-[#EEDC82] pt-8 pb-12 px-4 rounded-b-[2rem] shadow-sm">
-                <div className="container mx-auto max-w-md text-center">
-                    <div className="bg-white p-4 rounded-2xl w-40 h-40 mx-auto shadow-lg mb-6 flex items-center justify-center">
+            <div className="bg-[#EEDC82] pt-12 pb-16 px-4 rounded-b-[3rem] shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                    <div className="absolute -top-24 -left-24 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+                    <div className="absolute top-1/2 -right-24 w-80 h-80 bg-white rounded-full blur-3xl"></div>
+                </div>
 
-                        <h1 className="font-serif text-3xl text-gray-800 text-center leading-tight">
-                            {merchant.name}
-                            <span className="block text-xs font-sans text-gray-500 mt-2 uppercase tracking-widest">Restaurante</span>
-                        </h1>
+                <div className="container mx-auto max-w-md text-center relative z-10">
+                    <div className="bg-white p-2 rounded-3xl w-44 h-44 mx-auto shadow-2xl mb-8 flex items-center justify-center border-4 border-white/50 ring-1 ring-gold/20">
+                        <div className="w-full h-full rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-gold font-serif text-4xl font-bold italic">
+                            {merchant.name.charAt(0)}
+                        </div>
                     </div>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Nuestro Menú</h2>
-                    <p className="text-gray-800 opacity-80">Explora nuestras deliciosas opciones.</p>
+                    <h1 className="font-serif text-4xl text-gray-900 leading-tight mb-2 tracking-tight">
+                        {merchant.name}
+                    </h1>
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                        <span className="h-px w-8 bg-gray-800/20"></span>
+                        <span className="text-sm font-sans text-gray-700 uppercase tracking-[0.2em] font-medium">Restaurante</span>
+                        <span className="h-px w-8 bg-gray-800/20"></span>
+                    </div>
                 </div>
             </div>
 
@@ -45,13 +55,12 @@ export default async function MerchantPage({ params }: { params: { slug: string 
                 <SocialLinks />
                 <ContactInfo />
 
-                {/* Full Menu List (for scrolling to) */}
-                <div className="space-y-8 pb-20">
-                    <h2 className="text-2xl font-bold text-gray-900 px-2">Menu Completo</h2>
+                <div className="space-y-8 pb-32">
+                    <h2 className="text-2xl font-bold text-gray-900 px-2">Menú Completo</h2>
                     {menu?.map((category: any) => (
                         <section key={category.id} id={`cat-${category.id}`} className="scroll-mt-20">
                             <h3 className="text-xl font-bold mb-4 text-gray-800 px-2">{category.name}</h3>
-                            <div className="bg-white rounded-xl shadow-sm border px-4">
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden px-4">
                                 {category.items.map((item: any) => (
                                     <ProductCard key={item.id} item={item} />
                                 ))}
@@ -61,10 +70,7 @@ export default async function MerchantPage({ params }: { params: { slug: string 
                 </div>
             </div>
 
-            {/* Floating Cart Button (Header is now less relevant on scroll, maybe we keep it simple or sticky?) */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50">
-                <Header merchantName={merchant.name} slug={slug} />
-            </div>
+            <FloatingCart slug={slug} />
         </main>
     );
 }

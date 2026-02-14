@@ -28,7 +28,11 @@ export default function RegisterPage() {
         setError('');
 
         try {
-            const result = await registerMerchant(formData);
+            const cleanedData = {
+                ...formData,
+                whatsapp_phone: formData.whatsapp_phone.trim()
+            };
+            const result = await registerMerchant(cleanedData);
             setRegisteredMerchant(result);
             setSuccess(true);
         } catch (err: any) {

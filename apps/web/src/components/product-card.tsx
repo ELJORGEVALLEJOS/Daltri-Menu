@@ -9,10 +9,14 @@ type ProductCardProps = {
         id: string;
         name: string;
         description?: string;
-        price: number;
-        imageUrl?: string;
+        item: {
+            id: string;
+            name: string;
+            description?: string;
+            price_cents: number;
+            imageUrl?: string;
+        };
     };
-};
 
 export function ProductCard({ item }: ProductCardProps) {
     const { addItem } = useCart();
@@ -21,7 +25,7 @@ export function ProductCard({ item }: ProductCardProps) {
         addItem({
             itemId: item.id,
             name: item.name,
-            price: Number(item.price),
+            price: item.price_cents / 100,
             quantity: 1,
             options: [], // TODO: Handle modifiers
         });
@@ -34,7 +38,7 @@ export function ProductCard({ item }: ProductCardProps) {
                 {item.description && (
                     <p className="text-gray-500 text-sm mt-1 line-clamp-2">{item.description}</p>
                 )}
-                <div className="mt-2 text-gray-900 font-medium">${Number(item.price).toFixed(2)}</div>
+                <div className="mt-2 text-gray-900 font-medium">${(item.price_cents / 100).toFixed(2)}</div>
             </div>
             <div className="flex flex-col items-end gap-2">
                 {item.imageUrl && (
