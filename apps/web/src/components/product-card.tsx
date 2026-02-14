@@ -9,14 +9,10 @@ type ProductCardProps = {
         id: string;
         name: string;
         description?: string;
-        item: {
-            id: string;
-            name: string;
-            description?: string;
-            price_cents: number;
-            imageUrl?: string;
-        };
+        price_cents: number;
+        imageUrl?: string;
     };
+};
 
 export function ProductCard({ item }: ProductCardProps) {
     const { addItem } = useCart();
