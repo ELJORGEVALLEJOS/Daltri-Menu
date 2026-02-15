@@ -10,11 +10,11 @@
     },
     "scripts": {
         "dev": "npm run dev --workspaces --if-present",
-        "db:generate": "npx prisma generate --schema=apps/api/prisma/schema.prisma",
-        "build": "npm run db:generate && npm run build --workspace api && npm run build --workspace web",
-        "start": "npm start --workspace web",
-        "start:web": "npm start --workspace web",
-        "start:api": "npm start --workspace api",
+        "db:generate": "cd apps/api && npx prisma generate",
+        "build": "npm run db:generate && cd apps/api && npm run build && cd ../web && npm run build",
+        "start": "cd apps/web && npm start",
+        "start:web": "cd apps/web && npm start",
+        "start:api": "cd apps/api && npm start",
         "test": "npm run test --workspaces --if-present",
         "lint": "npm run lint --workspaces --if-present"
     },
