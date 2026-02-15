@@ -262,16 +262,18 @@ export class PublicService {
   async getDiag() {
     try {
       const dbStatus = await this.prisma.$queryRaw`SELECT 1`.then(() => 'Connected').catch((e) => `Error: ${e.message}`);
-      const merchantCount = await this.prisma.merchant.count();
-      const dbDate = await this.prisma.$queryRaw`SELECT NOW()`.then((res: any) => res[0].now).catch(() => 'N/A');
+      const merchants = await this.prisma.merchant.findMany({
+        select: { name: true, slug: true, isActive: true }
+      });
 
       return {
         status: 'ok',
-        version: '2.2',
+        version: '2.4',
         database: {
           status: dbStatus,
           merchantCount,
           date: dbDate,
+          merchants
         },
         env: {
           NODE_ENV: process.env.NODE_ENV,
