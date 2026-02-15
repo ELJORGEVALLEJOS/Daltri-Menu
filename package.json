@@ -3,19 +3,18 @@
     "version": "1.0.0",
     "private": true,
     "workspaces": [
-        "apps/*",
-        "packages/*"
+        "apps/*"
     ],
     "engines": {
         "node": ">=20.9.0"
     },
     "scripts": {
         "dev": "npm run dev --workspaces --if-present",
-        "db:generate": "npm run db:generate -w api",
-        "build": "npm run db:generate && npm run build --workspaces",
-        "start": "npm start -w web",
-        "start:web": "npm start -w web",
-        "start:api": "npm start -w api",
+        "db:generate": "npx prisma generate --schema=apps/api/prisma/schema.prisma",
+        "build": "npm run db:generate && npm run build --workspace api && npm run build --workspace web",
+        "start": "npm start --workspace web",
+        "start:web": "npm start --workspace web",
+        "start:api": "npm start --workspace api",
         "test": "npm run test --workspaces --if-present",
         "lint": "npm run lint --workspaces --if-present"
     },
