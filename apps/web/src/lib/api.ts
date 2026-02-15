@@ -1,21 +1,24 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://server.daltrishop.com';
 
 export async function fetchMerchant(slug: string) {
+    const url = `${API_URL}/public/restaurants/${slug}/menu`;
+    console.log(`[API] Fetching merchant: ${url}`);
     try {
-        // The public/restaurants/:slug/menu endpoint returns { restaurant: {...}, categories: [...] }
-        // We can use this to get the restaurant details.
-        const res = await fetch(`${API_URL}/public/restaurants/${slug}/menu`, {
+        const res = await fetch(url, {
             next: { revalidate: 60 },
         });
 
         if (!res.ok) {
-            console.error(`Error fetching merchant: ${res.status} ${res.statusText}`);
+            console.error(`[API] Error fetching merchant (${slug}): ${res.status} ${res.statusText}`);
             return null;
         }
         const data = await res.json();
-        return data.restaurant || null; // Fallback to null if restaurant property is missing
+        if (!data.restaurant) {
+            console.warn(`[API] Merchant data missing property 'restaurant' for slug: ${slug}`);
+        }
+        return data.restaurant || null;
     } catch (error) {
-        console.error('Error fetching merchant:', error);
+        console.error(`[API] Critical error fetching merchant (${slug}):`, error);
         return null;
     }
 }
