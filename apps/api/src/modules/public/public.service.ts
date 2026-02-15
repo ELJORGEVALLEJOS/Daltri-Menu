@@ -268,10 +268,10 @@ export class PublicService {
 
       return {
         status: 'ok',
-        version: '2.4',
+        version: '2.5',
         database: {
           status: dbStatus,
-          merchantCount,
+          merchantCount: merchants.length,
           date: dbDate,
           merchants
         },
