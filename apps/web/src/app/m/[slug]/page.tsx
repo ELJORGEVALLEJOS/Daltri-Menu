@@ -18,28 +18,37 @@ export default async function MerchantPage({ params }: { params: { slug: string 
     const menu = await fetchRestaurantMenu(slug);
 
     return (
-        <main className="min-h-screen bg-gray-50">
+        <main className="min-h-screen bg-beige-light/30">
             {/* Hero Section */}
-            <div className="bg-[#EEDC82] pt-12 pb-16 px-4 rounded-b-[3rem] shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                    <div className="absolute -top-24 -left-24 w-64 h-64 bg-white rounded-full blur-3xl"></div>
-                    <div className="absolute top-1/2 -right-24 w-80 h-80 bg-white rounded-full blur-3xl"></div>
+            <div className="bg-beige pt-20 pb-24 px-6 rounded-b-[4rem] shadow-premium relative overflow-hidden mb-12">
+                <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+                    <div className="absolute -top-24 -left-24 w-64 h-64 bg-white/40 rounded-full blur-3xl"></div>
+                    <div className="absolute top-1/2 -right-24 w-80 h-80 bg-white/40 rounded-full blur-3xl"></div>
                 </div>
 
                 <div className="container mx-auto max-w-md text-center relative z-10">
-                    <div className="bg-white p-2 rounded-3xl w-44 h-44 mx-auto shadow-2xl mb-8 flex items-center justify-center border-4 border-white/50 ring-1 ring-gold/20">
-                        <div className="w-full h-full rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-gold font-serif text-4xl font-bold italic">
-                            {merchant.name.charAt(0)}
-                        </div>
+                    <div className="bg-white p-3 rounded-[3rem] w-56 h-56 mx-auto shadow-premium mb-10 flex items-center justify-center border-8 border-white ring-1 ring-gold/10 overflow-hidden group">
+                        {merchant.logoUrl ? (
+                            <img src={merchant.logoUrl} alt={merchant.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" />
+                        ) : (
+                            <div className="w-full h-full rounded-[2rem] bg-gradient-to-br from-beige-light to-white flex items-center justify-center text-gold font-serif text-6xl font-black italic shadow-inner">
+                                {merchant.name.charAt(0)}
+                            </div>
+                        )}
                     </div>
 
-                    <h1 className="font-serif text-4xl text-gray-900 leading-tight mb-2 tracking-tight">
-                        {merchant.name}
+                    <h1 className="font-sans font-black text-5xl text-gray-900 leading-none mb-6 tracking-tighter">
+                        Todo lo seleccionado
                     </h1>
-                    <div className="flex items-center justify-center gap-2 mb-4">
-                        <span className="h-px w-8 bg-gray-800/20"></span>
-                        <span className="text-sm font-sans text-gray-700 uppercase tracking-[0.2em] font-medium">Restaurante</span>
-                        <span className="h-px w-8 bg-gray-800/20"></span>
+
+                    <p className="text-xl font-medium text-gray-800/80 max-w-[280px] mx-auto leading-relaxed mb-4">
+                        Auténticas comidas y bebidas francesas.
+                    </p>
+
+                    <div className="flex items-center justify-center gap-3">
+                        <span className="h-0.5 w-6 bg-gray-900/10"></span>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">Depuis 1978</span>
+                        <span className="h-0.5 w-6 bg-gray-900/10"></span>
                     </div>
                 </div>
             </div>
