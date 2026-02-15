@@ -260,80 +260,82 @@ export class PublicService {
   }
 
   async getDiag() {
-    const dbDate = await this.prisma.$queryRaw`SELECT NOW()`.then((res: any) => res[0].now).catch(() => 'N/A');
-    const merchants = await this.prisma.merchant.findMany({
-      select: { name: true, slug: true, isActive: true }
-    });
+    try {
+      const dbStatus = await this.prisma.$queryRaw`SELECT 1`.then(() => 'Connected').catch((e: any) => `Error: ${e.message}`);
+      const dbDate = await this.prisma.$queryRaw`SELECT NOW()`.then((res: any) => res[0].now).catch(() => 'N/A');
+      const merchants = await this.prisma.merchant.findMany({
+        select: { name: true, slug: true, isActive: true }
+      });
 
-    return {
-      status: 'ok',
-      version: '2.6',
-      database: {
-        status: dbStatus,
-        merchantCount: merchants.length,
-        date: dbDate,
-        merchants
-      },
-      env: {
-        NODE_ENV: process.env.NODE_ENV,
-        PORT: process.env.PORT,
-      }
-    };
-  } catch(error: any) {
-    return {
-      status: 'error',
-      message: error.message,
-      stack: error.stack
-    };
+      return {
+        status: 'ok',
+        version: '2.7',
+        database: {
+          status: dbStatus,
+          merchantCount: merchants.length,
+          date: dbDate,
+          merchants
+        },
+        env: {
+          NODE_ENV: process.env.NODE_ENV,
+          PORT: process.env.PORT,
+        }
+      };
+    } catch (error: any) {
+      return {
+        status: 'error',
+        message: error.message,
+        stack: error.stack
+      };
+    }
   }
-}
 
   private buildWhatsappMessage(input: {
-  orderId: string;
-  orderNumber: string;
-  restaurantName: string;
-  customerName: string;
-  customerPhone: string;
-  delivery: PublicDeliveryType;
-  deliveryAddress?: string;
-  notes?: string;
-  currency: string;
-  items: Array<{
-    qty: number;
+    orderId: string;
+    orderNumber: string;
+    restaurantName: string;
+    customerName: string;
+    customerPhone: string;
+    delivery: PublicDeliveryType;
+    deliveryAddress?: string;
     notes?: string;
-    name: string;
-    lineTotalCents: number;
-  }>;
-  totalCents: number;
-}): string {
-  const lines: string[] = [];
-  lines.push(`Nuevo pedido en ${input.restaurantName}`);
-  lines.push(`Pedido: ${input.orderNumber} (${input.orderId})`);
-  lines.push(`Cliente: ${input.customerName}`);
-  lines.push(`Telefono: ${input.customerPhone}`);
-  lines.push(`Entrega: ${input.delivery}`);
-  if (input.deliveryAddress) {
-    lines.push(`Direccion: ${input.deliveryAddress}`);
+    currency: string;
+    items: Array<{
+      qty: number;
+      notes?: string;
+      name: string;
+      lineTotalCents: number;
+    }>;
+    totalCents: number;
+  }): string {
+    const lines: string[] = [];
+    lines.push(`Nuevo pedido en ${input.restaurantName}`);
+    lines.push(`Pedido: ${input.orderNumber} (${input.orderId})`);
+    lines.push(`Cliente: ${input.customerName}`);
+    lines.push(`Telefono: ${input.customerPhone}`);
+    lines.push(`Entrega: ${input.delivery}`);
+    if (input.deliveryAddress) {
+      lines.push(`Direccion: ${input.deliveryAddress}`);
+    }
+    if (input.notes) {
+      lines.push(`Notas: ${input.notes}`);
+    }
+    lines.push('Items:');
+    for (const item of input.items) {
+      const notes = item.notes ? ` (${item.notes})` : '';
+      lines.push(
+        `- ${item.qty} x ${item.name}${notes} = ${this.formatMoney(item.lineTotalCents, input.currency)}`,
+      );
+    }
+    lines.push(`Total: ${this.formatMoney(input.totalCents, input.currency)}`);
+    return lines.join('\n');
   }
-  if (input.notes) {
-    lines.push(`Notas: ${input.notes}`);
-  }
-  lines.push('Items:');
-  for (const item of input.items) {
-    const notes = item.notes ? ` (${item.notes})` : '';
-    lines.push(
-      `- ${item.qty} x ${item.name}${notes} = ${this.formatMoney(item.lineTotalCents, input.currency)}`,
-    );
-  }
-  lines.push(`Total: ${this.formatMoney(input.totalCents, input.currency)}`);
-  return lines.join('\n');
-}
 
   private formatMoney(cents: number, currency: string): string {
-  return `${(cents / 100).toFixed(2)} ${currency}`;
-}
+    return `${(cents / 100).toFixed(2)} ${currency}`;
+  }
 
   private toOrderNumber(shortCode: number): string {
-  return `#${shortCode.toString().padStart(6, '0')}`;
-}
+    return `#${shortCode.toString().padStart(6, '0')}`;
+  }
 }
