@@ -11,11 +11,11 @@
     },
     "scripts": {
         "dev": "npm run dev --workspaces --if-present",
-        "db:generate": "npm run db:generate --workspace=api",
+        "db:generate": "npm run db:generate -w api",
         "build": "npm run db:generate && npm run build --workspaces",
-        "start": "npm start --workspace=web",
-        "start:web": "npm start --workspace=web",
-        "start:api": "npm start --workspace=api",
+        "start": "npm start -w web",
+        "start:web": "npm start -w web",
+        "start:api": "npm start -w api",
         "test": "npm run test --workspaces --if-present",
         "lint": "npm run lint --workspaces --if-present"
     },

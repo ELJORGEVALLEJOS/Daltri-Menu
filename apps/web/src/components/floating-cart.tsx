@@ -1,7 +1,7 @@
 'use client';
 
 import { useCart } from '@/context/cart-context';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 
@@ -12,25 +12,29 @@ export function FloatingCart({ slug }: { slug: string }) {
     if (itemCount === 0) return null;
 
     return (
-        <div className="fixed bottom-6 left-0 right-0 px-4 z-50">
+        <div className="fixed bottom-10 left-0 right-0 px-6 z-50 animate-in fade-in slide-in-from-bottom-8 duration-500">
             <Link href={`/m/${slug}/cart`}>
                 <Button
-                    className="w-full h-16 bg-gray-900 text-white rounded-2xl shadow-2xl flex items-center justify-between px-6 hover:bg-black transition-all active:scale-95"
+                    className="w-full h-20 bg-zinc-900 border border-white/10 text-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-between px-8 hover:bg-black transition-all active:scale-[0.98] relative overflow-hidden group"
                 >
-                    <div className="flex items-center gap-4">
-                        <div className="relative bg-white/20 p-2 rounded-xl">
-                            <ShoppingCart className="h-6 w-6" />
-                            <span className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-gold text-white text-xs font-bold flex items-center justify-center border-2 border-gray-900">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+
+                    <div className="flex items-center gap-6 z-10">
+                        <div className="relative bg-white/10 p-4 rounded-2xl border border-white/10">
+                            <ShoppingCart className="h-8 w-8 text-gold" />
+                            <span className="absolute -top-3 -right-3 h-8 w-8 rounded-full bg-gold border-4 border-zinc-900 text-zinc-900 text-sm font-black flex items-center justify-center shadow-lg">
                                 {itemCount}
                             </span>
                         </div>
                         <div className="text-left">
-                            <p className="text-xs text-white/60 font-medium uppercase tracking-wider">Tu Carrito</p>
-                            <p className="font-bold text-lg leading-tight">Ver pedido</p>
+                            <p className="text-xs text-white/40 font-black uppercase tracking-[0.2em] mb-0.5">Tu Pedido</p>
+                            <p className="font-sans font-black text-2xl tracking-tighter leading-tight">Ver carrito</p>
                         </div>
                     </div>
-                    <div className="text-right">
-                        <p className="text-2xl font-serif font-bold text-gold">${total.toFixed(2)}</p>
+
+                    <div className="flex items-center gap-4 z-10 px-4 py-2 bg-white/5 rounded-2xl border border-white/5">
+                        <p className="text-3xl font-mono font-bold text-gold tracking-tighter">${total.toFixed(0)}</p>
+                        <ArrowRight className="w-6 h-6 text-gold animate-pulse" />
                     </div>
                 </Button>
             </Link>

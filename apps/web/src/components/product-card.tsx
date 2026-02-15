@@ -2,7 +2,7 @@
 
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Wheat, Fish } from 'lucide-react';
 
 type ProductCardProps = {
     item: {
@@ -23,28 +23,58 @@ export function ProductCard({ item }: ProductCardProps) {
             name: item.name,
             price: item.price_cents / 100,
             quantity: 1,
-            options: [], // TODO: Handle modifiers
+            options: [],
         });
     };
 
     return (
-        <div className="flex justify-between border-b py-4 gap-4">
-            <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                {item.description && (
-                    <p className="text-gray-500 text-sm mt-1 line-clamp-2">{item.description}</p>
-                )}
-                <div className="mt-2 text-gray-900 font-medium">${(item.price_cents / 100).toFixed(2)}</div>
-            </div>
-            <div className="flex flex-col items-end gap-2">
-                {item.imageUrl && (
-                    <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden relative">
-                        {/* <Image src={item.imageUrl} alt={item.name} fill className="object-cover" /> */}
-                        <div className="w-full h-full bg-gray-200" />
+        <div className="bg-white rounded-[2rem] p-6 shadow-premium border border-gray-100/50 mb-6 flex flex-col gap-6 group hover:scale-[1.01] transition-all">
+            {item.imageUrl && (
+                <div className="w-full aspect-square rounded-[1.5rem] overflow-hidden relative shadow-inner border border-gray-100">
+                    <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                </div>
+            )}
+
+            <div className="space-y-4">
+                <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                        <h3 className="text-2xl font-sans font-black text-gray-900 tracking-tight leading-tight">
+                            {item.name}
+                        </h3>
+                        <p className="text-sm font-medium text-gray-400 italic">Salat / Product</p>
                     </div>
+                </div>
+
+                {item.description && (
+                    <p className="text-gray-600 text-base leading-relaxed line-clamp-3">
+                        {item.description}
+                    </p>
                 )}
-                <Button size="sm" variant="secondary" onClick={handleAdd}>
-                    Añadir <Plus className="ml-2 h-4 w-4" />
+
+                <div className="flex items-end justify-between pt-2">
+                    <div className="text-4xl font-mono font-bold text-blue-600 tracking-tighter">
+                        {(item.price_cents / 100).toFixed(0)}
+                    </div>
+
+                    <div className="flex gap-2">
+                        <div className="bg-gold/20 p-2 rounded-full">
+                            <Wheat className="w-5 h-5 text-gold-dark" />
+                        </div>
+                        <div className="bg-red-100 p-2 rounded-full">
+                            <Fish className="w-5 h-5 text-red-400" />
+                        </div>
+                    </div>
+                </div>
+
+                <Button
+                    className="w-full bg-zinc-900 hover:bg-black text-white rounded-xl h-12 font-bold shadow-lg"
+                    onClick={handleAdd}
+                >
+                    Añadir al pedido <Plus className="ml-2 w-5 h-5" />
                 </Button>
             </div>
         </div>
