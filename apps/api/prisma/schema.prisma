@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  MANAGER
+  STAFF
+}
+
+enum OrderStatus {
+  CREATED
+  SENT_TO_WHATSAPP
+  CANCELLED
+  COMPLETED
+}
+
+enum DeliveryType {
+  PICKUP
+  DELIVERY
+}
+
+model Merchant {
+  id             String           @id @default(uuid())
+  slug           String           @unique
+  name           String
+  logoUrl        String?
+  whatsappNumber String
+  currency       String           @default("ARS")
+  address        String?
+  isActive       Boolean          @default(true)
+  config         Json?            // Stores hours, payment methods, etc.
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  categories     Category[]
+  items          Item[]
+  orders         Order[]
+  users          RestaurantUser[]
+
+  @@index([isActive, name])
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  merchantId  String
+  name        String
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  items       Item[]
+
+  @@unique([id, merchantId])
+  @@index([merchantId, isActive, sortOrder])
+}
+
+model Item {
+  id          String   @id @default(uuid())
+  merchantId  String
+  categoryId  String
+  name        String
+  description String?
+  priceCents  Int
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  category    Category @relation(fields: [categoryId, merchantId], references: [id, merchantId], onDelete: Cascade)
+  modifiers   ModifierGroup[]
+  orderItems  OrderItem[]
+
+  @@index([merchantId, isActive])
+  @@index([categoryId, isActive])
+}
+
+model ModifierGroup {
+  id        String   @id @default(uuid())
+  itemId    String
+  name      String
+  minSelect Int      @default(0)
+  maxSelect Int      @default(1)
+
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  options   ModifierOption[]
+
+  @@index([itemId])
+}
+
+model ModifierOption {
+  id         String   @id @default(uuid())
+  groupId    String
+  name       String
+  priceDelta Int      @default(0)
+
+  group     ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+}
+
+model User {
+  id           String           @id @default(uuid())
+  email        String           @unique
+  passwordHash String
+  fullName     String
+  role         UserRole         @default(MANAGER)
+  isActive     Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  restaurants  RestaurantUser[]
+}
+
+model RestaurantUser {
+  id           String    @id @default(uuid())
+  restaurantId String
+  userId       String
+  role         UserRole  @default(MANAGER)
+  createdAt    DateTime  @default(now())
+
+  restaurant   Merchant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, userId])
+  @@index([userId])
+}
+
+model Order {
+  id            String       @id @default(uuid())
+  shortCode     Int          @default(autoincrement()) @unique
+  merchantId    String
+  customerName  String
+  customerPhone String
+  delivery      DeliveryType @default(PICKUP)
+  deliveryAddress String?
+  notes         String?
+  whatsappUrl   String?
+  status        OrderStatus  @default(CREATED)
+  totalCents    Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  merchant      Merchant     @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  items         OrderItem[]
+
+  @@index([merchantId, status, createdAt])
+}
+
+model OrderItem {
+  id            String   @id @default(uuid())
+  orderId       String
+  productId     String
+  qty           Int
+  notes         String?
+  unitPriceCents Int
+  lineTotalCents Int
+  createdAt     DateTime @default(now())
+
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       Item     @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+}
