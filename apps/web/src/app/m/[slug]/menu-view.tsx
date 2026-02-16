@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { CategoryList } from '@/components/category-list';
 import { ProductCard } from '@/components/product-card';
-import { IconGrid } from '@/components/icon-grid';
 import { SocialLinks, ContactInfo } from '@/components/social-contact';
 import { Header } from '@/components/header';
 import { ChevronLeft } from 'lucide-react';
@@ -30,8 +29,8 @@ export function MenuView({ merchant, menu, slug }: { merchant: any, menu: any[],
                                     key={cat.id}
                                     onClick={() => setSelectedCategoryId(cat.id)}
                                     className={`whitespace-nowrap pb-2 border-b-4 transition-all font-sans font-bold text-lg ${selectedCategoryId === cat.id
-                                            ? 'border-zinc-900 text-zinc-900'
-                                            : 'border-transparent text-gray-400'
+                                        ? 'border-zinc-900 text-zinc-900'
+                                        : 'border-transparent text-gray-400'
                                         }`}
                                 >
                                     {cat.name}
@@ -109,7 +108,6 @@ export function MenuView({ merchant, menu, slug }: { merchant: any, menu: any[],
                     ))}
                 </div>
 
-                <IconGrid />
                 <SocialLinks />
                 <ContactInfo />
             </div>

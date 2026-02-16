@@ -1,8 +1,10 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 import { DeliveryType, OrderStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -18,42 +20,65 @@ export class PublicService {
 
   async registerMerchant(dto: RegisterMerchantDto) {
     try {
-      const existing = await this.prisma.merchant.findUnique({
+      const existingSlug = await this.prisma.merchant.findUnique({
         where: { slug: dto.slug.toLowerCase() },
       });
 
-      if (existing) {
+      if (existingSlug) {
         throw new ConflictException('Merchant slug already exists');
       }
 
-      // Clean phone number (keep only digits)
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: dto.email.toLowerCase() },
+      });
+
+      if (existingUser) {
+        throw new ConflictException('User with this email already exists');
+      }
+
+      const passwordHash = await bcrypt.hash(dto.password, 10);
       const cleanPhone = dto.whatsapp_phone.replace(/\D/g, '');
 
-      const merchant = await this.prisma.merchant.create({
-        data: {
-          name: dto.name,
-          slug: dto.slug.toLowerCase(),
-          whatsappNumber: cleanPhone,
-          address: dto.address,
-          isActive: true,
-          currency: 'ARS', // Default to ARS for Argentina as per UI context
-        },
+      const result = await this.prisma.$transaction(async (tx) => {
+        const merchant = await tx.merchant.create({
+          data: {
+            name: dto.name,
+            slug: dto.slug.toLowerCase(),
+            whatsappNumber: cleanPhone,
+            address: dto.address,
+            isActive: true,
+            currency: 'ARS',
+          },
+        });
+
+        const user = await tx.user.create({
+          data: {
+            email: dto.email.toLowerCase(),
+            passwordHash,
+            fullName: dto.name,
+            role: 'MANAGER',
+            restaurants: {
+              create: {
+                restaurantId: merchant.id,
+                role: 'MANAGER',
+              },
+            },
+          },
+        });
+
+        return { merchant, user };
       });
 
       return {
-        id: merchant.id,
-        name: merchant.name,
-        slug: merchant.slug,
-        whatsapp_phone: merchant.whatsappNumber,
-        share_link: `https://menu.daltrishop.com/m/${merchant.slug}`,
+        id: result.merchant.id,
+        name: result.merchant.name,
+        slug: result.merchant.slug,
+        whatsapp_phone: result.merchant.whatsappNumber,
+        user_id: result.user.id,
+        share_link: `https://menu.daltrishop.com/m/${result.merchant.slug}`,
       };
     } catch (error: any) {
-      console.error('Error in registerMerchant:', {
-        message: error.message,
-        code: error.code,
-        stack: error.stack,
-        dto: dto
-      });
+      console.error('Error in registerMerchant:', error);
       throw error;
     }
   }

@@ -2,7 +2,7 @@
 
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
-import { Plus, Wheat, Fish } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 type ProductCardProps = {
     item: {
@@ -58,15 +58,6 @@ export function ProductCard({ item }: ProductCardProps) {
                 <div className="flex items-end justify-between pt-2">
                     <div className="text-4xl font-mono font-bold text-blue-600 tracking-tighter">
                         {(item.price_cents / 100).toFixed(0)}
-                    </div>
-
-                    <div className="flex gap-2">
-                        <div className="bg-gold/20 p-2 rounded-full">
-                            <Wheat className="w-5 h-5 text-gold-dark" />
-                        </div>
-                        <div className="bg-red-100 p-2 rounded-full">
-                            <Fish className="w-5 h-5 text-red-400" />
-                        </div>
                     </div>
                 </div>
 

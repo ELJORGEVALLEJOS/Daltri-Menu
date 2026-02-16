@@ -15,6 +15,8 @@ export default function RegisterPage() {
         slug: '',
         whatsapp_phone: '',
         address: '',
+        email: '',
+        password: '',
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -59,15 +61,20 @@ export default function RegisterPage() {
                         <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">Tu link público:</p>
                         <p className="text-amber-500 font-mono text-sm break-all">{registeredMerchant.share_link}</p>
                     </div>
+
+                    <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                        <p className="text-xs text-blue-400 font-medium">Usa tu email y contraseña para entrar al panel de administración.</p>
+                    </div>
+
                     <div className="flex flex-col gap-3 pt-4">
-                        <Link href={`/m/${registeredMerchant.slug}`}>
+                        <Link href={`https://admin.daltrishop.com/login`}>
                             <Button className="w-full h-12 bg-white text-black hover:bg-zinc-200 font-bold rounded-xl">
-                                Ir a mi Menú
+                                Ir a mi Panel
                             </Button>
                         </Link>
-                        <Link href="/">
-                            <Button variant="ghost" className="w-full text-zinc-400 hover:text-white">
-                                Volver al inicio
+                        <Link href={`/m/${registeredMerchant.slug}`}>
+                            <Button variant="outline" className="w-full h-12 border-white/10 text-white hover:bg-white/5 font-bold rounded-xl">
+                                Ver Menú Público
                             </Button>
                         </Link>
                     </div>
@@ -78,7 +85,7 @@ export default function RegisterPage() {
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white p-6 font-sans">
-            <main className="flex w-full max-w-md flex-col space-y-8">
+            <main className="flex w-full max-w-md flex-col space-y-8 py-10">
                 <Link href="/" className="inline-flex items-center text-zinc-500 hover:text-zinc-300 transition-colors w-fit">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Volver
@@ -91,7 +98,7 @@ export default function RegisterPage() {
                         </div>
                         <div>
                             <h1 className="text-xl font-bold text-white">Registrar Restaurante</h1>
-                            <p className="text-zinc-500 text-xs">Únete a Daltri Menu hoy</p>
+                            <p className="text-zinc-500 text-xs text-balance">Crea tu cuenta de dueño y empieza a vender</p>
                         </div>
                     </div>
 
@@ -104,32 +111,59 @@ export default function RegisterPage() {
                                 placeholder="El palacio de la pizza"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="bg-black/40 border-white/10 text-white h-11 rounded-xl"
+                                className="bg-black/40 border-white/10 text-white h-11 rounded-xl focus:ring-amber-500/50"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="slug" className="text-zinc-400 text-xs ml-1">Código Único (slug)</Label>
+                                <Input
+                                    id="slug"
+                                    required
+                                    placeholder="palacio-pizzas"
+                                    value={formData.slug}
+                                    onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                                    className="bg-black/40 border-white/10 text-white h-11 rounded-xl focus:ring-amber-500/50"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="whatsapp" className="text-zinc-400 text-xs ml-1">WhatsApp</Label>
+                                <Input
+                                    id="whatsapp"
+                                    required
+                                    placeholder="+54911..."
+                                    value={formData.whatsapp_phone}
+                                    onChange={(e) => setFormData({ ...formData, whatsapp_phone: e.target.value })}
+                                    className="bg-black/40 border-white/10 text-white h-11 rounded-xl focus:ring-amber-500/50"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label htmlFor="email" className="text-zinc-400 text-xs ml-1">Email del Dueño (Login)</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                required
+                                placeholder="dueno@tucomercio.com"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                className="bg-black/40 border-white/10 text-white h-11 rounded-xl focus:ring-amber-500/50"
                             />
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label htmlFor="slug" className="text-zinc-400 text-xs ml-1">Código Único (slug)</Label>
+                            <Label htmlFor="password" className="text-zinc-400 text-xs ml-1">Contraseña (Mín. 8 caracteres)</Label>
                             <Input
-                                id="slug"
+                                id="password"
+                                type="password"
                                 required
-                                placeholder="palacio-pizzas"
-                                value={formData.slug}
-                                onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
-                                className="bg-black/40 border-white/10 text-white h-11 rounded-xl"
-                            />
-                            <p className="text-[10px] text-zinc-600 ml-1">Solo letras minúsculas y guiones.</p>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label htmlFor="whatsapp" className="text-zinc-400 text-xs ml-1">Número de WhatsApp</Label>
-                            <Input
-                                id="whatsapp"
-                                required
-                                placeholder="+5491112345678"
-                                value={formData.whatsapp_phone}
-                                onChange={(e) => setFormData({ ...formData, whatsapp_phone: e.target.value })}
-                                className="bg-black/40 border-white/10 text-white h-11 rounded-xl"
+                                minLength={8}
+                                placeholder="••••••••"
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                className="bg-black/40 border-white/10 text-white h-11 rounded-xl focus:ring-amber-500/50"
                             />
                         </div>
 
@@ -140,7 +174,7 @@ export default function RegisterPage() {
                                 placeholder="Calle 123, Ciudad"
                                 value={formData.address}
                                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                className="bg-black/40 border-white/10 text-white h-11 rounded-xl"
+                                className="bg-black/40 border-white/10 text-white h-11 rounded-xl focus:ring-amber-500/50"
                             />
                         </div>
 
@@ -153,9 +187,9 @@ export default function RegisterPage() {
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full h-12 bg-white text-black hover:bg-zinc-200 font-bold rounded-xl mt-4"
+                            className="w-full h-12 bg-white text-black hover:bg-zinc-200 font-bold rounded-xl mt-4 shadow-lg shadow-white/5 active:scale-[0.98] transition-all"
                         >
-                            {loading ? 'Registrando...' : 'Crear mi Restaurante'}
+                            {loading ? 'Creando cuenta...' : 'Crear mi Restaurante'}
                         </Button>
                     </form>
                 </div>

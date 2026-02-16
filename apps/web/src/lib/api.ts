@@ -65,7 +65,7 @@ export async function createOrder(slug: string, orderData: any) {
     return res.json();
 }
 
-export async function registerMerchant(data: { name: string; slug: string; whatsapp_phone: string; address?: string }) {
+export async function registerMerchant(data: { name: string; slug: string; whatsapp_phone: string; address?: string; email: string; password?: string }) {
     const res = await fetch(`${API_URL}/public/merchants/register`, {
         method: 'POST',
         headers: {
