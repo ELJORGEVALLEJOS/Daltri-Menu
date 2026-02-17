@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { fetchMenu, createCategory, deleteCategory, createProduct, deleteProduct } from '@/lib/api';
-import { Trash2, Plus, ChevronDown, ChevronRight, LayoutGrid, Package, Info, DollarSign, Image as ImageIcon } from 'lucide-react';
+import { fetchMenu, createCategory, updateCategory, deleteCategory, createProduct, updateProduct, deleteProduct } from '@/lib/api';
+import { Trash2, Plus, ChevronDown, LayoutGrid, Package, DollarSign, Image as ImageIcon, Edit2, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function MenuPage() {
@@ -14,9 +14,19 @@ export default function MenuPage() {
     const [newCategoryName, setNewCategoryName] = useState('');
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
-    // New Item State
+    // Edit/Add States
     const [addingItemTo, setAddingItemTo] = useState<string | null>(null);
-    const [newItemData, setNewItemData] = useState({ name: '', price: '', description: '', imageUrl: '' });
+    const [editingItem, setEditingItem] = useState<any | null>(null);
+    const [editingCategory, setEditingCategory] = useState<string | null>(null);
+    const [categoryEditName, setCategoryEditName] = useState('');
+
+    const [itemData, setItemData] = useState({
+        name: '',
+        price: '',
+        originalPrice: '',
+        description: '',
+        imageUrl: ''
+    });
 
     const loadMenu = async () => {
         try {
@@ -44,6 +54,13 @@ export default function MenuPage() {
         loadMenu();
     };
 
+    const handleUpdateCategory = async (id: string) => {
+        if (!categoryEditName) return;
+        await updateCategory(id, categoryEditName);
+        setEditingCategory(null);
+        loadMenu();
+    };
+
     const handleDeleteCategory = async (id: string) => {
         if (!confirm('¿Estás seguro? Se ocultará la categoría y todos sus productos.')) return;
         await deleteCategory(id);
@@ -56,17 +73,38 @@ export default function MenuPage() {
         );
     };
 
-    const handleCreateItem = async (categoryId: string) => {
-        await createProduct({
+    const handleSaveItem = async (categoryId: string) => {
+        const payload = {
             category_id: categoryId,
-            name: newItemData.name,
-            price_cents: Math.round(parseFloat(newItemData.price) * 100),
-            description: newItemData.description,
-            image_url: newItemData.imageUrl
-        });
+            name: itemData.name,
+            price_cents: Math.round(parseFloat(itemData.price) * 100),
+            original_price_cents: itemData.originalPrice ? Math.round(parseFloat(itemData.originalPrice) * 100) : undefined,
+            description: itemData.description,
+            image_url: itemData.imageUrl
+        };
+
+        if (editingItem) {
+            await updateProduct(editingItem.id, payload);
+        } else {
+            await createProduct(payload);
+        }
+
         setAddingItemTo(null);
-        setNewItemData({ name: '', price: '', description: '', imageUrl: '' });
+        setEditingItem(null);
+        setItemData({ name: '', price: '', originalPrice: '', description: '', imageUrl: '' });
         loadMenu();
+    };
+
+    const startEditingItem = (item: any, categoryId: string) => {
+        setEditingItem(item);
+        setAddingItemTo(categoryId);
+        setItemData({
+            name: item.name,
+            price: (item.priceCents / 100).toString(),
+            originalPrice: item.originalPriceCents ? (item.originalPriceCents / 100).toString() : '',
+            description: item.description || '',
+            imageUrl: item.imageUrl || ''
+        });
     };
 
     const handleDeleteItem = async (id: string) => {
@@ -121,9 +159,34 @@ export default function MenuPage() {
                                 )}>
                                     <LayoutGrid className="h-6 w-6" />
                                 </div>
-                                <div>
-                                    <h3 className="text-xl font-serif font-bold text-gray-900">{category.name}</h3>
-                                    <p className="text-sm text-gray-400 font-medium tracking-wide">{category.items.length} productos</p>
+                                <div className="flex-1">
+                                    {editingCategory === category.id ? (
+                                        <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                            <Input
+                                                value={categoryEditName}
+                                                onChange={e => setCategoryEditName(e.target.value)}
+                                                className="h-10 w-48 font-serif font-bold"
+                                                autoFocus
+                                            />
+                                            <Button size="icon" variant="ghost" onClick={() => handleUpdateCategory(category.id)} className="h-10 w-10 text-green-500 hover:bg-green-50">
+                                                <Check className="h-4 w-4" />
+                                            </Button>
+                                            <Button size="icon" variant="ghost" onClick={() => setEditingCategory(null)} className="h-10 w-10 text-gray-400 hover:bg-gray-50">
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <h3 className="text-xl font-serif font-bold text-gray-900 flex items-center gap-2 group/cat">
+                                                {category.name}
+                                                <Edit2
+                                                    className="h-3 w-3 text-gray-300 opacity-0 group-hover/cat:opacity-100 cursor-pointer hover:text-[#C5A059] transition-all"
+                                                    onClick={(e) => { e.stopPropagation(); setEditingCategory(category.id); setCategoryEditName(category.name); }}
+                                                />
+                                            </h3>
+                                            <p className="text-sm text-gray-400 font-medium tracking-wide">{category.items.length} productos</p>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -146,7 +209,7 @@ export default function MenuPage() {
                             <div className="p-8 bg-white border-t border-gray-50">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                                     {category.items.map((item: any) => (
-                                        <div key={item.id} className="group relative bg-[#FDFCFB] p-5 rounded-3xl border border-gray-100 hover:border-[#C5A059]/30 transition-all hover:shadow-2xl hover:shadow-gray-200/60 overflow-hidden">
+                                        <div key={item.id} className="group relative bg-[#FDFCFB] p-5 rounded-3xl border border-gray-100 hover:border-[#C5A059]/30 transition-all hover:shadow-2xl hover:shadow-gray-200/60 overflow-hidden flex flex-col">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div className="h-14 w-14 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
                                                     {item.imageUrl ? (
@@ -155,23 +218,40 @@ export default function MenuPage() {
                                                         <ImageIcon className="h-6 w-6 text-gray-200" />
                                                     )}
                                                 </div>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-9 w-9 text-gray-200 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
-                                                    onClick={() => handleDeleteItem(item.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                <div className="flex gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-9 w-9 text-gray-200 hover:text-[#C5A059] hover:bg-[#C5A059]/5 rounded-xl transition-colors"
+                                                        onClick={() => startEditingItem(item, category.id)}
+                                                    >
+                                                        <Edit2 className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-9 w-9 text-gray-200 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                                        onClick={() => handleDeleteItem(item.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                             </div>
 
                                             <h4 className="font-bold text-gray-900 group-hover:text-[#C5A059] transition-colors line-clamp-1 mb-1">{item.name}</h4>
                                             <p className="text-sm text-gray-400 line-clamp-2 min-h-[2.5rem] mb-4 font-medium leading-relaxed">{item.description || 'Sin descripción'}</p>
 
                                             <div className="flex items-center justify-between mt-auto">
-                                                <div className="flex items-center gap-1 text-[#C5A059] font-bold text-lg">
-                                                    <span className="text-sm mt-0.5">$</span>
-                                                    {(item.priceCents / 100).toLocaleString('es-AR')}
+                                                <div className="flex flex-col">
+                                                    {item.originalPriceCents && (
+                                                        <span className="text-[10px] text-gray-300 line-through font-bold -mb-1">
+                                                            ${(item.originalPriceCents / 100).toLocaleString('es-AR')}
+                                                        </span>
+                                                    )}
+                                                    <div className="flex items-center gap-1 text-[#C5A059] font-bold text-lg">
+                                                        <span className="text-sm mt-0.5">$</span>
+                                                        {(item.priceCents / 100).toLocaleString('es-AR')}
+                                                    </div>
                                                 </div>
                                                 <div className={cn(
                                                     "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest",
@@ -180,6 +260,14 @@ export default function MenuPage() {
                                                     {item.isActive ? 'Activo' : 'Oculto'}
                                                 </div>
                                             </div>
+
+                                            {item.originalPriceCents && item.originalPriceCents > item.priceCents && (
+                                                <div className="absolute top-0 right-0 p-1">
+                                                    <div className="bg-amber-500 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-bl-xl shadow-sm">
+                                                        Oferta
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
 
@@ -197,37 +285,52 @@ export default function MenuPage() {
                                     )}
                                 </div>
 
-                                {/* Modern Add Product Form */}
+                                {/* Modern Add/Edit Product Form */}
                                 {addingItemTo === category.id && (
                                     <div className="bg-[#FDFCFB] p-8 rounded-[2rem] border border-[#C5A059]/20 shadow-inner space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
                                         <div className="flex items-center gap-4">
                                             <div className="h-10 w-10 bg-[#C5A059] rounded-xl flex items-center justify-center shadow-lg shadow-[#C5A059]/20">
                                                 <Package className="h-5 w-5 text-white" />
                                             </div>
-                                            <h4 className="text-xl font-serif font-bold text-gray-900">Nuevo Producto</h4>
+                                            <h4 className="text-xl font-serif font-bold text-gray-900">{editingItem ? 'Editar Producto' : 'Nuevo Producto'}</h4>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-2">
                                                 <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Nombre</Label>
                                                 <Input
-                                                    value={newItemData.name}
-                                                    onChange={e => setNewItemData({ ...newItemData, name: e.target.value })}
+                                                    value={itemData.name}
+                                                    onChange={e => setItemData({ ...itemData, name: e.target.value })}
                                                     placeholder="Nombre del plato"
                                                     className="h-14 bg-white rounded-2xl border-gray-100 px-5 focus:ring-[#C5A059]/20"
                                                 />
                                             </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Precio (en pesos)</Label>
-                                                <div className="relative">
-                                                    <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#C5A059]" />
-                                                    <Input
-                                                        type="number"
-                                                        value={newItemData.price}
-                                                        onChange={e => setNewItemData({ ...newItemData, price: e.target.value })}
-                                                        placeholder="0.00"
-                                                        className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 focus:ring-[#C5A059]/20"
-                                                    />
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Precio</Label>
+                                                    <div className="relative">
+                                                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#C5A059]" />
+                                                        <Input
+                                                            type="number"
+                                                            value={itemData.price}
+                                                            onChange={e => setItemData({ ...itemData, price: e.target.value })}
+                                                            placeholder="0.00"
+                                                            className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 focus:ring-[#C5A059]/20 font-bold"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Anterior (Oferta)</Label>
+                                                    <div className="relative">
+                                                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
+                                                        <Input
+                                                            type="number"
+                                                            value={itemData.originalPrice}
+                                                            onChange={e => setItemData({ ...itemData, originalPrice: e.target.value })}
+                                                            placeholder="Opcional"
+                                                            className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 focus:ring-[#C5A059]/20 text-gray-300 line-through"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -235,8 +338,8 @@ export default function MenuPage() {
                                         <div className="space-y-2">
                                             <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Descripción</Label>
                                             <Input
-                                                value={newItemData.description}
-                                                onChange={e => setNewItemData({ ...newItemData, description: e.target.value })}
+                                                value={itemData.description}
+                                                onChange={e => setItemData({ ...itemData, description: e.target.value })}
                                                 placeholder="Ingredientes, preparación, etc."
                                                 className="h-14 bg-white rounded-2xl border-gray-100 px-5 focus:ring-[#C5A059]/20"
                                             />
@@ -247,8 +350,8 @@ export default function MenuPage() {
                                             <div className="relative">
                                                 <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
                                                 <Input
-                                                    value={newItemData.imageUrl}
-                                                    onChange={e => setNewItemData({ ...newItemData, imageUrl: e.target.value })}
+                                                    value={itemData.imageUrl}
+                                                    onChange={e => setItemData({ ...itemData, imageUrl: e.target.value })}
                                                     placeholder="https://images.unsplash.com/..."
                                                     className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 focus:ring-[#C5A059]/20"
                                                 />
@@ -256,10 +359,10 @@ export default function MenuPage() {
                                         </div>
 
                                         <div className="flex gap-4 pt-4">
-                                            <Button onClick={() => handleCreateItem(category.id)} className="flex-1 h-14 bg-[#C5A059] hover:bg-[#B48F4D] text-white text-lg font-bold rounded-2xl shadow-xl shadow-[#C5A059]/20">
-                                                Guardar Producto
+                                            <Button onClick={() => handleSaveItem(category.id)} className="flex-1 h-14 bg-[#C5A059] hover:bg-[#B48F4D] text-white text-lg font-bold rounded-2xl shadow-xl shadow-[#C5A059]/20">
+                                                {editingItem ? 'Actualizar Producto' : 'Guardar Producto'}
                                             </Button>
-                                            <Button variant="ghost" onClick={() => setAddingItemTo(null)} className="h-14 px-8 text-gray-400 font-bold rounded-2xl hover:bg-gray-100">
+                                            <Button variant="ghost" onClick={() => { setAddingItemTo(null); setEditingItem(null); setItemData({ name: '', price: '', originalPrice: '', description: '', imageUrl: '' }); }} className="h-14 px-8 text-gray-400 font-bold rounded-2xl hover:bg-gray-100">
                                                 Cancelar
                                             </Button>
                                         </div>

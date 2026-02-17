@@ -15,7 +15,7 @@ import { UpdateAdminRestaurantDto } from './dto/update-admin-restaurant.dto';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async getRestaurant(user: JwtUser) {
     const restaurantId = this.getRestaurantIdFromUser(user);
@@ -166,6 +166,7 @@ export class AdminService {
         name: true,
         description: true,
         priceCents: true,
+        originalPriceCents: true,
         imageUrl: true,
         isActive: true,
       },
@@ -183,6 +184,7 @@ export class AdminService {
         name: dto.name,
         description: dto.description,
         priceCents: dto.price_cents,
+        originalPriceCents: dto.original_price_cents,
         imageUrl: dto.image_url,
         isActive: dto.active ?? true,
       },
@@ -192,6 +194,7 @@ export class AdminService {
         name: true,
         description: true,
         priceCents: true,
+        originalPriceCents: true,
         imageUrl: true,
         isActive: true,
       },
@@ -215,6 +218,7 @@ export class AdminService {
         name: dto.name,
         description: dto.description,
         priceCents: dto.price_cents,
+        originalPriceCents: dto.original_price_cents,
         imageUrl: dto.image_url,
         isActive: dto.active,
       },
@@ -224,6 +228,7 @@ export class AdminService {
         name: true,
         description: true,
         priceCents: true,
+        originalPriceCents: true,
         imageUrl: true,
         isActive: true,
       },

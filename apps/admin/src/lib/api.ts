@@ -65,6 +65,16 @@ export async function createCategory(name: string) {
     throw new Error('Failed to create category');
 }
 
+export async function updateCategory(id: string, name: string) {
+    const res = await fetch(`${API_URL}/admin/categories/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ name }),
+    });
+    if (res.ok) return res.json();
+    throw new Error('Failed to update category');
+}
+
 export async function deleteCategory(id: string) {
     const res = await fetch(`${API_URL}/admin/categories/${id}`, {
         method: 'DELETE',
@@ -74,7 +84,7 @@ export async function deleteCategory(id: string) {
     throw new Error('Failed to delete category');
 }
 
-export async function createProduct(data: { category_id: string; name: string; price_cents: number; description?: string; image_url?: string }) {
+export async function createProduct(data: { category_id: string; name: string; price_cents: number; original_price_cents?: number; description?: string; image_url?: string }) {
     const res = await fetch(`${API_URL}/admin/products`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -82,6 +92,16 @@ export async function createProduct(data: { category_id: string; name: string; p
     });
     if (res.ok) return res.json();
     throw new Error('Failed to create product');
+}
+
+export async function updateProduct(id: string, data: { category_id?: string; name?: string; price_cents?: number; original_price_cents?: number; description?: string; image_url?: string; active?: boolean }) {
+    const res = await fetch(`${API_URL}/admin/products/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+    });
+    if (res.ok) return res.json();
+    throw new Error('Failed to update product');
 }
 
 export async function deleteProduct(id: string) {

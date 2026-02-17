@@ -30,6 +30,11 @@ export class UpdateProductDto {
   price_cents?: number;
 
   @IsOptional()
+  @IsInt()
+  @Min(0)
+  original_price_cents?: number;
+
+  @IsOptional()
   @IsUrl({
     require_protocol: true,
   })

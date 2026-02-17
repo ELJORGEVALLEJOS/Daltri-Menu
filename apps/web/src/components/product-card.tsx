@@ -10,6 +10,7 @@ type ProductCardProps = {
         name: string;
         description?: string;
         price_cents: number;
+        original_price_cents?: number;
         imageUrl?: string;
     };
 };
@@ -45,7 +46,7 @@ export function ProductCard({ item }: ProductCardProps) {
                         <h3 className="text-2xl font-sans font-black text-gray-900 tracking-tight leading-tight">
                             {item.name}
                         </h3>
-                        <p className="text-sm font-medium text-gray-400 italic">Salat / Product</p>
+                        <p className="text-sm font-medium text-gray-400 italic">Producto</p>
                     </div>
                 </div>
 
@@ -56,9 +57,22 @@ export function ProductCard({ item }: ProductCardProps) {
                 )}
 
                 <div className="flex items-end justify-between pt-2">
-                    <div className="text-4xl font-mono font-bold text-blue-600 tracking-tighter">
-                        {(item.price_cents / 100).toFixed(0)}
+                    <div className="flex flex-col">
+                        {item.original_price_cents && item.original_price_cents > item.price_cents && (
+                            <span className="text-sm font-mono font-bold text-gray-300 line-through -mb-1">
+                                ${(item.original_price_cents / 100).toFixed(0)}
+                            </span>
+                        )}
+                        <div className="text-4xl font-mono font-bold text-blue-600 tracking-tighter">
+                            {(item.price_cents / 100).toFixed(0)}
+                        </div>
                     </div>
+
+                    {item.original_price_cents && item.original_price_cents > item.price_cents && (
+                        <div className="bg-amber-100 text-amber-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest animate-pulse">
+                            Oferta
+                        </div>
+                    )}
                 </div>
 
                 <Button

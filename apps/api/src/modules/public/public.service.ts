@@ -95,6 +95,15 @@ export class PublicService {
               items: {
                 where: { isActive: true },
                 orderBy: { name: 'asc' },
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  priceCents: true,
+                  originalPriceCents: true,
+                  imageUrl: true,
+                  isActive: true,
+                },
               },
             },
           },
@@ -122,6 +131,7 @@ export class PublicService {
             name: item.name,
             description: item.description,
             price_cents: item.priceCents,
+            original_price_cents: item.originalPriceCents,
             image_url: item.imageUrl,
             active: item.isActive,
           })),
