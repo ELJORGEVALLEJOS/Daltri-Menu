@@ -28,6 +28,14 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
         return null;
     }
 
+    // Mock shipping logic (since we can't fetch from backend yet)
+    // In a real implementation with backend support, this would come from the merchant API
+    const SHIPPING_COST = 5000; // $5000 fixed cost
+    const FREE_SHIPPING_THRESHOLD = 50000; // Free shipping over $50000
+
+    const shippingCost = total >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+    const finalTotal = total + shippingCost;
+
     const handleWhatsAppOrder = async () => {
         if (!merchantPhone) return;
 
@@ -35,30 +43,38 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
             const orderData = {
                 customer_name: name,
                 customer_phone: phone.replace(/\D/g, ''),
-                delivery: "pickup", // Hardcoded for MVP
-                delivery_address: "",
+                delivery: "delivery", // Defaulting to delivery for now as requested
+                delivery_address: "", // We might need to add this field if it's delivery
                 notes: note,
                 items: items.map(item => ({
                     product_id: item.itemId,
                     qty: item.quantity,
-                    notes: "" // Options could go here
+                    notes: ""
                 }))
             };
 
             const response = await createOrder(slug, orderData);
 
-            // The backend returns the whatsapp_url
             if (response.whatsapp_url) {
                 clearCart();
                 window.location.href = response.whatsapp_url;
             } else {
-                // Fallback if backend doesn't return URL
                 let message = `*Nuevo Pedido de ${name}*\n\n`;
                 items.forEach((item) => {
                     message += `${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
                 });
+
+                message += `\nSubtotal: $${total.toFixed(2)}\n`;
+
+                if (shippingCost === 0) {
+                    message += `Envío: GRATIS\n`;
+                } else {
+                    message += `Envío: $${shippingCost.toFixed(2)}\n`;
+                }
+
                 if (note) message += `\n*Nota:* ${note}\n`;
-                message += `\n*Total: $${total.toFixed(2)}*`;
+                message += `\n*Total a Pagar: $${finalTotal.toFixed(2)}*`;
+
                 const encodedMessage = encodeURIComponent(message);
                 const url = `https://wa.me/${merchantPhone}?text=${encodedMessage}`;
                 clearCart();
@@ -95,9 +111,25 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
                             </div>
                         ))}
                     </div>
-                    <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-xl text-gray-900">
+
+                    <div className="border-t border-gray-100 pt-3 space-y-2">
+                        <div className="flex justify-between text-gray-600">
+                            <span>Subtotal</span>
+                            <span>${total.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-gray-600">
+                            <span>Envío</span>
+                            {shippingCost === 0 ? (
+                                <span className="text-green-600 font-bold">GRATIS</span>
+                            ) : (
+                                <span>${shippingCost.toFixed(2)}</span>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-xl text-gray-900 mt-2">
                         <span>Total</span>
-                        <span className="text-gold-dark font-serif font-black">${total.toFixed(2)}</span>
+                        <span className="text-gold-dark font-serif font-black">${finalTotal.toFixed(2)}</span>
                     </div>
                 </div>
 

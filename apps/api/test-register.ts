@@ -6,6 +6,8 @@ async function testRegistration() {
     const data = {
         name: 'Daltri Shop Test',
         slug: '1234-test-' + Date.now().toString().slice(-4),
+        email: 'test@daltrishop.com',
+        password: 'TestPassword123!',
         whatsapp_phone: '+54 2974946299',
         address: 'los pinos'
     };

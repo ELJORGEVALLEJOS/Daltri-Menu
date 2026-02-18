@@ -14,10 +14,15 @@ export default function SettingsPage() {
         name: '',
         slug: '',
         whatsappNumber: '',
+        shippingCost: '',
+        freeShippingThreshold: '',
     });
 
     useEffect(() => {
         const slug = localStorage.getItem('merchant_slug');
+        // Load local shipping settings
+        const localSettings = JSON.parse(localStorage.getItem('shipping_settings') || '{}');
+
         if (slug) {
             loginMerchant(slug).then((data) => {
                 setMerchant(data);
@@ -25,6 +30,8 @@ export default function SettingsPage() {
                     name: data.name,
                     slug: data.slug,
                     whatsappNumber: data.whatsappNumber || '',
+                    shippingCost: localSettings.shippingCost || '',
+                    freeShippingThreshold: localSettings.freeShippingThreshold || '',
                 });
                 setLoading(false);
             });
@@ -39,7 +46,21 @@ export default function SettingsPage() {
         e.preventDefault();
         setSaving(true);
         try {
-            await updateMerchant(merchant.id, formData);
+            // We can pass the whole object, the API function handles it. 
+            // Ideally we should update the API signature or pass just what's needed.
+            // Looking at api.ts, updateMerchant takes just 'data'.
+            await updateMerchant({
+                name: formData.name,
+                whatsappNumber: formData.whatsappNumber,
+                slug: formData.slug
+            });
+
+            // Save shipping settings to localStorage
+            localStorage.setItem('shipping_settings', JSON.stringify({
+                shippingCost: formData.shippingCost,
+                freeShippingThreshold: formData.freeShippingThreshold
+            }));
+
             alert('Settings updated successfully');
             // Update local storage if slug changed
             if (formData.slug !== merchant.slug) {
@@ -97,6 +118,36 @@ export default function SettingsPage() {
                         className="mt-2"
                     />
                     <p className="text-xs text-gray-500 mt-1">Include country code, no spaces or dashes.</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 border-t pt-4">
+                    <div>
+                        <Label htmlFor="shippingCost">Costo de Envío ($)</Label>
+                        <Input
+                            id="shippingCost"
+                            name="shippingCost"
+                            type="number"
+                            value={formData.shippingCost}
+                            onChange={handleChange}
+                            placeholder="0"
+                            className="mt-2"
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="freeShippingThreshold">Envío Gratis desde ($)</Label>
+                        <Input
+                            id="freeShippingThreshold"
+                            name="freeShippingThreshold"
+                            type="number"
+                            value={formData.freeShippingThreshold}
+                            onChange={handleChange}
+                            placeholder="Sin límite"
+                            className="mt-2"
+                        />
+                    </div>
+                    <p className="col-span-2 text-xs text-amber-600 font-medium">
+                        * Nota: Esta configuración se guarda localmente en este dispositivo (Modo Demo Frontend).
+                    </p>
                 </div>
 
                 <div className="pt-4">
