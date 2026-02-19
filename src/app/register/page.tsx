@@ -67,7 +67,7 @@ export default function RegisterPage() {
                     </div>
 
                     <div className="flex flex-col gap-3 pt-4">
-                        <Link href={`https://admin.daltrishop.com/login`}>
+                        <Link href={`/login`}>
                             <Button className="w-full h-12 bg-white text-black hover:bg-zinc-200 font-bold rounded-xl">
                                 Ir a mi Panel
                             </Button>
