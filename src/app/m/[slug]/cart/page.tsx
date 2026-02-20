@@ -5,7 +5,7 @@ import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Trash2, ArrowLeft, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import { fetchMerchant } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 
@@ -14,8 +14,12 @@ export default function CartPage() {
     const [merchantPhone, setMerchantPhone] = useState<string | null>(null);
     const [shippingCost, setShippingCost] = useState(0);
     const params = useParams<{ slug?: string | string[] }>();
+    const pathname = usePathname();
     const slugValue = params?.slug;
-    const slug = Array.isArray(slugValue) ? slugValue[0] : slugValue || '';
+    const slugFromParams = Array.isArray(slugValue) ? slugValue[0] : slugValue || '';
+    const slugFromPath = pathname.match(/^\/m\/([^/]+)/)?.[1] || '';
+    const slug = slugFromParams || slugFromPath;
+    const menuHref = slug ? `/m/${slug}` : '/';
 
     useEffect(() => {
         if (!slug) return;
@@ -53,7 +57,7 @@ export default function CartPage() {
                 <div className="bg-white p-8 rounded-[2rem] shadow-premium text-center max-w-sm w-full border border-gray-100">
                     <h2 className="text-2xl font-sans font-black mb-2 text-gray-900">Tu carrito esta vacio</h2>
                     <p className="text-gray-500 mb-8 font-medium">Parece que aun no has anadido nada delicioso.</p>
-                    <Link href={`/m/${slug}`}>
+                    <Link href={menuHref}>
                         <Button className="w-full h-14 bg-zinc-900 hover:bg-black text-white font-bold rounded-2xl shadow-xl transition-all">
                             Volver al Menu
                         </Button>
@@ -68,7 +72,7 @@ export default function CartPage() {
             <div className="bg-[#EEDC83] pt-12 pb-20 px-6 rounded-b-[4rem] shadow-premium mb-[-3rem] relative z-0">
                 <div className="container mx-auto max-w-md">
                     <div className="flex items-center mb-4">
-                        <Link href={`/m/${slug}`} className="mr-6 bg-white/30 backdrop-blur-md p-3 rounded-full hover:bg-white/50 transition-all border border-white/20">
+                        <Link href={menuHref} className="mr-6 bg-white/30 backdrop-blur-md p-3 rounded-full hover:bg-white/50 transition-all border border-white/20">
                             <ArrowLeft className="h-6 w-6 text-gray-900" />
                         </Link>
                         <h1 className="text-4xl font-sans font-black text-gray-900 tracking-tighter">Tu Pedido</h1>

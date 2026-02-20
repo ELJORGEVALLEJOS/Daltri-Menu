@@ -1,10 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { ProductCard } from '@/components/product-card';
 import { SocialLinks, type MerchantSocialLinks } from '@/components/social-contact';
-import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 
 type MenuItem = {
@@ -150,17 +148,6 @@ export function MenuView({
                             </div>
                         </button>
                     ))}
-                </div>
-
-                <div className="mb-10">
-                    <Link href={`/login?restaurant=${slug}`} className="block">
-                        <Button
-                            variant="outline"
-                            className="w-full h-12 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 rounded-2xl font-bold"
-                        >
-                            Entrar a mi restaurante
-                        </Button>
-                    </Link>
                 </div>
 
                 <SocialLinks links={merchant.social_links} />

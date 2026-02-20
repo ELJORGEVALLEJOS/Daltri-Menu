@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import { fetchMerchant, createOrder } from '@/lib/api';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -18,8 +18,12 @@ export default function CheckoutPage() {
     const [shippingCost, setShippingCost] = useState(0);
     const router = useRouter();
     const params = useParams<{ slug?: string | string[] }>();
+    const pathname = usePathname();
     const slugValue = params?.slug;
-    const slug = Array.isArray(slugValue) ? slugValue[0] : slugValue || '';
+    const slugFromParams = Array.isArray(slugValue) ? slugValue[0] : slugValue || '';
+    const slugFromPath = pathname.match(/^\/m\/([^/]+)/)?.[1] || '';
+    const slug = slugFromParams || slugFromPath;
+    const cartHref = slug ? `/m/${slug}/cart` : '/';
 
     useEffect(() => {
         if (!slug) return;
@@ -93,7 +97,7 @@ export default function CheckoutPage() {
             <div className="bg-[#EEDC82] pt-6 pb-12 px-4 rounded-b-[2rem] shadow-sm mb-[-2rem] relative z-0">
                 <div className="container mx-auto max-w-md">
                     <div className="flex items-center mb-2">
-                        <Link href={`/m/${slug}/cart`} className="mr-4 bg-white/20 p-2 rounded-full hover:bg-white/40 transition">
+                        <Link href={cartHref} className="mr-4 bg-white/20 p-2 rounded-full hover:bg-white/40 transition">
                             <ArrowLeft className="h-6 w-6 text-gray-900" />
                         </Link>
                         <h1 className="text-2xl font-serif font-bold text-gray-900">Finalizar pedido</h1>
