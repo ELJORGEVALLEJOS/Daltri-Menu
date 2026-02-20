@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import { loginMerchant } from "@/lib/admin-api";
-import { registerMerchant } from "@/lib/api";
 import { ChefHat, Lock, Mail } from 'lucide-react';
 
 export default function LoginPage() {
@@ -25,8 +24,9 @@ export default function LoginPage() {
         try {
             await loginMerchant(email, password);
             router.push('/dashboard');
-        } catch (err: any) {
-            setError(err.message || 'Credenciales inválidas');
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Credenciales inválidas';
+            setError(message);
         } finally {
             setLoading(false);
         }

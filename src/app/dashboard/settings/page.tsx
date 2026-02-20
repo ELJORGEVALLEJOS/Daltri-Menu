@@ -4,19 +4,14 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { fetchRestaurant, updateMerchant } from '@/lib/admin-api';
-import {
-    DEFAULT_SHIPPING_SETTINGS,
-    readShippingSettings,
-    saveShippingSettings,
-    type ShippingType,
-} from '@/lib/shipping-settings';
+import { fetchRestaurant, updateMerchant, type MerchantShippingType } from '@/lib/admin-api';
 
 type Merchant = {
     name?: string;
     slug?: string;
-    whatsappNumber?: string;
     whatsapp_phone?: string;
+    shipping_type?: MerchantShippingType;
+    shipping_cost_cents?: number;
 };
 
 export default function SettingsPage() {
@@ -26,8 +21,8 @@ export default function SettingsPage() {
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
-        whatsappNumber: '',
-        shippingType: DEFAULT_SHIPPING_SETTINGS.shippingType as ShippingType,
+        whatsappPhone: '',
+        shippingType: 'free' as MerchantShippingType,
         shippingCost: '',
     });
 
@@ -39,24 +34,19 @@ export default function SettingsPage() {
                 const data = (await fetchRestaurant()) as Merchant;
                 if (!active) return;
 
-                const merchantSlug = data.slug || localStorage.getItem('merchant_slug') || '';
-                const shippingSettings = merchantSlug
-                    ? readShippingSettings(merchantSlug)
-                    : DEFAULT_SHIPPING_SETTINGS;
-
                 setFormData({
                     name: data.name || '',
-                    slug: merchantSlug,
-                    whatsappNumber: data.whatsappNumber || data.whatsapp_phone || '',
-                    shippingType: shippingSettings.shippingType,
+                    slug: data.slug || '',
+                    whatsappPhone: data.whatsapp_phone || '',
+                    shippingType: data.shipping_type === 'paid' ? 'paid' : 'free',
                     shippingCost:
-                        shippingSettings.shippingType === 'paid'
-                            ? String(shippingSettings.shippingCost)
+                        data.shipping_type === 'paid'
+                            ? String((data.shipping_cost_cents || 0) / 100)
                             : '',
                 });
 
-                if (merchantSlug) {
-                    localStorage.setItem('merchant_slug', merchantSlug);
+                if (data.slug) {
+                    localStorage.setItem('merchant_slug', data.slug);
                 }
             } catch {
                 if (!active) return;
@@ -76,7 +66,7 @@ export default function SettingsPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleShippingTypeChange = (shippingType: ShippingType) => {
+    const handleShippingTypeChange = (shippingType: MerchantShippingType) => {
         setFormData((prev) => ({
             ...prev,
             shippingType,
@@ -90,29 +80,22 @@ export default function SettingsPage() {
         setError('');
 
         const normalizedSlug = formData.slug.trim().toLowerCase().replace(/\s+/g, '-');
+        const normalizedPhone = formData.whatsappPhone.trim();
         const shippingCostValue =
             formData.shippingType === 'paid'
-                ? Math.max(0, Number(formData.shippingCost || 0))
+                ? Math.max(0, Math.round(Number(formData.shippingCost || 0) * 100))
                 : 0;
 
         try {
             await updateMerchant({
-                name: formData.name,
-                whatsappNumber: formData.whatsappNumber,
+                name: formData.name.trim(),
                 slug: normalizedSlug,
+                whatsapp_phone: normalizedPhone,
+                shipping_type: formData.shippingType,
+                shipping_cost_cents: shippingCostValue,
             });
 
-            saveShippingSettings(normalizedSlug, {
-                shippingType: formData.shippingType,
-                shippingCost: shippingCostValue,
-            });
             localStorage.setItem('merchant_slug', normalizedSlug);
-
-            setFormData((prev) => ({
-                ...prev,
-                slug: normalizedSlug,
-                shippingCost: prev.shippingType === 'paid' ? String(shippingCostValue) : '',
-            }));
             alert('Configuracion guardada correctamente');
         } catch {
             setError('No se pudo actualizar la configuracion.');
@@ -156,16 +139,16 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                    <Label htmlFor="whatsappNumber">WhatsApp del restaurante</Label>
+                    <Label htmlFor="whatsappPhone">WhatsApp del restaurante</Label>
                     <Input
-                        id="whatsappNumber"
-                        name="whatsappNumber"
-                        value={formData.whatsappNumber}
+                        id="whatsappPhone"
+                        name="whatsappPhone"
+                        value={formData.whatsappPhone}
                         onChange={handleChange}
                         placeholder="54911..."
                         className="mt-2"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Incluye codigo de pais.</p>
+                    <p className="text-xs text-gray-500 mt-1">Incluye codigo de pais sin espacios.</p>
                 </div>
 
                 <div className="space-y-4 border-t pt-4">
@@ -192,7 +175,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="max-w-sm">
-                        <Label htmlFor="shippingCost">Costo de envio</Label>
+                        <Label htmlFor="shippingCost">Costo de envio (moneda local)</Label>
                         <Input
                             id="shippingCost"
                             name="shippingCost"
@@ -209,10 +192,6 @@ export default function SettingsPage() {
                             Si eliges envio gratis, este valor no se usa.
                         </p>
                     </div>
-
-                    <p className="text-xs text-amber-600 font-medium">
-                        * Nota: esta configuracion se guarda localmente en este dispositivo.
-                    </p>
                 </div>
 
                 {error && <p className="text-sm text-red-600">{error}</p>}

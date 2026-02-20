@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { fetchMerchant, createOrder } from '@/lib/api';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
-import { readShippingSettings } from '@/lib/shipping-settings';
 
 export default function CheckoutPage({ params }: { params: { slug: string } }) {
     const { items, total, clearCart } = useCart();
@@ -15,17 +14,16 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
     const [phone, setPhone] = useState('');
     const [note, setNote] = useState('');
     const [merchantPhone, setMerchantPhone] = useState<string | null>(null);
+    const [shippingCost, setShippingCost] = useState(0);
     const router = useRouter();
     const { slug } = params;
 
-    const shippingCost = useMemo(() => {
-        const settings = readShippingSettings(slug);
-        return settings.shippingType === 'paid' ? settings.shippingCost : 0;
-    }, [slug]);
-
     useEffect(() => {
         fetchMerchant(slug).then((m) => {
-            if (m) setMerchantPhone(m.whatsapp_phone);
+            if (!m) return;
+            setMerchantPhone(m.whatsapp_phone);
+            const costCents = m.shipping_type === 'paid' ? m.shipping_cost_cents || 0 : 0;
+            setShippingCost(costCents / 100);
         });
     }, [slug]);
 
@@ -46,8 +44,7 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
             const orderData = {
                 customer_name: name,
                 customer_phone: phone.replace(/\D/g, ''),
-                delivery: 'delivery',
-                delivery_address: '',
+                delivery: 'pickup' as const,
                 notes: note,
                 items: items.map((item) => ({
                     product_id: item.itemId,

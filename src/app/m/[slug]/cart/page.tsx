@@ -1,26 +1,24 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Trash2, ArrowLeft, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { fetchMerchant } from '@/lib/api';
-import { readShippingSettings } from '@/lib/shipping-settings';
 
 export default function CartPage({ params }: { params: { slug: string } }) {
     const { items, removeItem, total } = useCart();
     const [merchantPhone, setMerchantPhone] = useState<string | null>(null);
+    const [shippingCost, setShippingCost] = useState(0);
     const { slug } = params;
-
-    const shippingCost = useMemo(() => {
-        const settings = readShippingSettings(slug);
-        return settings.shippingType === 'paid' ? settings.shippingCost : 0;
-    }, [slug]);
 
     useEffect(() => {
         fetchMerchant(slug).then((m) => {
-            if (m) setMerchantPhone(m.whatsapp_phone);
+            if (!m) return;
+            setMerchantPhone(m.whatsapp_phone);
+            const costCents = m.shipping_type === 'paid' ? m.shipping_cost_cents || 0 : 0;
+            setShippingCost(costCents / 100);
         });
     }, [slug]);
 

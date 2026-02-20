@@ -1,5 +1,18 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://server.daltrishop.com';
 
+export type MerchantShippingType = 'free' | 'paid';
+
+export type UpdateMerchantPayload = {
+    name?: string;
+    slug?: string;
+    whatsapp_phone?: string;
+    currency?: string;
+    address?: string;
+    logo_url?: string;
+    shipping_type?: MerchantShippingType;
+    shipping_cost_cents?: number;
+};
+
 function getAuthHeaders() {
     const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
     return {
@@ -36,7 +49,7 @@ export async function fetchRestaurant() {
     return res.json();
 }
 
-export async function updateMerchant(data: any) {
+export async function updateMerchant(data: UpdateMerchantPayload) {
     const res = await fetch(`${API_URL}/admin/restaurant`, {
         method: 'PUT',
         headers: getAuthHeaders(),
