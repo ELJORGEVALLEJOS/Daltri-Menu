@@ -3,8 +3,12 @@ import { notFound } from "next/navigation";
 import { MenuView } from "./menu-view";
 import { FloatingCart } from "@/components/floating-cart";
 
-export default async function MerchantPage({ params }: { params: { slug: string } }) {
-    const { slug } = params;
+export default async function MerchantPage({
+    params,
+}: {
+    params: Promise<{ slug: string }>;
+}) {
+    const { slug } = await params;
     const merchant = await fetchMerchant(slug);
 
     if (!merchant) {
