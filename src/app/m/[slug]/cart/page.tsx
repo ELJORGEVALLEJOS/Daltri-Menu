@@ -5,16 +5,21 @@ import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Trash2, ArrowLeft, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { fetchMerchant } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 
-export default function CartPage({ params }: { params: { slug: string } }) {
+export default function CartPage() {
     const { items, removeItem, total } = useCart();
     const [merchantPhone, setMerchantPhone] = useState<string | null>(null);
     const [shippingCost, setShippingCost] = useState(0);
-    const { slug } = params;
+    const params = useParams<{ slug?: string | string[] }>();
+    const slugValue = params?.slug;
+    const slug = Array.isArray(slugValue) ? slugValue[0] : slugValue || '';
 
     useEffect(() => {
+        if (!slug) return;
+
         fetchMerchant(slug).then((m) => {
             if (!m) return;
             setMerchantPhone(m.whatsapp_phone);
@@ -26,7 +31,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
     const finalTotal = total + shippingCost;
 
     const handleWhatsAppOrder = () => {
-        if (!merchantPhone) return;
+        if (!merchantPhone || !slug) return;
 
         let message = `*Nuevo Pedido*\n\n`;
         items.forEach((item) => {
@@ -110,7 +115,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                 <Button
                     className="w-full bg-[#25D366] hover:bg-[#1fa34e] text-white h-20 text-xl font-black rounded-[2rem] shadow-[0_20px_50px_rgba(37,211,102,0.2)] flex items-center justify-center gap-4 transition-all active:scale-[0.98] border-b-8 border-[#1a9447] disabled:opacity-50"
                     onClick={handleWhatsAppOrder}
-                    disabled={!merchantPhone}
+                    disabled={!merchantPhone || !slug}
                 >
                     <MessageCircle className="w-8 h-8 fill-white/20" />
                     Pedir por WhatsApp

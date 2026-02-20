@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { fetchMerchant, createOrder } from '@/lib/api';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { formatMoney } from '@/lib/format';
 
-export default function CheckoutPage({ params }: { params: { slug: string } }) {
+export default function CheckoutPage() {
     const { items, total, clearCart } = useCart();
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
@@ -17,9 +17,13 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
     const [merchantPhone, setMerchantPhone] = useState<string | null>(null);
     const [shippingCost, setShippingCost] = useState(0);
     const router = useRouter();
-    const { slug } = params;
+    const params = useParams<{ slug?: string | string[] }>();
+    const slugValue = params?.slug;
+    const slug = Array.isArray(slugValue) ? slugValue[0] : slugValue || '';
 
     useEffect(() => {
+        if (!slug) return;
+
         fetchMerchant(slug).then((m) => {
             if (!m) return;
             setMerchantPhone(m.whatsapp_phone);
@@ -29,7 +33,7 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
     }, [slug]);
 
     useEffect(() => {
-        if (items.length === 0) {
+        if (items.length === 0 && slug) {
             router.replace(`/m/${slug}`);
         }
     }, [items.length, router, slug]);
@@ -41,7 +45,7 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
         formatMoney(value, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
     const handleWhatsAppOrder = async () => {
-        if (!merchantPhone) return;
+        if (!merchantPhone || !slug) return;
 
         try {
             const orderData = {
@@ -165,7 +169,7 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
                 <Button
                     className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white h-16 text-lg font-bold rounded-2xl shadow-xl shadow-green-900/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale cursor-pointer"
                     onClick={handleWhatsAppOrder}
-                    disabled={!name || !phone || !merchantPhone}
+                    disabled={!name || !phone || !merchantPhone || !slug}
                 >
                     <MessageCircle className="w-6 h-6" />
                     Enviar pedido por WhatsApp
