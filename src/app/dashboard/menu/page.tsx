@@ -150,7 +150,14 @@ export default function MenuPage() {
                 setFormError('El precio anterior debe ser un numero valido.');
                 return;
             }
+            if (originalNumber <= priceNumber) {
+                setFormError('El precio anterior (oferta) debe ser mayor que el precio actual.');
+                return;
+            }
             originalPriceCents = Math.round(originalNumber * 100);
+        } else if (editingItem) {
+            // In edit mode, empty offer means removing the previous offer.
+            originalPriceCents = 0;
         }
 
         const payload = {
@@ -417,6 +424,7 @@ export default function MenuPage() {
                                                             className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 focus:ring-[#C5A059]/20 text-[#99A1AF] placeholder:text-[#99A1AF] line-through"
                                                         />
                                                     </div>
+                                                    <p className="text-[11px] text-[#99A1AF] ml-1">Debe ser mayor al precio actual.</p>
                                                 </div>
                                             </div>
                                         </div>
