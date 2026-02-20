@@ -179,7 +179,7 @@ export default function MenuPage() {
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
                         placeholder="Nueva categoría (ej. Vinos)"
-                        className="h-12 w-64 border-none bg-gray-50/50 rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-1 focus:ring-[#C5A059]/30"
+                        className="h-12 w-64 border-none bg-gray-50/50 rounded-xl text-gray-900 placeholder:text-[#99A1AF] focus:ring-1 focus:ring-[#C5A059]/30"
                     />
                     <Button onClick={handleCreateCategory} className="bg-[#C5A059] hover:bg-[#B48F4D] text-white rounded-xl h-12 px-6 shadow-lg shadow-[#C5A059]/20">
                         <Plus className="h-5 w-5 mr-2" /> Añadir
@@ -201,7 +201,7 @@ export default function MenuPage() {
                             <div className="flex items-center gap-4">
                                 <div className={cn(
                                     "h-12 w-12 rounded-2xl flex items-center justify-center transition-all shadow-md shadow-gray-200/50",
-                                    expandedCategories.includes(category.id) ? "bg-[#C5A059] text-white rotate-6" : "bg-gray-100 text-gray-400"
+                                    expandedCategories.includes(category.id) ? "bg-[#C5A059] text-white rotate-6" : "bg-gray-100 text-[#99A1AF]"
                                 )}>
                                     <LayoutGrid className="h-6 w-6" />
                                 </div>
@@ -217,7 +217,7 @@ export default function MenuPage() {
                                             <Button size="icon" variant="ghost" onClick={() => handleUpdateCategory(category.id)} className="h-10 w-10 text-green-500 hover:bg-green-50">
                                                 <Check className="h-4 w-4" />
                                             </Button>
-                                            <Button size="icon" variant="ghost" onClick={() => setEditingCategory(null)} className="h-10 w-10 text-gray-400 hover:bg-gray-50">
+                                            <Button size="icon" variant="ghost" onClick={() => setEditingCategory(null)} className="h-10 w-10 text-[#99A1AF] hover:bg-gray-50">
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -226,11 +226,11 @@ export default function MenuPage() {
                                             <h3 className="text-xl font-serif font-bold text-gray-900 flex items-center gap-2 group/cat">
                                                 {category.name}
                                                 <Edit2
-                                                    className="h-3 w-3 text-gray-300 opacity-0 group-hover/cat:opacity-100 cursor-pointer hover:text-[#C5A059] transition-all"
+                                                    className="h-3 w-3 text-[#99A1AF] opacity-0 group-hover/cat:opacity-100 cursor-pointer hover:text-[#C5A059] transition-all"
                                                     onClick={(e) => { e.stopPropagation(); setEditingCategory(category.id); setCategoryEditName(category.name); }}
                                                 />
                                             </h3>
-                                            <p className="text-sm text-gray-400 font-medium tracking-wide">{category.items.length} productos</p>
+                                            <p className="text-sm text-[#99A1AF] font-medium tracking-wide">{category.items.length} productos</p>
                                         </>
                                     )}
                                 </div>
@@ -240,13 +240,13 @@ export default function MenuPage() {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-10 w-10 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl"
+                                    className="h-10 w-10 text-[#99A1AF] hover:text-red-500 hover:bg-red-50 rounded-xl"
                                     onClick={(e) => { e.stopPropagation(); handleDeleteCategory(category.id); }}
                                 >
                                     <Trash2 className="h-5 w-5" />
                                 </Button>
                                 <div className={cn("transition-transform duration-300", expandedCategories.includes(category.id) && "rotate-180")}>
-                                    <ChevronDown className="h-6 w-6 text-gray-400" />
+                                    <ChevronDown className="h-6 w-6 text-[#99A1AF]" />
                                 </div>
                             </div>
                         </div>
@@ -285,12 +285,12 @@ export default function MenuPage() {
                                             </div>
 
                                             <h4 className="font-bold text-gray-900 group-hover:text-[#C5A059] transition-colors line-clamp-1 mb-1">{item.name}</h4>
-                                            <p className="text-sm text-gray-400 line-clamp-2 min-h-[2.5rem] mb-4 font-medium leading-relaxed">{item.description || 'Sin descripción'}</p>
+                                            <p className="text-sm text-[#99A1AF] line-clamp-2 min-h-[2.5rem] mb-4 font-medium leading-relaxed">{item.description || 'Sin descripción'}</p>
 
                                             <div className="flex items-center justify-between mt-auto">
                                                 <div className="flex flex-col">
                                                     {item.originalPriceCents && (
-                                                        <span className="text-[10px] text-gray-300 line-through font-bold -mb-1">
+                                                        <span className="text-[10px] text-[#99A1AF] line-through font-bold -mb-1">
                                                             ${(item.originalPriceCents / 100).toLocaleString('es-AR')}
                                                         </span>
                                                     )}
@@ -301,7 +301,7 @@ export default function MenuPage() {
                                                 </div>
                                                 <div className={cn(
                                                     "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest",
-                                                    item.isActive ? "bg-green-50 text-green-500" : "bg-gray-50 text-gray-400"
+                                                    item.isActive ? "bg-green-50 text-green-500" : "bg-gray-50 text-[#99A1AF]"
                                                 )}>
                                                     {item.isActive ? 'Activo' : 'Oculto'}
                                                 </div>
@@ -321,7 +321,7 @@ export default function MenuPage() {
                                     {addingItemTo !== category.id && (
                                         <button
                                             onClick={() => setAddingItemTo(category.id)}
-                                            className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-gray-100 rounded-3xl hover:border-[#C5A059]/40 hover:bg-[#FDFCFB] transition-all group text-gray-300 hover:text-[#C5A059]"
+                                            className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-gray-100 rounded-3xl hover:border-[#C5A059]/40 hover:bg-[#FDFCFB] transition-all group text-[#99A1AF] hover:text-[#C5A059]"
                                         >
                                             <div className="h-14 w-14 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:bg-[#C5A059]/10 group-hover:scale-110 transition-all">
                                                 <Plus className="h-8 w-8" />
@@ -343,17 +343,17 @@ export default function MenuPage() {
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-2">
-                                                <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Nombre</Label>
+                                                <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Nombre</Label>
                                                 <Input
                                                     value={itemData.name}
                                                     onChange={e => setItemData({ ...itemData, name: e.target.value })}
                                                     placeholder="Nombre del plato"
-                                                    className="h-14 bg-white rounded-2xl border-gray-100 px-5 focus:ring-[#C5A059]/20"
+                                                    className="h-14 bg-white rounded-2xl border-gray-100 px-5 text-[#99A1AF] placeholder:text-[#99A1AF] focus:ring-[#C5A059]/20"
                                                 />
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-2">
-                                                    <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Precio</Label>
+                                                    <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Precio</Label>
                                                     <div className="relative">
                                                         <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#C5A059]" />
                                                         <Input
@@ -361,20 +361,20 @@ export default function MenuPage() {
                                                             value={itemData.price}
                                                             onChange={e => setItemData({ ...itemData, price: e.target.value })}
                                                             placeholder="0.00"
-                                                            className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 focus:ring-[#C5A059]/20 font-bold"
+                                                            className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 text-[#99A1AF] placeholder:text-[#99A1AF] focus:ring-[#C5A059]/20 font-bold"
                                                         />
                                                     </div>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Anterior (Oferta)</Label>
+                                                    <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Anterior (Oferta)</Label>
                                                     <div className="relative">
-                                                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
+                                                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#99A1AF]" />
                                                         <Input
                                                             type="number"
                                                             value={itemData.originalPrice}
                                                             onChange={e => setItemData({ ...itemData, originalPrice: e.target.value })}
                                                             placeholder="Opcional"
-                                                            className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 focus:ring-[#C5A059]/20 text-gray-300 line-through"
+                                                            className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 focus:ring-[#C5A059]/20 text-[#99A1AF] placeholder:text-[#99A1AF] line-through"
                                                         />
                                                     </div>
                                                 </div>
@@ -382,24 +382,24 @@ export default function MenuPage() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Descripción</Label>
+                                            <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Descripción</Label>
                                             <Input
                                                 value={itemData.description}
                                                 onChange={e => setItemData({ ...itemData, description: e.target.value })}
                                                 placeholder="Ingredientes, preparación, etc."
-                                                className="h-14 bg-white rounded-2xl border-gray-100 px-5 focus:ring-[#C5A059]/20"
+                                                className="h-14 bg-white rounded-2xl border-gray-100 px-5 text-[#99A1AF] placeholder:text-[#99A1AF] focus:ring-[#C5A059]/20"
                                             />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Url de Imagen (Opcional)</Label>
+                                            <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Url de Imagen (Opcional)</Label>
                                             <div className="relative">
-                                                <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
+                                                <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#99A1AF]" />
                                                 <Input
                                                     value={itemData.imageUrl}
                                                     onChange={e => setItemData({ ...itemData, imageUrl: e.target.value })}
                                                     placeholder="https://images.unsplash.com/..."
-                                                    className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 focus:ring-[#C5A059]/20"
+                                                    className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 text-[#99A1AF] placeholder:text-[#99A1AF] focus:ring-[#C5A059]/20"
                                                 />
                                             </div>
                                         </div>
@@ -408,7 +408,7 @@ export default function MenuPage() {
                                             <Button onClick={() => handleSaveItem(category.id)} className="flex-1 h-14 bg-[#C5A059] hover:bg-[#B48F4D] text-white text-lg font-bold rounded-2xl shadow-xl shadow-[#C5A059]/20">
                                                 {editingItem ? 'Actualizar Producto' : 'Guardar Producto'}
                                             </Button>
-                                            <Button variant="ghost" onClick={() => { setAddingItemTo(null); setEditingItem(null); setItemData({ name: '', price: '', originalPrice: '', description: '', imageUrl: '' }); }} className="h-14 px-8 text-gray-400 font-bold rounded-2xl hover:bg-gray-100">
+                                            <Button variant="ghost" onClick={() => { setAddingItemTo(null); setEditingItem(null); setItemData({ name: '', price: '', originalPrice: '', description: '', imageUrl: '' }); }} className="h-14 px-8 text-[#99A1AF] font-bold rounded-2xl hover:bg-gray-100">
                                                 Cancelar
                                             </Button>
                                         </div>
@@ -431,7 +431,7 @@ export default function MenuPage() {
                         <LayoutGrid className="h-10 w-10 text-gray-200" />
                     </div>
                     <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2">Comienza tu menú</h3>
-                    <p className="text-gray-400 max-w-sm mx-auto font-medium">Añade tu primera categoría arriba para empezar a cargar tus platos y bebidas.</p>
+                    <p className="text-[#99A1AF] max-w-sm mx-auto font-medium">Añade tu primera categoría arriba para empezar a cargar tus platos y bebidas.</p>
                 </div>
             )}
         </div>
