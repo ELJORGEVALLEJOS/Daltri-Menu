@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { fetchMerchant, createOrder } from '@/lib/api';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
+import { readShippingSettings } from '@/lib/shipping-settings';
 
 export default function CheckoutPage({ params }: { params: { slug: string } }) {
     const { items, total, clearCart } = useCart();
@@ -17,23 +18,25 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
     const router = useRouter();
     const { slug } = params;
 
+    const shippingCost = useMemo(() => {
+        const settings = readShippingSettings(slug);
+        return settings.shippingType === 'paid' ? settings.shippingCost : 0;
+    }, [slug]);
+
     useEffect(() => {
         fetchMerchant(slug).then((m) => {
             if (m) setMerchantPhone(m.whatsapp_phone);
         });
     }, [slug]);
 
-    if (items.length === 0) {
-        router.replace(`/m/${slug}`);
-        return null;
-    }
+    useEffect(() => {
+        if (items.length === 0) {
+            router.replace(`/m/${slug}`);
+        }
+    }, [items.length, router, slug]);
 
-    // Mock shipping logic (since we can't fetch from backend yet)
-    // In a real implementation with backend support, this would come from the merchant API
-    const SHIPPING_COST = 5000; // $5000 fixed cost
-    const FREE_SHIPPING_THRESHOLD = 50000; // Free shipping over $50000
+    if (items.length === 0) return null;
 
-    const shippingCost = total >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
     const finalTotal = total + shippingCost;
 
     const handleWhatsAppOrder = async () => {
@@ -43,14 +46,14 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
             const orderData = {
                 customer_name: name,
                 customer_phone: phone.replace(/\D/g, ''),
-                delivery: "delivery", // Defaulting to delivery for now as requested
-                delivery_address: "", // We might need to add this field if it's delivery
+                delivery: 'delivery',
+                delivery_address: '',
                 notes: note,
-                items: items.map(item => ({
+                items: items.map((item) => ({
                     product_id: item.itemId,
                     qty: item.quantity,
-                    notes: ""
-                }))
+                    notes: '',
+                })),
             };
 
             const response = await createOrder(slug, orderData);
@@ -65,30 +68,24 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
                 });
 
                 message += `\nSubtotal: $${total.toFixed(2)}\n`;
-
-                if (shippingCost === 0) {
-                    message += `Envío: GRATIS\n`;
-                } else {
-                    message += `Envío: $${shippingCost.toFixed(2)}\n`;
-                }
+                message += shippingCost > 0 ? `Envio: $${shippingCost.toFixed(2)}\n` : 'Envio: GRATIS\n';
 
                 if (note) message += `\n*Nota:* ${note}\n`;
                 message += `\n*Total a Pagar: $${finalTotal.toFixed(2)}*`;
 
                 const encodedMessage = encodeURIComponent(message);
-                const url = `https://wa.me/${merchantPhone}?text=${encodedMessage}`;
+                const url = `https://wa.me/${merchantPhone.replace(/\D/g, '')}?text=${encodedMessage}`;
                 clearCart();
                 window.location.href = url;
             }
         } catch (error) {
             console.error('Error creating order:', error);
-            alert('Hubo un error al crear tu pedido. Por favor, inténtalo de nuevo.');
+            alert('Hubo un error al crear tu pedido. Por favor, intenta de nuevo.');
         }
     };
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            {/* Header */}
             <div className="bg-[#EEDC82] pt-6 pb-12 px-4 rounded-b-[2rem] shadow-sm mb-[-2rem] relative z-0">
                 <div className="container mx-auto max-w-md">
                     <div className="flex items-center mb-2">
@@ -104,7 +101,7 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
                     <h2 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-50 pb-2">Resumen del pedido</h2>
                     <div className="space-y-3 mb-4">
-                        {items.map(i => (
+                        {items.map((i) => (
                             <div key={i.id} className="flex justify-between text-sm">
                                 <span className="text-gray-600 font-medium">{i.quantity}x {i.name}</span>
                                 <span className="font-bold text-gray-900">${(i.price * i.quantity).toFixed(2)}</span>
@@ -118,7 +115,7 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
                             <span>${total.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-gray-600">
-                            <span>Envío</span>
+                            <span>Envio</span>
                             {shippingCost === 0 ? (
                                 <span className="text-green-600 font-bold">GRATIS</span>
                             ) : (
@@ -141,11 +138,11 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
                             className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all text-gray-800 font-medium"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="Ej: Juan Pérez"
+                            placeholder="Ej: Juan Perez"
                         />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">WhatsApp / Teléfono</label>
+                        <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">WhatsApp / Telefono</label>
                         <input
                             type="tel"
                             className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all text-gray-800 font-medium"
@@ -155,12 +152,12 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
                         />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">Instrucciones o Notas</label>
+                        <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">Instrucciones o notas</label>
                         <textarea
                             className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all min-h-[100px] text-gray-800 font-medium"
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
-                            placeholder="Alergias, cambio de $1000, etc."
+                            placeholder="Alergias, cambio de dinero, etc."
                         />
                     </div>
                 </div>

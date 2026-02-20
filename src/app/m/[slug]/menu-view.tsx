@@ -1,16 +1,48 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
-import { CategoryList } from '@/components/category-list';
 import { ProductCard } from '@/components/product-card';
 import { SocialLinks, ContactInfo } from '@/components/social-contact';
-import { Header } from '@/components/header';
+import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 
-export function MenuView({ merchant, menu, slug }: { merchant: any, menu: any[], slug: string }) {
+type MenuItem = {
+    id: string;
+    name: string;
+    description?: string;
+    price_cents?: number;
+    priceCents?: number;
+    original_price_cents?: number;
+    originalPriceCents?: number;
+    imageUrl?: string;
+    image_url?: string;
+};
+
+type MenuCategory = {
+    id: string;
+    name: string;
+    items: MenuItem[];
+};
+
+type Merchant = {
+    name: string;
+    logoUrl?: string;
+    logo_url?: string;
+};
+
+export function MenuView({
+    merchant,
+    menu,
+    slug,
+}: {
+    merchant: Merchant;
+    menu: MenuCategory[];
+    slug: string;
+}) {
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
-    const selectedCategory = menu.find(c => c.id === selectedCategoryId);
+    const selectedCategory = menu.find((c) => c.id === selectedCategoryId);
 
     if (selectedCategoryId && selectedCategory) {
         return (
@@ -43,9 +75,17 @@ export function MenuView({ merchant, menu, slug }: { merchant: any, menu: any[],
                 <div className="container mx-auto max-w-md px-6 pt-12 pb-32 uppercase tracking-tighter">
                     <h2 className="text-4xl font-sans font-black text-gray-900 mb-12">{selectedCategory.name}</h2>
                     <div className="space-y-4">
-                        {selectedCategory.items.map((item: any) => (
-                            <ProductCard key={item.id} item={item} />
-                        ))}
+                        {selectedCategory.items.map((item) => {
+                            const normalizedItem = {
+                                ...item,
+                                price_cents: item.price_cents ?? item.priceCents ?? 0,
+                                original_price_cents:
+                                    item.original_price_cents ?? item.originalPriceCents,
+                                imageUrl: item.imageUrl ?? item.image_url,
+                            };
+
+                            return <ProductCard key={item.id} item={normalizedItem} />;
+                        })}
                     </div>
                 </div>
             </div>
@@ -54,7 +94,6 @@ export function MenuView({ merchant, menu, slug }: { merchant: any, menu: any[],
 
     return (
         <div className="min-h-screen bg-beige-light/30">
-            {/* Hero Section */}
             <div className="bg-beige pt-20 pb-24 px-6 rounded-b-[4rem] shadow-premium relative overflow-hidden mb-12">
                 <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
                     <div className="absolute -top-24 -left-24 w-64 h-64 bg-white/40 rounded-full blur-3xl"></div>
@@ -63,8 +102,12 @@ export function MenuView({ merchant, menu, slug }: { merchant: any, menu: any[],
 
                 <div className="container mx-auto max-w-md text-center relative z-10">
                     <div className="bg-white p-3 rounded-[3rem] w-56 h-56 mx-auto shadow-premium mb-10 flex items-center justify-center border-8 border-white ring-1 ring-gold/10 overflow-hidden group">
-                        {merchant.logoUrl ? (
-                            <img src={merchant.logoUrl} alt={merchant.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" />
+                        {merchant.logoUrl || merchant.logo_url ? (
+                            <img
+                                src={merchant.logoUrl || merchant.logo_url}
+                                alt={merchant.name}
+                                className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700"
+                            />
                         ) : (
                             <div className="w-full h-full rounded-[2rem] bg-gradient-to-br from-beige-light to-white flex items-center justify-center text-gold font-serif text-6xl font-black italic shadow-inner">
                                 {merchant.name.charAt(0)}
@@ -77,7 +120,7 @@ export function MenuView({ merchant, menu, slug }: { merchant: any, menu: any[],
                     </h1>
 
                     <p className="text-xl font-medium text-gray-800/80 max-w-[280px] mx-auto leading-relaxed mb-4">
-                        Auténticas comidas y bebidas francesas.
+                        Autenticas comidas y bebidas francesas.
                     </p>
 
                     <div className="flex items-center justify-center gap-3">
@@ -106,6 +149,17 @@ export function MenuView({ merchant, menu, slug }: { merchant: any, menu: any[],
                             </div>
                         </button>
                     ))}
+                </div>
+
+                <div className="mb-10">
+                    <Link href={`/login?restaurant=${slug}`} className="block">
+                        <Button
+                            variant="outline"
+                            className="w-full h-12 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 rounded-2xl font-bold"
+                        >
+                            Entrar a mi restaurante
+                        </Button>
+                    </Link>
                 </div>
 
                 <SocialLinks />

@@ -66,7 +66,7 @@ export default function Home() {
           <div className="flex flex-col gap-2 w-full max-w-xs">
             <Link href="/login" className="w-full">
               <Button variant="outline" className="w-full bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors text-xs h-10 rounded-xl">
-                Entrar a mi Restaurante
+                Entrar a mi restaurante
               </Button>
             </Link>
             <Link href="/register" className="block text-center text-amber-500/80 hover:text-amber-500 text-xs font-medium hover:underline transition-all py-2">
