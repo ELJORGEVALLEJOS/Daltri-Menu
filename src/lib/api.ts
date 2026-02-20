@@ -1,4 +1,7 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://server.daltrishop.com';
+const FALLBACK_API_URL = 'https://server.daltrishop.com';
+const API_BASES = Array.from(
+    new Set([process.env.NEXT_PUBLIC_API_URL, FALLBACK_API_URL].filter(Boolean)),
+).map((url) => String(url).replace(/\/+$/, ''));
 
 type PublicProduct = {
     id: string;
@@ -19,55 +22,63 @@ type PublicCategory = {
 };
 
 export async function fetchMerchant(slug: string) {
-    const url = `${API_URL}/public/restaurants/${slug}/menu`;
+    for (const baseUrl of API_BASES) {
+        try {
+            const res = await fetch(`${baseUrl}/public/restaurants/${slug}/menu`, {
+                next: { revalidate: 60 },
+            });
 
-    try {
-        const res = await fetch(url, {
-            next: { revalidate: 60 },
-        });
+            if (!res.ok) {
+                continue;
+            }
 
-        if (!res.ok) {
-            return null;
-        }
-
-        const data = (await res.json()) as {
-            restaurant?: {
-                id: string;
-                name: string;
-                slug: string;
-                whatsapp_phone: string;
-                currency?: string;
-                shipping_type?: 'free' | 'paid';
-                shipping_cost_cents?: number;
+            const data = (await res.json()) as {
+                restaurant?: {
+                    id: string;
+                    name: string;
+                    slug: string;
+                    whatsapp_phone: string;
+                    currency?: string;
+                    shipping_type?: 'free' | 'paid';
+                    shipping_cost_cents?: number;
+                };
             };
-        };
 
-        return data.restaurant || null;
-    } catch {
-        return null;
+            if (data.restaurant) {
+                return data.restaurant;
+            }
+        } catch {
+            continue;
+        }
     }
+
+    return null;
 }
 
 export async function fetchRestaurantMenu(slug: string) {
-    try {
-        const res = await fetch(`${API_URL}/public/restaurants/${slug}/menu`, {
-            next: { revalidate: 60 },
-        });
+    for (const baseUrl of API_BASES) {
+        try {
+            const res = await fetch(`${baseUrl}/public/restaurants/${slug}/menu`, {
+                next: { revalidate: 60 },
+            });
 
-        if (!res.ok) {
-            return [];
+            if (!res.ok) {
+                continue;
+            }
+
+            const data = (await res.json()) as { categories?: PublicCategory[] };
+            const categories = data.categories || [];
+
+            return categories.map((category) => ({
+                ...category,
+                items: category.items || category.products || [],
+            }));
+        } catch {
+            continue;
         }
-
-        const data = (await res.json()) as { categories?: PublicCategory[] };
-        const categories = data.categories || [];
-
-        return categories.map((category) => ({
-            ...category,
-            items: category.items || category.products || [],
-        }));
-    } catch {
-        return [];
     }
+
+    return [];
 }
 
 export async function createOrder(
@@ -85,20 +96,35 @@ export async function createOrder(
         }>;
     },
 ) {
-    const res = await fetch(`${API_URL}/public/restaurants/${slug}/orders`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData),
-    });
+    let lastError = 'Failed to create order';
 
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to create order');
+    for (const baseUrl of API_BASES) {
+        try {
+            const res = await fetch(`${baseUrl}/public/restaurants/${slug}/orders`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(orderData),
+            });
+
+            if (res.ok) {
+                return res.json();
+            }
+
+            const errorData = await res.json().catch(() => ({} as Record<string, unknown>));
+            const message = errorData?.message;
+            if (Array.isArray(message)) {
+                lastError = message.join(', ');
+            } else if (typeof message === 'string' && message.trim()) {
+                lastError = message;
+            }
+        } catch {
+            continue;
+        }
     }
 
-    return res.json();
+    throw new Error(lastError);
 }
 
 export async function registerMerchant(data: {
@@ -110,18 +136,33 @@ export async function registerMerchant(data: {
     admin_password: string;
     admin_full_name: string;
 }) {
-    const res = await fetch(`${API_URL}/public/merchants/register`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-    });
+    let lastError = 'Failed to register merchant';
 
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to register merchant');
+    for (const baseUrl of API_BASES) {
+        try {
+            const res = await fetch(`${baseUrl}/public/merchants/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (res.ok) {
+                return res.json();
+            }
+
+            const errorData = await res.json().catch(() => ({} as Record<string, unknown>));
+            const message = errorData?.message;
+            if (Array.isArray(message)) {
+                lastError = message.join(', ');
+            } else if (typeof message === 'string' && message.trim()) {
+                lastError = message;
+            }
+        } catch {
+            continue;
+        }
     }
 
-    return res.json();
+    throw new Error(lastError);
 }
