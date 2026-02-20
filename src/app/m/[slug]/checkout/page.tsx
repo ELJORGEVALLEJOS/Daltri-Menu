@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { fetchMerchant, createOrder } from '@/lib/api';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
+import { formatMoney } from '@/lib/format';
 
 export default function CheckoutPage({ params }: { params: { slug: string } }) {
     const { items, total, clearCart } = useCart();
@@ -36,6 +37,8 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
     if (items.length === 0) return null;
 
     const finalTotal = total + shippingCost;
+    const formatAmount = (value: number) =>
+        formatMoney(value, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
     const handleWhatsAppOrder = async () => {
         if (!merchantPhone) return;
@@ -61,14 +64,14 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
             } else {
                 let message = `*Nuevo Pedido de ${name}*\n\n`;
                 items.forEach((item) => {
-                    message += `${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
+                    message += `${item.quantity}x ${item.name} - ${formatAmount(item.price * item.quantity)}\n`;
                 });
 
-                message += `\nSubtotal: $${total.toFixed(2)}\n`;
-                message += shippingCost > 0 ? `Envio: $${shippingCost.toFixed(2)}\n` : 'Envio: GRATIS\n';
+                message += `\nSubtotal: ${formatAmount(total)}\n`;
+                message += shippingCost > 0 ? `Envio: ${formatAmount(shippingCost)}\n` : 'Envio: GRATIS\n';
 
                 if (note) message += `\n*Nota:* ${note}\n`;
-                message += `\n*Total a Pagar: $${finalTotal.toFixed(2)}*`;
+                message += `\n*Total a Pagar: ${formatAmount(finalTotal)}*`;
 
                 const encodedMessage = encodeURIComponent(message);
                 const url = `https://wa.me/${merchantPhone.replace(/\D/g, '')}?text=${encodedMessage}`;
@@ -101,7 +104,7 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
                         {items.map((i) => (
                             <div key={i.id} className="flex justify-between text-sm">
                                 <span className="text-gray-600 font-medium">{i.quantity}x {i.name}</span>
-                                <span className="font-bold text-gray-900">${(i.price * i.quantity).toFixed(2)}</span>
+                                <span className="font-bold text-gray-900">{formatAmount(i.price * i.quantity)}</span>
                             </div>
                         ))}
                     </div>
@@ -109,21 +112,21 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
                     <div className="border-t border-gray-100 pt-3 space-y-2">
                         <div className="flex justify-between text-gray-600">
                             <span>Subtotal</span>
-                            <span>${total.toFixed(2)}</span>
+                            <span>{formatAmount(total)}</span>
                         </div>
                         <div className="flex justify-between text-gray-600">
                             <span>Envio</span>
                             {shippingCost === 0 ? (
                                 <span className="text-green-600 font-bold">GRATIS</span>
                             ) : (
-                                <span>${shippingCost.toFixed(2)}</span>
+                                <span>{formatAmount(shippingCost)}</span>
                             )}
                         </div>
                     </div>
 
                     <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-xl text-gray-900 mt-2">
                         <span>Total</span>
-                        <span className="text-gold-dark font-serif font-black">${finalTotal.toFixed(2)}</span>
+                        <span className="text-gold-dark font-serif font-black">{formatAmount(finalTotal)}</span>
                     </div>
                 </div>
 

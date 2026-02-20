@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Trash2, ArrowLeft, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { fetchMerchant } from '@/lib/api';
+import { formatMoney } from '@/lib/format';
 
 export default function CartPage({ params }: { params: { slug: string } }) {
     const { items, removeItem, total } = useCart();
@@ -29,12 +30,12 @@ export default function CartPage({ params }: { params: { slug: string } }) {
 
         let message = `*Nuevo Pedido*\n\n`;
         items.forEach((item) => {
-            message += `${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(0)}\n`;
+            message += `${item.quantity}x ${item.name} - ${formatMoney(item.price * item.quantity)}\n`;
         });
 
-        message += `\nSubtotal: $${total.toFixed(0)}\n`;
-        message += shippingCost > 0 ? `Envio: $${shippingCost.toFixed(0)}\n` : 'Envio: GRATIS\n';
-        message += `\n*Total: $${finalTotal.toFixed(0)}*`;
+        message += `\nSubtotal: ${formatMoney(total)}\n`;
+        message += shippingCost > 0 ? `Envio: ${formatMoney(shippingCost)}\n` : 'Envio: GRATIS\n';
+        message += `\n*Total: ${formatMoney(finalTotal)}*`;
 
         const encodedMessage = encodeURIComponent(message);
         const url = `https://wa.me/${merchantPhone.replace(/\D/g, '')}?text=${encodedMessage}`;
@@ -77,11 +78,11 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                             <div className="space-y-1">
                                 <h3 className="font-black text-xl text-gray-900 leading-tight">{item.name}</h3>
                                 <div className="text-sm text-gray-400 font-bold uppercase tracking-widest">
-                                    ${item.price.toFixed(0)} × {item.quantity}
+                                    {formatMoney(item.price)} × {item.quantity}
                                 </div>
                             </div>
                             <div className="flex items-center gap-6">
-                                <span className="font-mono font-bold text-blue-600 text-2xl tracking-tighter">${(item.price * item.quantity).toFixed(0)}</span>
+                                <span className="font-mono font-bold text-blue-600 text-2xl tracking-tighter">{formatMoney(item.price * item.quantity)}</span>
                                 <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="h-10 w-10 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
                                     <Trash2 className="h-5 w-5" />
                                 </Button>
@@ -93,16 +94,16 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                 <div className="bg-white rounded-3xl shadow-premium border border-gray-100 p-8 mb-10 space-y-4">
                     <div className="flex justify-between items-center text-sm text-gray-500 font-bold uppercase tracking-[0.15em]">
                         <span>Subtotal</span>
-                        <span className="text-gray-900">${total.toFixed(0)}</span>
+                        <span className="text-gray-900">{formatMoney(total)}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm text-gray-500 font-bold uppercase tracking-[0.15em]">
                         <span>Envio</span>
-                        <span className="text-gray-900">{shippingCost > 0 ? `$${shippingCost.toFixed(0)}` : 'Gratis'}</span>
+                        <span className="text-gray-900">{shippingCost > 0 ? formatMoney(shippingCost) : 'Gratis'}</span>
                     </div>
                     <div className="h-px bg-gray-100" />
                     <div className="flex justify-between items-center">
                         <span className="text-gray-400 font-black uppercase tracking-[0.2em] text-[10px]">Total estimado</span>
-                        <span className="text-4xl font-mono font-bold text-gray-900 tracking-tighter">${finalTotal.toFixed(0)}</span>
+                        <span className="text-4xl font-mono font-bold text-gray-900 tracking-tighter">{formatMoney(finalTotal)}</span>
                     </div>
                 </div>
 

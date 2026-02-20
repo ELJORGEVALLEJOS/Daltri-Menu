@@ -4,6 +4,7 @@ import { useCart } from '@/context/cart-context';
 import { ShoppingCart, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
+import { formatMoney } from '@/lib/format';
 
 export function FloatingCart({ slug }: { slug: string }) {
     const { items, total } = useCart();
@@ -33,7 +34,7 @@ export function FloatingCart({ slug }: { slug: string }) {
                     </div>
 
                     <div className="flex items-center gap-4 z-10 px-4 py-2 bg-white/5 rounded-2xl border border-white/5">
-                        <p className="text-3xl font-mono font-bold text-gold tracking-tighter">${total.toFixed(0)}</p>
+                        <p className="text-3xl font-mono font-bold text-gold tracking-tighter">{formatMoney(total)}</p>
                         <ArrowRight className="w-6 h-6 text-gold animate-pulse" />
                     </div>
                 </Button>

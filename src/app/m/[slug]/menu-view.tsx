@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { ProductCard } from '@/components/product-card';
-import { SocialLinks, ContactInfo } from '@/components/social-contact';
+import { SocialLinks, type MerchantSocialLinks } from '@/components/social-contact';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 
@@ -29,6 +29,7 @@ type Merchant = {
     name: string;
     logoUrl?: string;
     logo_url?: string;
+    social_links?: MerchantSocialLinks;
 };
 
 export function MenuView({
@@ -162,8 +163,7 @@ export function MenuView({
                     </Link>
                 </div>
 
-                <SocialLinks />
-                <ContactInfo />
+                <SocialLinks links={merchant.social_links} />
             </div>
         </div>
     );

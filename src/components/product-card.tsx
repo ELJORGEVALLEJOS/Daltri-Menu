@@ -3,6 +3,7 @@
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { formatMoney } from '@/lib/format';
 
 type ProductCardProps = {
     item: {
@@ -60,11 +61,11 @@ export function ProductCard({ item }: ProductCardProps) {
                     <div className="flex flex-col">
                         {item.original_price_cents && item.original_price_cents > item.price_cents && (
                             <span className="text-sm font-mono font-bold text-gray-300 line-through -mb-1">
-                                ${(item.original_price_cents / 100).toFixed(0)}
+                                {formatMoney(item.original_price_cents / 100)}
                             </span>
                         )}
                         <div className="text-4xl font-mono font-bold text-blue-600 tracking-tighter">
-                            {(item.price_cents / 100).toFixed(0)}
+                            {formatMoney(item.price_cents / 100)}
                         </div>
                     </div>
 

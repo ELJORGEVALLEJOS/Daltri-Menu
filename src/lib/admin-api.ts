@@ -2,6 +2,14 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://server.daltrishop.co
 
 export type MerchantShippingType = 'free' | 'paid';
 
+export type MerchantSocialLinksPayload = {
+    uber_eats?: string;
+    google?: string;
+    instagram?: string;
+    facebook?: string;
+    tiktok?: string;
+};
+
 export type UpdateMerchantPayload = {
     name?: string;
     slug?: string;
@@ -11,6 +19,7 @@ export type UpdateMerchantPayload = {
     logo_url?: string;
     shipping_type?: MerchantShippingType;
     shipping_cost_cents?: number;
+    social_links?: MerchantSocialLinksPayload;
 };
 
 function getAuthHeaders() {

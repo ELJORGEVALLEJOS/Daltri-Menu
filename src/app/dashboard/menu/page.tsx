@@ -1,12 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { fetchMenu, createCategory, updateCategory, deleteCategory, createProduct, updateProduct, deleteProduct } from '@/lib/admin-api';
 import { Trash2, Plus, ChevronDown, LayoutGrid, Package, DollarSign, Image as ImageIcon, Edit2, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const EMPTY_ITEM_DATA = {
+    name: '',
+    price: '',
+    originalPrice: '',
+    description: '',
+    imageUrl: '',
+};
 
 export default function MenuPage() {
     const [menu, setMenu] = useState<any[]>([]);
@@ -22,11 +30,7 @@ export default function MenuPage() {
     const [categoryEditName, setCategoryEditName] = useState('');
 
     const [itemData, setItemData] = useState({
-        name: '',
-        price: '',
-        originalPrice: '',
-        description: '',
-        imageUrl: ''
+        ...EMPTY_ITEM_DATA,
     });
 
     const loadMenu = async () => {
@@ -85,6 +89,42 @@ export default function MenuPage() {
         );
     };
 
+    const readFileAsDataUrl = (file: File) =>
+        new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => reject(new Error('No se pudo leer la imagen seleccionada.'));
+            reader.readAsDataURL(file);
+        });
+
+    const handleImageFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            setFormError('Selecciona un archivo de imagen válido.');
+            event.target.value = '';
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            setFormError('La imagen no debe superar 5MB.');
+            event.target.value = '';
+            return;
+        }
+
+        try {
+            const dataUrl = await readFileAsDataUrl(file);
+            setItemData((prev) => ({ ...prev, imageUrl: dataUrl }));
+            setFormError('');
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'No se pudo cargar la imagen.';
+            setFormError(message);
+        } finally {
+            event.target.value = '';
+        }
+    };
+
     const handleSaveItem = async (categoryId: string) => {
         setFormError('');
 
@@ -119,7 +159,7 @@ export default function MenuPage() {
             price_cents: Math.round(priceNumber * 100),
             original_price_cents: originalPriceCents,
             description: description || undefined,
-            image_url: imageUrl || undefined,
+            image_url: imageUrl || (editingItem ? '' : undefined),
         };
 
         try {
@@ -137,7 +177,7 @@ export default function MenuPage() {
 
         setAddingItemTo(null);
         setEditingItem(null);
-        setItemData({ name: '', price: '', originalPrice: '', description: '', imageUrl: '' });
+        setItemData({ ...EMPTY_ITEM_DATA });
         loadMenu();
     };
 
@@ -149,7 +189,7 @@ export default function MenuPage() {
             price: (item.priceCents / 100).toString(),
             originalPrice: item.originalPriceCents ? (item.originalPriceCents / 100).toString() : '',
             description: item.description || '',
-            imageUrl: item.imageUrl || ''
+            imageUrl: item.imageUrl || item.image_url || ''
         });
     };
 
@@ -258,8 +298,8 @@ export default function MenuPage() {
                                         <div key={item.id} className="group relative bg-[#FDFCFB] p-5 rounded-3xl border border-gray-100 hover:border-[#C5A059]/30 transition-all hover:shadow-2xl hover:shadow-gray-200/60 overflow-hidden flex flex-col">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div className="h-14 w-14 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
-                                                    {item.imageUrl ? (
-                                                        <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                                                    {item.imageUrl || item.image_url ? (
+                                                        <img src={item.imageUrl || item.image_url} alt={item.name} className="h-full w-full object-cover" />
                                                     ) : (
                                                         <ImageIcon className="h-6 w-6 text-gray-200" />
                                                     )}
@@ -391,16 +431,43 @@ export default function MenuPage() {
                                             />
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Url de Imagen (Opcional)</Label>
-                                            <div className="relative">
-                                                <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#99A1AF]" />
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Foto del producto</Label>
                                                 <Input
-                                                    value={itemData.imageUrl}
-                                                    onChange={e => setItemData({ ...itemData, imageUrl: e.target.value })}
-                                                    placeholder="https://images.unsplash.com/..."
-                                                    className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 text-[#99A1AF] placeholder:text-[#99A1AF] focus:ring-[#C5A059]/20"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleImageFileChange}
+                                                    className="h-14 bg-white rounded-2xl border-gray-100 px-4 py-3 text-[#99A1AF] file:mr-4 file:border-0 file:bg-[#C5A059]/10 file:text-[#B48F4D] file:px-3 file:py-2 file:rounded-lg file:font-semibold"
                                                 />
+                                            </div>
+
+                                            {itemData.imageUrl && (
+                                                <div className="relative w-full h-40 rounded-2xl overflow-hidden border border-gray-100 bg-white">
+                                                    <img src={itemData.imageUrl} alt="Preview" className="h-full w-full object-cover" />
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => setItemData((prev) => ({ ...prev, imageUrl: '' }))}
+                                                        className="absolute top-2 right-2 bg-white/90 hover:bg-white text-red-500 border border-gray-100"
+                                                    >
+                                                        Quitar foto
+                                                    </Button>
+                                                </div>
+                                            )}
+
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">URL de Imagen (Opcional)</Label>
+                                                <div className="relative">
+                                                    <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#99A1AF]" />
+                                                    <Input
+                                                        value={itemData.imageUrl.startsWith('data:image/') ? '' : itemData.imageUrl}
+                                                        onChange={e => setItemData({ ...itemData, imageUrl: e.target.value })}
+                                                        placeholder="https://..."
+                                                        className="h-14 bg-white rounded-2xl border-gray-100 pl-12 pr-5 text-[#99A1AF] placeholder:text-[#99A1AF] focus:ring-[#C5A059]/20"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
 
@@ -408,7 +475,7 @@ export default function MenuPage() {
                                             <Button onClick={() => handleSaveItem(category.id)} className="flex-1 h-14 bg-[#C5A059] hover:bg-[#B48F4D] text-white text-lg font-bold rounded-2xl shadow-xl shadow-[#C5A059]/20">
                                                 {editingItem ? 'Actualizar Producto' : 'Guardar Producto'}
                                             </Button>
-                                            <Button variant="ghost" onClick={() => { setAddingItemTo(null); setEditingItem(null); setItemData({ name: '', price: '', originalPrice: '', description: '', imageUrl: '' }); }} className="h-14 px-8 text-[#99A1AF] font-bold rounded-2xl hover:bg-gray-100">
+                                            <Button variant="ghost" onClick={() => { setAddingItemTo(null); setEditingItem(null); setItemData({ ...EMPTY_ITEM_DATA }); }} className="h-14 px-8 text-[#99A1AF] font-bold rounded-2xl hover:bg-gray-100">
                                                 Cancelar
                                             </Button>
                                         </div>

@@ -12,6 +12,13 @@ type Merchant = {
     whatsapp_phone?: string;
     shipping_type?: MerchantShippingType;
     shipping_cost_cents?: number;
+    social_links?: {
+        uber_eats?: string;
+        google?: string;
+        instagram?: string;
+        facebook?: string;
+        tiktok?: string;
+    };
 };
 
 export default function SettingsPage() {
@@ -24,6 +31,11 @@ export default function SettingsPage() {
         whatsappPhone: '',
         shippingType: 'free' as MerchantShippingType,
         shippingCost: '',
+        uberEats: '',
+        google: '',
+        instagram: '',
+        facebook: '',
+        tiktok: '',
     });
 
     useEffect(() => {
@@ -43,6 +55,11 @@ export default function SettingsPage() {
                         data.shipping_type === 'paid'
                             ? String((data.shipping_cost_cents || 0) / 100)
                             : '',
+                    uberEats: data.social_links?.uber_eats || '',
+                    google: data.social_links?.google || '',
+                    instagram: data.social_links?.instagram || '',
+                    facebook: data.social_links?.facebook || '',
+                    tiktok: data.social_links?.tiktok || '',
                 });
 
                 if (data.slug) {
@@ -93,6 +110,13 @@ export default function SettingsPage() {
                 whatsapp_phone: normalizedPhone,
                 shipping_type: formData.shippingType,
                 shipping_cost_cents: shippingCostValue,
+                social_links: {
+                    uber_eats: formData.uberEats.trim(),
+                    google: formData.google.trim(),
+                    instagram: formData.instagram.trim(),
+                    facebook: formData.facebook.trim(),
+                    tiktok: formData.tiktok.trim(),
+                },
             });
 
             localStorage.setItem('merchant_slug', normalizedSlug);
@@ -191,6 +215,67 @@ export default function SettingsPage() {
                         <p className="text-xs text-gray-500 mt-1">
                             Si eliges envio gratis, este valor no se usa.
                         </p>
+                    </div>
+                </div>
+
+                <div className="space-y-4 border-t pt-4">
+                    <Label>Redes sociales (opcional)</Label>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                            <Label htmlFor="uberEats">Uber Eats</Label>
+                            <Input
+                                id="uberEats"
+                                name="uberEats"
+                                value={formData.uberEats}
+                                onChange={handleChange}
+                                placeholder="https://..."
+                                className="mt-2"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="google">Google</Label>
+                            <Input
+                                id="google"
+                                name="google"
+                                value={formData.google}
+                                onChange={handleChange}
+                                placeholder="https://..."
+                                className="mt-2"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="instagram">Instagram</Label>
+                            <Input
+                                id="instagram"
+                                name="instagram"
+                                value={formData.instagram}
+                                onChange={handleChange}
+                                placeholder="https://instagram.com/..."
+                                className="mt-2"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="facebook">Facebook</Label>
+                            <Input
+                                id="facebook"
+                                name="facebook"
+                                value={formData.facebook}
+                                onChange={handleChange}
+                                placeholder="https://facebook.com/..."
+                                className="mt-2"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="tiktok">TikTok</Label>
+                            <Input
+                                id="tiktok"
+                                name="tiktok"
+                                value={formData.tiktok}
+                                onChange={handleChange}
+                                placeholder="https://tiktok.com/..."
+                                className="mt-2"
+                            />
+                        </div>
                     </div>
                 </div>
 

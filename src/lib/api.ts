@@ -21,6 +21,14 @@ type PublicCategory = {
     items?: PublicProduct[];
 };
 
+type MerchantSocialLinks = {
+    uber_eats?: string;
+    google?: string;
+    instagram?: string;
+    facebook?: string;
+    tiktok?: string;
+};
+
 export async function fetchMerchant(slug: string) {
     for (const baseUrl of API_BASES) {
         try {
@@ -41,6 +49,7 @@ export async function fetchMerchant(slug: string) {
                     currency?: string;
                     shipping_type?: 'free' | 'paid';
                     shipping_cost_cents?: number;
+                    social_links?: MerchantSocialLinks;
                 };
             };
 
