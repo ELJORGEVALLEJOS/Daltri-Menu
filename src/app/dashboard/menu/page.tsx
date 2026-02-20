@@ -12,6 +12,7 @@ export default function MenuPage() {
     const [menu, setMenu] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [newCategoryName, setNewCategoryName] = useState('');
+    const [formError, setFormError] = useState('');
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
     // Edit/Add States
@@ -74,19 +75,53 @@ export default function MenuPage() {
     };
 
     const handleSaveItem = async (categoryId: string) => {
+        setFormError('');
+
+        const name = itemData.name.trim();
+        const description = itemData.description.trim();
+        const imageUrl = itemData.imageUrl.trim();
+
+        const priceNumber = Number(itemData.price);
+        if (!name) {
+            setFormError('El nombre del producto es obligatorio.');
+            return;
+        }
+        if (!Number.isFinite(priceNumber) || priceNumber < 0) {
+            setFormError('Ingresa un precio valido.');
+            return;
+        }
+
+        const originalRaw = itemData.originalPrice.trim();
+        let originalPriceCents: number | undefined;
+        if (originalRaw.length > 0) {
+            const originalNumber = Number(originalRaw);
+            if (!Number.isFinite(originalNumber) || originalNumber < 0) {
+                setFormError('El precio anterior debe ser un numero valido.');
+                return;
+            }
+            originalPriceCents = Math.round(originalNumber * 100);
+        }
+
         const payload = {
             category_id: categoryId,
-            name: itemData.name,
-            price_cents: Math.round(parseFloat(itemData.price) * 100),
-            original_price_cents: itemData.originalPrice ? Math.round(parseFloat(itemData.originalPrice) * 100) : undefined,
-            description: itemData.description,
-            image_url: itemData.imageUrl
+            name,
+            price_cents: Math.round(priceNumber * 100),
+            original_price_cents: originalPriceCents,
+            description: description || undefined,
+            image_url: imageUrl || undefined,
         };
 
-        if (editingItem) {
-            await updateProduct(editingItem.id, payload);
-        } else {
-            await createProduct(payload);
+        try {
+            if (editingItem) {
+                await updateProduct(editingItem.id, payload);
+            } else {
+                await createProduct(payload);
+            }
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : 'No se pudo guardar el producto';
+            setFormError(message);
+            return;
         }
 
         setAddingItemTo(null);
@@ -366,6 +401,11 @@ export default function MenuPage() {
                                                 Cancelar
                                             </Button>
                                         </div>
+                                        {formError && (
+                                            <div className="text-sm text-red-600 font-medium bg-red-50 border border-red-100 rounded-xl p-3">
+                                                {formError}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

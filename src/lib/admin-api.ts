@@ -21,6 +21,18 @@ function getAuthHeaders() {
     };
 }
 
+async function parseError(res: Response, fallback: string) {
+    const errorData = await res.json().catch(() => ({} as Record<string, unknown>));
+    const message = errorData?.message;
+    if (Array.isArray(message)) {
+        return message.join(', ');
+    }
+    if (typeof message === 'string' && message.trim()) {
+        return message;
+    }
+    return fallback;
+}
+
 export async function loginMerchant(email: string, password: string) {
     const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
@@ -104,7 +116,7 @@ export async function createProduct(data: { category_id: string; name: string; p
         body: JSON.stringify(data),
     });
     if (res.ok) return res.json();
-    throw new Error('Failed to create product');
+    throw new Error(await parseError(res, 'Failed to create product'));
 }
 
 export async function updateProduct(id: string, data: { category_id?: string; name?: string; price_cents?: number; original_price_cents?: number; description?: string; image_url?: string; active?: boolean }) {
@@ -114,7 +126,7 @@ export async function updateProduct(id: string, data: { category_id?: string; na
         body: JSON.stringify(data),
     });
     if (res.ok) return res.json();
-    throw new Error('Failed to update product');
+    throw new Error(await parseError(res, 'Failed to update product'));
 }
 
 export async function deleteProduct(id: string) {
