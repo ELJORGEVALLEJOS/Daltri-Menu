@@ -32,9 +32,12 @@ export default function MenuPage() {
     const loadMenu = async () => {
         try {
             const data = await fetchMenu();
-            setMenu(data);
-            if (data.length > 0 && expandedCategories.length === 0) {
-                setExpandedCategories([data[0].id]);
+            const activeCategories = data.filter(
+                (category: any) => category.isActive !== false && category.active !== false,
+            );
+            setMenu(activeCategories);
+            if (activeCategories.length > 0 && expandedCategories.length === 0) {
+                setExpandedCategories([activeCategories[0].id]);
             }
         } catch (error) {
             console.error('Failed to load menu', error);
@@ -64,8 +67,16 @@ export default function MenuPage() {
 
     const handleDeleteCategory = async (id: string) => {
         if (!confirm('¿Estás seguro? Se ocultará la categoría y todos sus productos.')) return;
-        await deleteCategory(id);
-        loadMenu();
+        try {
+            await deleteCategory(id);
+            setMenu((prev) => prev.filter((category) => category.id !== id));
+            setExpandedCategories((prev) => prev.filter((categoryId) => categoryId !== id));
+            loadMenu();
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : 'No se pudo eliminar la categoría';
+            alert(message);
+        }
     };
 
     const toggleCategory = (id: string) => {
@@ -168,7 +179,7 @@ export default function MenuPage() {
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
                         placeholder="Nueva categoría (ej. Vinos)"
-                        className="h-12 w-64 border-none bg-gray-50/50 rounded-xl focus:ring-1 focus:ring-[#C5A059]/30"
+                        className="h-12 w-64 border-none bg-gray-50/50 rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-1 focus:ring-[#C5A059]/30"
                     />
                     <Button onClick={handleCreateCategory} className="bg-[#C5A059] hover:bg-[#B48F4D] text-white rounded-xl h-12 px-6 shadow-lg shadow-[#C5A059]/20">
                         <Plus className="h-5 w-5 mr-2" /> Añadir
