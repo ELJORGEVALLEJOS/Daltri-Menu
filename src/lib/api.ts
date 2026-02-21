@@ -80,7 +80,30 @@ export async function fetchRestaurantMenu(slug: string) {
 
             return categories.map((category) => ({
                 ...category,
-                items: category.items || category.products || [],
+                items: (category.items || category.products || []).map((item) => {
+                    const rawPrice = item.price_cents ?? 0;
+                    const rawOriginalPrice = item.original_price_cents;
+                    const priceCents =
+                        typeof rawPrice === 'number'
+                            ? rawPrice
+                            : Number.parseInt(String(rawPrice), 10);
+                    const originalPriceCents =
+                        rawOriginalPrice === undefined || rawOriginalPrice === null
+                            ? undefined
+                            : typeof rawOriginalPrice === 'number'
+                                ? rawOriginalPrice
+                                : Number.parseInt(String(rawOriginalPrice), 10);
+
+                    return {
+                        ...item,
+                        price_cents: Number.isFinite(priceCents) ? priceCents : 0,
+                        original_price_cents:
+                            originalPriceCents !== undefined &&
+                                Number.isFinite(originalPriceCents)
+                                ? originalPriceCents
+                                : undefined,
+                    };
+                }),
             }));
         } catch {
             continue;

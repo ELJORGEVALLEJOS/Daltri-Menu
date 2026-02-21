@@ -18,6 +18,15 @@ type ProductCardProps = {
 
 export function ProductCard({ item }: ProductCardProps) {
     const { addItem } = useCart();
+    const currentPriceCents = Number(item.price_cents || 0);
+    const originalPriceCents =
+        item.original_price_cents === undefined || item.original_price_cents === null
+            ? null
+            : Number(item.original_price_cents);
+    const hasOffer =
+        originalPriceCents !== null &&
+        Number.isFinite(originalPriceCents) &&
+        originalPriceCents > currentPriceCents;
 
     const handleAdd = () => {
         addItem({
@@ -59,17 +68,17 @@ export function ProductCard({ item }: ProductCardProps) {
 
                 <div className="flex items-end justify-between pt-2">
                     <div className="flex flex-col">
-                        {item.original_price_cents && item.original_price_cents > item.price_cents && (
+                        {hasOffer && (
                             <span className="text-sm font-mono font-bold text-gray-300 line-through -mb-1">
-                                {formatMoney(item.original_price_cents / 100)}
+                                {formatMoney((originalPriceCents || 0) / 100)}
                             </span>
                         )}
                         <div className="text-4xl font-mono font-bold text-blue-600 tracking-tighter">
-                            {formatMoney(item.price_cents / 100)}
+                            {formatMoney(currentPriceCents / 100)}
                         </div>
                     </div>
 
-                    {item.original_price_cents && item.original_price_cents > item.price_cents && (
+                    {hasOffer && (
                         <div className="bg-amber-100 text-amber-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest animate-pulse">
                             Oferta
                         </div>
