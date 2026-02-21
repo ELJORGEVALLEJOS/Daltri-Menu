@@ -20,6 +20,7 @@ export default function CartPage() {
     const slugFromPath = pathname.match(/^\/m\/([^/]+)/)?.[1] || '';
     const slug = slugFromParams || slugFromPath;
     const menuHref = slug ? `/m/${slug}` : '/';
+    const restaurantLink = slug ? `https://menu.daltrishop.com/m/${slug}` : '';
 
     useEffect(() => {
         if (!slug) return;
@@ -45,6 +46,9 @@ export default function CartPage() {
         message += `\nSubtotal: ${formatMoney(total)}\n`;
         message += shippingCost > 0 ? `Envio: ${formatMoney(shippingCost)}\n` : 'Envio: GRATIS\n';
         message += `\n*Total: ${formatMoney(finalTotal)}*`;
+        if (restaurantLink) {
+            message += `\n\nMenu: ${restaurantLink}`;
+        }
 
         const encodedMessage = encodeURIComponent(message);
         const url = `https://wa.me/${merchantPhone.replace(/\D/g, '')}?text=${encodedMessage}`;

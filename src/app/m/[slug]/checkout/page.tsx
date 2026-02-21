@@ -24,6 +24,7 @@ export default function CheckoutPage() {
     const slugFromPath = pathname.match(/^\/m\/([^/]+)/)?.[1] || '';
     const slug = slugFromParams || slugFromPath;
     const cartHref = slug ? `/m/${slug}/cart` : '/';
+    const restaurantLink = slug ? `https://menu.daltrishop.com/m/${slug}` : '';
 
     useEffect(() => {
         if (!slug) return;
@@ -80,6 +81,9 @@ export default function CheckoutPage() {
 
                 if (note) message += `\n*Nota:* ${note}\n`;
                 message += `\n*Total a Pagar: ${formatAmount(finalTotal)}*`;
+                if (restaurantLink) {
+                    message += `\n\nMenu: ${restaurantLink}`;
+                }
 
                 const encodedMessage = encodeURIComponent(message);
                 const url = `https://wa.me/${merchantPhone.replace(/\D/g, '')}?text=${encodedMessage}`;
