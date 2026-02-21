@@ -31,3 +31,20 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Compact UI scale across devices, with extra reduction on mobile */
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 1280px) {
+  html {
+    font-size: 15.5px;
+  }
+}
