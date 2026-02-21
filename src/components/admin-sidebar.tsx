@@ -1,14 +1,13 @@
 'use client';
 
-import { LayoutDashboard, Settings, LogOut, Menu } from 'lucide-react';
+import { Settings, LogOut, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const sidebarItems = [
-    { icon: LayoutDashboard, label: 'Resumen', href: '/dashboard' },
     { icon: Menu, label: 'Gestión del Menú', href: '/dashboard/menu' },
-    { icon: Settings, label: 'Ajustes', href: '/dashboard/settings' },
+    { icon: Settings, label: 'Configuración', href: '/dashboard/settings' },
 ];
 
 export function Sidebar() {
