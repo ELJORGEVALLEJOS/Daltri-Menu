@@ -1,9 +1,8 @@
 'use client';
 
 import { useCart } from '@/context/cart-context';
-import { ShoppingCart, ArrowRight } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from './ui/button';
 import { formatMoney } from '@/lib/format';
 
 type FloatingThemeColors = {
@@ -32,36 +31,42 @@ export function FloatingCart({
     if (itemCount === 0) return null;
 
     return (
-        <div className="fixed bottom-4 sm:bottom-10 left-0 right-0 px-4 sm:px-6 z-50 animate-in fade-in slide-in-from-bottom-8 duration-500">
-            <Link href={`/m/${slug}/cart`}>
-                <Button
-                    className="w-full h-16 sm:h-20 border border-white/10 rounded-[1.5rem] sm:rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-between px-4 sm:px-8 transition-all active:scale-[0.98] relative overflow-hidden group"
+        <div className="fixed bottom-6 right-4 sm:bottom-8 sm:right-6 z-50 animate-in fade-in slide-in-from-bottom-8 duration-500">
+            <Link
+                href={`/m/${slug}/cart`}
+                aria-label={`Ver carrito, ${itemCount} productos, total ${formatMoney(total)}`}
+                className="group relative block"
+            >
+                <span
+                    className="absolute right-16 top-1/2 hidden -translate-y-1/2 rounded-full px-3 py-1 text-sm font-bold shadow-lg sm:block"
                     style={{
                         backgroundColor: buttonColor,
                         color: buttonTextColor,
                     }}
                 >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    {formatMoney(total)}
+                </span>
 
-                    <div className="flex items-center gap-3 sm:gap-6 z-10">
-                        <div className="relative bg-white/10 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-white/10">
-                            <ShoppingCart className="h-6 w-6 sm:h-8 sm:w-8 text-gold" />
-                            <span className="absolute -top-2.5 -right-2.5 sm:-top-3 sm:-right-3 h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-gold border-2 sm:border-4 border-zinc-900 text-zinc-900 text-xs sm:text-sm font-black flex items-center justify-center shadow-lg">
-                                {itemCount}
-                            </span>
-                        </div>
-                        <div className="text-left">
-                            <p className="text-xs text-white/40 font-black uppercase tracking-[0.2em] mb-0.5">Tu Pedido</p>
-                            <p className="font-sans font-black text-lg sm:text-2xl tracking-tighter leading-tight">Ver carrito</p>
-                        </div>
-                    </div>
+                <span
+                    className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-transform group-hover:scale-105 active:scale-95"
+                    style={{
+                        backgroundColor: buttonColor,
+                        color: buttonTextColor,
+                    }}
+                >
+                    <ShoppingCart className="h-6 w-6" />
+                </span>
 
-                    <div className="flex items-center gap-2 sm:gap-4 z-10 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/5 rounded-xl sm:rounded-2xl border border-white/5">
-                        <p className="text-xl sm:text-3xl font-mono font-bold text-gold tracking-tighter">{formatMoney(total)}</p>
-                        <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-gold animate-pulse" />
-                    </div>
-                </Button>
+                <span className="absolute -right-1 -top-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-white px-1 text-xs font-black text-gray-900 shadow-lg">
+                    {itemCount}
+                </span>
             </Link>
+            <p className="mt-2 text-center text-xs font-bold sm:hidden" style={{ color: buttonColor }}>
+                {formatMoney(total)}
+            </p>
+            <p className="sr-only">
+                {itemCount} productos en carrito
+            </p>
         </div>
     );
 }
