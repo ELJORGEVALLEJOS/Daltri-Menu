@@ -169,6 +169,8 @@ export default function SettingsPage() {
 
         const normalizedSlug = formData.slug.trim().toLowerCase().replace(/\s+/g, '-');
         const normalizedPhone = formData.whatsappPhone.trim();
+        const normalizedLogoUrl = formData.logoUrl.trim();
+        const normalizedCoverUrl = formData.coverUrl.trim();
         const shippingCostValue =
             formData.shippingType === 'paid'
                 ? Math.max(0, Math.round(Number(formData.shippingCost || 0) * 100))
@@ -179,8 +181,8 @@ export default function SettingsPage() {
                 name: formData.name.trim(),
                 slug: normalizedSlug,
                 whatsapp_phone: normalizedPhone,
-                logo_url: formData.logoUrl.trim(),
-                cover_url: formData.coverUrl.trim(),
+                logo_url: normalizedLogoUrl || undefined,
+                cover_url: normalizedCoverUrl || undefined,
                 shipping_type: formData.shippingType,
                 shipping_cost_cents: shippingCostValue,
                 social_links: {
@@ -201,8 +203,12 @@ export default function SettingsPage() {
 
             localStorage.setItem('merchant_slug', normalizedSlug);
             alert('Configuracion guardada correctamente');
-        } catch {
-            setError('No se pudo actualizar la configuracion.');
+        } catch (error) {
+            const message =
+                error instanceof Error && error.message.trim()
+                    ? error.message
+                    : 'No se pudo actualizar la configuracion.';
+            setError(message);
         } finally {
             setSaving(false);
         }

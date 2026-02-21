@@ -40,6 +40,15 @@ function getAuthHeaders() {
     };
 }
 
+function isHttpUrl(value: string) {
+    try {
+        const parsed = new URL(value);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
 async function parseError(res: Response, fallback: string) {
     const errorData = await res.json().catch(() => ({} as Record<string, unknown>));
     const message = errorData?.message;
@@ -88,7 +97,31 @@ export async function updateMerchant(data: UpdateMerchantPayload) {
     });
 
     if (res.ok) return res.json();
-    throw new Error(await parseError(res, 'Failed to update merchant'));
+
+    const firstError = await parseError(res, 'Failed to update merchant');
+
+    if (res.status === 400) {
+        const legacyPayload: UpdateMerchantPayload = {
+            ...data,
+            logo_url:
+                typeof data.logo_url === 'string' && isHttpUrl(data.logo_url)
+                    ? data.logo_url
+                    : undefined,
+            cover_url: undefined,
+            theme_colors: undefined,
+        };
+
+        const legacyRes = await fetch(`${API_URL}/admin/restaurant`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(legacyPayload),
+        });
+
+        if (legacyRes.ok) return legacyRes.json();
+        throw new Error(await parseError(legacyRes, firstError));
+    }
+
+    throw new Error(firstError);
 }
 
 export async function fetchMenu() {
