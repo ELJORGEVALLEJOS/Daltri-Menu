@@ -220,301 +220,322 @@ export default function SettingsPage() {
         <div className="w-full">
             <h1 className="text-2xl font-bold mb-6">Configuracion del Restaurante</h1>
 
-            <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow border">
-                <div>
-                    <Label htmlFor="name">Nombre del negocio</Label>
-                    <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className="mt-2"
-                    />
-                </div>
-
-                <div>
-                    <Label htmlFor="slug">Codigo del restaurante</Label>
-                    <div className="flex items-center gap-2 mt-2">
-                        <span className="text-gray-500 text-sm">daltri.com/m/</span>
-                        <Input
-                            id="slug"
-                            name="slug"
-                            value={formData.slug}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">Este codigo define tu URL publica.</p>
-                </div>
-
-                <div>
-                    <Label htmlFor="whatsappPhone">WhatsApp del restaurante</Label>
-                    <Input
-                        id="whatsappPhone"
-                        name="whatsappPhone"
-                        value={formData.whatsappPhone}
-                        onChange={handleChange}
-                        placeholder="54911..."
-                        className="mt-2"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Incluye codigo de pais sin espacios.</p>
-                </div>
-
-                <div className="space-y-4 border-t pt-4">
-                    <Label>Logo del restaurante</Label>
-                    <Input
-                        id="logoUrl"
-                        name="logoUrl"
-                        value={formData.logoUrl}
-                        onChange={handleChange}
-                        placeholder="URL del logo o usa el cargador de imagen"
-                        className="mt-2"
-                    />
-                    <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(event) => void handleMediaUpload(event, 'logoUrl')}
-                        className="mt-2"
-                    />
-                    {formData.logoUrl && (
-                        <div className="h-24 w-24 rounded-xl overflow-hidden border border-gray-200 bg-white">
-                            <img src={formData.logoUrl} alt="Logo preview" className="h-full w-full object-contain" />
-                        </div>
-                    )}
-                </div>
-
-                <div className="space-y-4 border-t pt-4">
-                    <Label>Portada del menú</Label>
-                    <Input
-                        id="coverUrl"
-                        name="coverUrl"
-                        value={formData.coverUrl}
-                        onChange={handleChange}
-                        placeholder="URL de portada o usa el cargador de imagen"
-                        className="mt-2"
-                    />
-                    <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(event) => void handleMediaUpload(event, 'coverUrl')}
-                        className="mt-2"
-                    />
-                    {formData.coverUrl && (
-                        <div className="h-28 w-full max-w-sm rounded-xl overflow-hidden border border-gray-200 bg-white">
-                            <img src={formData.coverUrl} alt="Cover preview" className="h-full w-full object-cover" />
-                        </div>
-                    )}
-                </div>
-
-                <div className="space-y-4 border-t pt-4">
-                    <Label>Colores del menú</Label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form
+                onSubmit={handleSubmit}
+                className="max-w-6xl space-y-6 rounded-lg border bg-white p-6 shadow"
+            >
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <section className="space-y-6">
                         <div>
-                            <Label htmlFor="themePrimary">Color primario</Label>
-                            <div className="flex gap-2 mt-2">
-                                <Input
-                                    id="themePrimary"
-                                    name="themePrimary"
-                                    type="color"
-                                    value={formData.themePrimary}
-                                    onChange={handleChange}
-                                    className="h-10 w-14 p-1"
-                                />
-                                <Input
-                                    name="themePrimary"
-                                    value={formData.themePrimary}
-                                    onChange={handleChange}
-                                    className="h-10"
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <Label htmlFor="themeBackground">Fondo</Label>
-                            <div className="flex gap-2 mt-2">
-                                <Input
-                                    id="themeBackground"
-                                    name="themeBackground"
-                                    type="color"
-                                    value={formData.themeBackground}
-                                    onChange={handleChange}
-                                    className="h-10 w-14 p-1"
-                                />
-                                <Input
-                                    name="themeBackground"
-                                    value={formData.themeBackground}
-                                    onChange={handleChange}
-                                    className="h-10"
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <Label htmlFor="themeSurface">Tarjetas</Label>
-                            <div className="flex gap-2 mt-2">
-                                <Input
-                                    id="themeSurface"
-                                    name="themeSurface"
-                                    type="color"
-                                    value={formData.themeSurface}
-                                    onChange={handleChange}
-                                    className="h-10 w-14 p-1"
-                                />
-                                <Input
-                                    name="themeSurface"
-                                    value={formData.themeSurface}
-                                    onChange={handleChange}
-                                    className="h-10"
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <Label htmlFor="themeText">Texto</Label>
-                            <div className="flex gap-2 mt-2">
-                                <Input
-                                    id="themeText"
-                                    name="themeText"
-                                    type="color"
-                                    value={formData.themeText}
-                                    onChange={handleChange}
-                                    className="h-10 w-14 p-1"
-                                />
-                                <Input
-                                    name="themeText"
-                                    value={formData.themeText}
-                                    onChange={handleChange}
-                                    className="h-10"
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <Label htmlFor="themeButtonText">Texto del botón</Label>
-                            <div className="flex gap-2 mt-2">
-                                <Input
-                                    id="themeButtonText"
-                                    name="themeButtonText"
-                                    type="color"
-                                    value={formData.themeButtonText}
-                                    onChange={handleChange}
-                                    className="h-10 w-14 p-1"
-                                />
-                                <Input
-                                    name="themeButtonText"
-                                    value={formData.themeButtonText}
-                                    onChange={handleChange}
-                                    className="h-10"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="space-y-4 border-t pt-4">
-                    <div>
-                        <Label>Envio</Label>
-                        <div className="mt-2 flex gap-3">
-                            <Button
-                                type="button"
-                                variant={formData.shippingType === 'free' ? 'default' : 'outline'}
-                                onClick={() => handleShippingTypeChange('free')}
-                                className="h-10"
-                            >
-                                Gratis
-                            </Button>
-                            <Button
-                                type="button"
-                                variant={formData.shippingType === 'paid' ? 'default' : 'outline'}
-                                onClick={() => handleShippingTypeChange('paid')}
-                                className="h-10"
-                            >
-                                Pago
-                            </Button>
-                        </div>
-                    </div>
-
-                    <div className="max-w-sm">
-                        <Label htmlFor="shippingCost">Costo de envio (moneda local)</Label>
-                        <Input
-                            id="shippingCost"
-                            name="shippingCost"
-                            type="number"
-                            value={formData.shippingCost}
-                            onChange={handleChange}
-                            placeholder="0"
-                            min={0}
-                            step="1"
-                            disabled={formData.shippingType === 'free'}
-                            className="mt-2"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                            Si eliges envio gratis, este valor no se usa.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="space-y-4 border-t pt-4">
-                    <Label>Redes sociales (opcional)</Label>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div>
-                            <Label htmlFor="uberEats">Uber Eats</Label>
+                            <Label htmlFor="name">Nombre del negocio</Label>
                             <Input
-                                id="uberEats"
-                                name="uberEats"
-                                value={formData.uberEats}
+                                id="name"
+                                name="name"
+                                value={formData.name}
                                 onChange={handleChange}
-                                placeholder="https://..."
+                                required
                                 className="mt-2"
                             />
                         </div>
+
                         <div>
-                            <Label htmlFor="google">Google</Label>
+                            <Label htmlFor="slug">Codigo del restaurante</Label>
+                            <div className="mt-2 flex items-center gap-2">
+                                <span className="text-sm text-gray-500">daltri.com/m/</span>
+                                <Input
+                                    id="slug"
+                                    name="slug"
+                                    value={formData.slug}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <p className="mt-1 text-xs text-gray-500">
+                                Este codigo define tu URL publica.
+                            </p>
+                        </div>
+
+                        <div>
+                            <Label htmlFor="whatsappPhone">WhatsApp del restaurante</Label>
                             <Input
-                                id="google"
-                                name="google"
-                                value={formData.google}
+                                id="whatsappPhone"
+                                name="whatsappPhone"
+                                value={formData.whatsappPhone}
                                 onChange={handleChange}
-                                placeholder="https://..."
+                                placeholder="54911..."
                                 className="mt-2"
                             />
+                            <p className="mt-1 text-xs text-gray-500">
+                                Incluye codigo de pais sin espacios.
+                            </p>
                         </div>
-                        <div>
-                            <Label htmlFor="instagram">Instagram</Label>
+
+                        <div className="space-y-4 rounded-lg border p-4">
+                            <Label>Logo del restaurante</Label>
                             <Input
-                                id="instagram"
-                                name="instagram"
-                                value={formData.instagram}
+                                id="logoUrl"
+                                name="logoUrl"
+                                value={formData.logoUrl}
                                 onChange={handleChange}
-                                placeholder="https://instagram.com/..."
+                                placeholder="URL del logo o usa el cargador de imagen"
                                 className="mt-2"
                             />
-                        </div>
-                        <div>
-                            <Label htmlFor="facebook">Facebook</Label>
                             <Input
-                                id="facebook"
-                                name="facebook"
-                                value={formData.facebook}
-                                onChange={handleChange}
-                                placeholder="https://facebook.com/..."
+                                type="file"
+                                accept="image/*"
+                                onChange={(event) => void handleMediaUpload(event, 'logoUrl')}
                                 className="mt-2"
                             />
+                            {formData.logoUrl && (
+                                <div className="h-24 w-24 overflow-hidden rounded-xl border border-gray-200 bg-white">
+                                    <img
+                                        src={formData.logoUrl}
+                                        alt="Logo preview"
+                                        className="h-full w-full object-contain"
+                                    />
+                                </div>
+                            )}
                         </div>
-                        <div>
-                            <Label htmlFor="tiktok">TikTok</Label>
+
+                        <div className="space-y-4 rounded-lg border p-4">
+                            <Label>Portada del menú</Label>
                             <Input
-                                id="tiktok"
-                                name="tiktok"
-                                value={formData.tiktok}
+                                id="coverUrl"
+                                name="coverUrl"
+                                value={formData.coverUrl}
                                 onChange={handleChange}
-                                placeholder="https://tiktok.com/..."
+                                placeholder="URL de portada o usa el cargador de imagen"
                                 className="mt-2"
                             />
+                            <Input
+                                type="file"
+                                accept="image/*"
+                                onChange={(event) => void handleMediaUpload(event, 'coverUrl')}
+                                className="mt-2"
+                            />
+                            {formData.coverUrl && (
+                                <div className="h-28 w-full max-w-sm overflow-hidden rounded-xl border border-gray-200 bg-white">
+                                    <img
+                                        src={formData.coverUrl}
+                                        alt="Cover preview"
+                                        className="h-full w-full object-cover"
+                                    />
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    </section>
+
+                    <section className="space-y-6">
+                        <div className="space-y-4 rounded-lg border p-4">
+                            <Label>Colores del menú</Label>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="themePrimary">Color primario</Label>
+                                    <div className="mt-2 flex gap-2">
+                                        <Input
+                                            id="themePrimary"
+                                            name="themePrimary"
+                                            type="color"
+                                            value={formData.themePrimary}
+                                            onChange={handleChange}
+                                            className="h-10 w-14 p-1"
+                                        />
+                                        <Input
+                                            name="themePrimary"
+                                            value={formData.themePrimary}
+                                            onChange={handleChange}
+                                            className="h-10"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label htmlFor="themeBackground">Fondo</Label>
+                                    <div className="mt-2 flex gap-2">
+                                        <Input
+                                            id="themeBackground"
+                                            name="themeBackground"
+                                            type="color"
+                                            value={formData.themeBackground}
+                                            onChange={handleChange}
+                                            className="h-10 w-14 p-1"
+                                        />
+                                        <Input
+                                            name="themeBackground"
+                                            value={formData.themeBackground}
+                                            onChange={handleChange}
+                                            className="h-10"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label htmlFor="themeSurface">Tarjetas</Label>
+                                    <div className="mt-2 flex gap-2">
+                                        <Input
+                                            id="themeSurface"
+                                            name="themeSurface"
+                                            type="color"
+                                            value={formData.themeSurface}
+                                            onChange={handleChange}
+                                            className="h-10 w-14 p-1"
+                                        />
+                                        <Input
+                                            name="themeSurface"
+                                            value={formData.themeSurface}
+                                            onChange={handleChange}
+                                            className="h-10"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label htmlFor="themeText">Texto</Label>
+                                    <div className="mt-2 flex gap-2">
+                                        <Input
+                                            id="themeText"
+                                            name="themeText"
+                                            type="color"
+                                            value={formData.themeText}
+                                            onChange={handleChange}
+                                            className="h-10 w-14 p-1"
+                                        />
+                                        <Input
+                                            name="themeText"
+                                            value={formData.themeText}
+                                            onChange={handleChange}
+                                            className="h-10"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label htmlFor="themeButtonText">Texto del boton</Label>
+                                    <div className="mt-2 flex gap-2">
+                                        <Input
+                                            id="themeButtonText"
+                                            name="themeButtonText"
+                                            type="color"
+                                            value={formData.themeButtonText}
+                                            onChange={handleChange}
+                                            className="h-10 w-14 p-1"
+                                        />
+                                        <Input
+                                            name="themeButtonText"
+                                            value={formData.themeButtonText}
+                                            onChange={handleChange}
+                                            className="h-10"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 rounded-lg border p-4">
+                            <div>
+                                <Label>Envio</Label>
+                                <div className="mt-2 flex gap-3">
+                                    <Button
+                                        type="button"
+                                        variant={formData.shippingType === 'free' ? 'default' : 'outline'}
+                                        onClick={() => handleShippingTypeChange('free')}
+                                        className="h-10"
+                                    >
+                                        Gratis
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant={formData.shippingType === 'paid' ? 'default' : 'outline'}
+                                        onClick={() => handleShippingTypeChange('paid')}
+                                        className="h-10"
+                                    >
+                                        Pago
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="shippingCost">Costo de envio (moneda local)</Label>
+                                <Input
+                                    id="shippingCost"
+                                    name="shippingCost"
+                                    type="number"
+                                    value={formData.shippingCost}
+                                    onChange={handleChange}
+                                    placeholder="0"
+                                    min={0}
+                                    step="1"
+                                    disabled={formData.shippingType === 'free'}
+                                    className="mt-2"
+                                />
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Si eliges envio gratis, este valor no se usa.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 rounded-lg border p-4">
+                            <Label>Redes sociales (opcional)</Label>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="uberEats">Uber Eats</Label>
+                                    <Input
+                                        id="uberEats"
+                                        name="uberEats"
+                                        value={formData.uberEats}
+                                        onChange={handleChange}
+                                        placeholder="https://..."
+                                        className="mt-2"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="google">Google</Label>
+                                    <Input
+                                        id="google"
+                                        name="google"
+                                        value={formData.google}
+                                        onChange={handleChange}
+                                        placeholder="https://..."
+                                        className="mt-2"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="instagram">Instagram</Label>
+                                    <Input
+                                        id="instagram"
+                                        name="instagram"
+                                        value={formData.instagram}
+                                        onChange={handleChange}
+                                        placeholder="https://instagram.com/..."
+                                        className="mt-2"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="facebook">Facebook</Label>
+                                    <Input
+                                        id="facebook"
+                                        name="facebook"
+                                        value={formData.facebook}
+                                        onChange={handleChange}
+                                        placeholder="https://facebook.com/..."
+                                        className="mt-2"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="tiktok">TikTok</Label>
+                                    <Input
+                                        id="tiktok"
+                                        name="tiktok"
+                                        value={formData.tiktok}
+                                        onChange={handleChange}
+                                        placeholder="https://tiktok.com/..."
+                                        className="mt-2"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
                 {error && <p className="text-sm text-red-600">{error}</p>}
 
-                <div className="pt-4">
+                <div className="pt-2">
                     <Button type="submit" disabled={saving}>
                         {saving ? 'Guardando...' : 'Guardar cambios'}
                     </Button>
