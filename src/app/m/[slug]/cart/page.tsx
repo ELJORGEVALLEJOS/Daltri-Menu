@@ -38,9 +38,9 @@ export default function CartPage() {
     const handleWhatsAppOrder = () => {
         if (!merchantPhone || !slug) return;
 
-        let message = `*Nuevo Pedido*\n\n`;
+        let message = `*Nuevo Pedido*\n\nProductos solicitados:\n`;
         items.forEach((item) => {
-            message += `${item.quantity}x ${item.name} - ${formatMoney(item.price * item.quantity)}\n`;
+            message += `- ${item.quantity}x ${item.name} - ${formatMoney(item.price * item.quantity)}\n`;
         });
 
         message += `\nSubtotal: ${formatMoney(total)}\n`;

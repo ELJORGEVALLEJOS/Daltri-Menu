@@ -71,9 +71,12 @@ export default function CheckoutPage() {
                 clearCart();
                 window.location.href = response.whatsapp_url;
             } else {
-                let message = `*Nuevo Pedido de ${name}*\n\n`;
+                const orderLink = response?.order_id
+                    ? `https://menu.daltrishop.com/m/${slug}/order/${response.order_id}`
+                    : '';
+                let message = `*Nuevo Pedido de ${name}*\n\nProductos solicitados:\n`;
                 items.forEach((item) => {
-                    message += `${item.quantity}x ${item.name} - ${formatAmount(item.price * item.quantity)}\n`;
+                    message += `- ${item.quantity}x ${item.name} - ${formatAmount(item.price * item.quantity)}\n`;
                 });
 
                 message += `\nSubtotal: ${formatAmount(total)}\n`;
@@ -81,6 +84,9 @@ export default function CheckoutPage() {
 
                 if (note) message += `\n*Nota:* ${note}\n`;
                 message += `\n*Total a Pagar: ${formatAmount(finalTotal)}*`;
+                if (orderLink) {
+                    message += `\nPedido exacto: ${orderLink}`;
+                }
                 if (restaurantLink) {
                     message += `\n\nMenu: ${restaurantLink}`;
                 }

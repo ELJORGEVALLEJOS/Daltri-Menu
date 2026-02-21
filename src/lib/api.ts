@@ -113,6 +113,27 @@ export async function fetchRestaurantMenu(slug: string) {
     return [];
 }
 
+export async function fetchPublicOrder(slug: string, orderId: string) {
+    for (const baseUrl of API_BASES) {
+        try {
+            const res = await fetch(
+                `${baseUrl}/public/restaurants/${slug}/orders/${orderId}`,
+                { next: { revalidate: 30 } },
+            );
+
+            if (!res.ok) {
+                continue;
+            }
+
+            return res.json();
+        } catch {
+            continue;
+        }
+    }
+
+    return null;
+}
+
 export async function createOrder(
     slug: string,
     orderData: {
