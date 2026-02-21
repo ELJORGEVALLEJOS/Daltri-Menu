@@ -19,7 +19,7 @@ export default async function MerchantPage({
 
     return (
         <>
-            <MenuView merchant={merchant} menu={menu || []} slug={slug} />
+            <MenuView merchant={merchant} menu={menu || []} />
             <FloatingCart slug={slug} />
         </>
     );

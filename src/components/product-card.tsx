@@ -39,7 +39,7 @@ export function ProductCard({ item }: ProductCardProps) {
     };
 
     return (
-        <div className="bg-white rounded-[2rem] p-6 shadow-premium border border-gray-100/50 mb-6 flex flex-col gap-6 group hover:scale-[1.01] transition-all">
+        <div className="bg-white rounded-[2rem] p-4 sm:p-6 shadow-premium border border-gray-100/50 mb-6 flex flex-col gap-5 sm:gap-6 group hover:scale-[1.01] transition-all">
             {item.imageUrl && (
                 <div className="w-full aspect-square rounded-[1.5rem] overflow-hidden relative shadow-inner border border-gray-100">
                     <img
@@ -53,7 +53,7 @@ export function ProductCard({ item }: ProductCardProps) {
             <div className="space-y-4">
                 <div className="flex justify-between items-start">
                     <div className="space-y-1">
-                        <h3 className="text-2xl font-sans font-black text-gray-900 tracking-tight leading-tight">
+                        <h3 className="text-xl sm:text-2xl font-sans font-black text-gray-900 tracking-tight leading-tight">
                             {item.name}
                         </h3>
                         <p className="text-sm font-medium text-gray-400 italic">Producto</p>
@@ -73,7 +73,7 @@ export function ProductCard({ item }: ProductCardProps) {
                                 {formatMoney((originalPriceCents || 0) / 100)}
                             </span>
                         )}
-                        <div className="text-4xl font-mono font-bold text-blue-600 tracking-tighter">
+                        <div className="text-3xl sm:text-4xl font-mono font-bold text-blue-600 tracking-tighter">
                             {formatMoney(currentPriceCents / 100)}
                         </div>
                     </div>
@@ -86,7 +86,7 @@ export function ProductCard({ item }: ProductCardProps) {
                 </div>
 
                 <Button
-                    className="w-full bg-zinc-900 hover:bg-black text-white rounded-xl h-12 font-bold shadow-lg"
+                    className="w-full bg-zinc-900 hover:bg-black text-white rounded-xl h-11 sm:h-12 font-bold shadow-lg"
                     onClick={handleAdd}
                 >
                     Añadir al pedido <Plus className="ml-2 w-5 h-5" />

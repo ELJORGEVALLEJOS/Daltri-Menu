@@ -72,30 +72,30 @@ export default function CartPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-32">
-            <div className="bg-[#EEDC83] pt-12 pb-20 px-6 rounded-b-[4rem] shadow-premium mb-[-3rem] relative z-0">
+        <div className="min-h-screen bg-gray-50/50 pb-28 sm:pb-32">
+            <div className="bg-[#EEDC83] pt-8 sm:pt-12 pb-14 sm:pb-20 px-4 sm:px-6 rounded-b-[2.5rem] sm:rounded-b-[4rem] shadow-premium mb-[-2.5rem] sm:mb-[-3rem] relative z-0">
                 <div className="container mx-auto max-w-md">
                     <div className="flex items-center mb-4">
-                        <Link href={menuHref} className="mr-6 bg-white/30 backdrop-blur-md p-3 rounded-full hover:bg-white/50 transition-all border border-white/20">
-                            <ArrowLeft className="h-6 w-6 text-gray-900" />
+                        <Link href={menuHref} className="mr-4 sm:mr-6 bg-white/30 backdrop-blur-md p-2.5 sm:p-3 rounded-full hover:bg-white/50 transition-all border border-white/20">
+                            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6 text-gray-900" />
                         </Link>
-                        <h1 className="text-4xl font-sans font-black text-gray-900 tracking-tighter">Tu Pedido</h1>
+                        <h1 className="text-3xl sm:text-4xl font-sans font-black text-gray-900 tracking-tighter">Tu Pedido</h1>
                     </div>
                 </div>
             </div>
 
-            <div className="container mx-auto px-6 max-w-md relative z-10">
+            <div className="container mx-auto px-4 sm:px-6 max-w-md relative z-10">
                 <div className="bg-white rounded-[2.5rem] shadow-premium border border-gray-100 overflow-hidden mb-8">
                     {items.map((item, index) => (
-                        <div key={item.id} className={`flex justify-between items-center p-6 ${index !== items.length - 1 ? 'border-b border-gray-50' : ''}`}>
-                            <div className="space-y-1">
-                                <h3 className="font-black text-xl text-gray-900 leading-tight">{item.name}</h3>
+                        <div key={item.id} className={`flex justify-between items-center p-4 sm:p-6 gap-4 ${index !== items.length - 1 ? 'border-b border-gray-50' : ''}`}>
+                            <div className="space-y-1 min-w-0">
+                                <h3 className="font-black text-lg sm:text-xl text-gray-900 leading-tight truncate">{item.name}</h3>
                                 <div className="text-sm text-gray-400 font-bold uppercase tracking-widest">
                                     {formatMoney(item.price)} × {item.quantity}
                                 </div>
                             </div>
-                            <div className="flex items-center gap-6">
-                                <span className="font-mono font-bold text-blue-600 text-2xl tracking-tighter">{formatMoney(item.price * item.quantity)}</span>
+                            <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+                                <span className="font-mono font-bold text-blue-600 text-xl sm:text-2xl tracking-tighter">{formatMoney(item.price * item.quantity)}</span>
                                 <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="h-10 w-10 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
                                     <Trash2 className="h-5 w-5" />
                                 </Button>
@@ -116,20 +116,20 @@ export default function CartPage() {
                     <div className="h-px bg-gray-100" />
                     <div className="flex justify-between items-center">
                         <span className="text-gray-400 font-black uppercase tracking-[0.2em] text-[10px]">Total estimado</span>
-                        <span className="text-4xl font-mono font-bold text-gray-900 tracking-tighter">{formatMoney(finalTotal)}</span>
+                        <span className="text-3xl sm:text-4xl font-mono font-bold text-gray-900 tracking-tighter">{formatMoney(finalTotal)}</span>
                     </div>
                 </div>
 
                 <Button
-                    className="w-full bg-[#25D366] hover:bg-[#1fa34e] text-white h-20 text-xl font-black rounded-[2rem] shadow-[0_20px_50px_rgba(37,211,102,0.2)] flex items-center justify-center gap-4 transition-all active:scale-[0.98] border-b-8 border-[#1a9447] disabled:opacity-50"
+                    className="w-full bg-[#25D366] hover:bg-[#1fa34e] text-white h-16 sm:h-20 text-lg sm:text-xl font-black rounded-[1.5rem] sm:rounded-[2rem] shadow-[0_20px_50px_rgba(37,211,102,0.2)] flex items-center justify-center gap-3 sm:gap-4 transition-all active:scale-[0.98] border-b-4 sm:border-b-8 border-[#1a9447] disabled:opacity-50"
                     onClick={handleWhatsAppOrder}
                     disabled={!merchantPhone || !slug}
                 >
-                    <MessageCircle className="w-8 h-8 fill-white/20" />
+                    <MessageCircle className="w-6 h-6 sm:w-8 sm:h-8 fill-white/20" />
                     Pedir por WhatsApp
                 </Button>
 
-                <p className="mt-8 text-center text-gray-400 text-xs font-bold uppercase tracking-[0.1em] px-8 leading-relaxed">
+                <p className="mt-6 sm:mt-8 text-center text-gray-400 text-xs font-bold uppercase tracking-[0.1em] px-2 sm:px-8 leading-relaxed">
                     Al hacer clic, se abrira WhatsApp con tu pedido listo para enviar.
                 </p>
             </div>

@@ -213,22 +213,22 @@ export default function MenuPage() {
     );
 
     return (
-        <div className="max-w-5xl mx-auto space-y-10 font-sans pb-20">
+        <div className="max-w-5xl mx-auto space-y-8 sm:space-y-10 font-sans pb-16 sm:pb-20">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-serif font-bold text-gray-900 mb-2 leading-tight">Gestión del Menú</h1>
+                    <h1 className="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-2 leading-tight">Gestión del Menú</h1>
                     <p className="text-gray-500 font-medium">Crea una experiencia gastronómica inolvidable</p>
                 </div>
 
                 {/* Add Category Quick Form */}
-                <div className="bg-white p-2 rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 flex gap-2">
+                <div className="bg-white p-2 rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                     <Input
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
                         placeholder="Nueva categoría (ej. Vinos)"
-                        className="h-12 w-64 border-none bg-gray-50/50 rounded-xl text-gray-900 placeholder:text-[#99A1AF] focus:ring-1 focus:ring-[#C5A059]/30"
+                        className="h-12 w-full sm:w-64 border-none bg-gray-50/50 rounded-xl text-gray-900 placeholder:text-[#99A1AF] focus:ring-1 focus:ring-[#C5A059]/30"
                     />
-                    <Button onClick={handleCreateCategory} className="bg-[#C5A059] hover:bg-[#B48F4D] text-white rounded-xl h-12 px-6 shadow-lg shadow-[#C5A059]/20">
+                    <Button onClick={handleCreateCategory} className="bg-[#C5A059] hover:bg-[#B48F4D] text-white rounded-xl h-12 px-6 shadow-lg shadow-[#C5A059]/20 w-full sm:w-auto">
                         <Plus className="h-5 w-5 mr-2" /> Añadir
                     </Button>
                 </div>
@@ -299,7 +299,7 @@ export default function MenuPage() {
                         </div>
 
                         {expandedCategories.includes(category.id) && (
-                            <div className="p-8 bg-white border-t border-gray-50">
+                            <div className="p-4 sm:p-8 bg-white border-t border-gray-50">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                                     {category.items.map((item: any) => (
                                         <div key={item.id} className="group relative bg-[#FDFCFB] p-5 rounded-3xl border border-gray-100 hover:border-[#C5A059]/30 transition-all hover:shadow-2xl hover:shadow-gray-200/60 overflow-hidden flex flex-col">
@@ -380,7 +380,7 @@ export default function MenuPage() {
 
                                 {/* Modern Add/Edit Product Form */}
                                 {addingItemTo === category.id && (
-                                    <div className="bg-[#FDFCFB] p-8 rounded-[2rem] border border-[#C5A059]/20 shadow-inner space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
+                                    <div className="bg-[#FDFCFB] p-4 sm:p-8 rounded-[2rem] border border-[#C5A059]/20 shadow-inner space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
                                         <div className="flex items-center gap-4">
                                             <div className="h-10 w-10 bg-[#C5A059] rounded-xl flex items-center justify-center shadow-lg shadow-[#C5A059]/20">
                                                 <Package className="h-5 w-5 text-white" />
@@ -388,7 +388,7 @@ export default function MenuPage() {
                                             <h4 className="text-xl font-serif font-bold text-gray-900">{editingItem ? 'Editar Producto' : 'Nuevo Producto'}</h4>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                                             <div className="space-y-2">
                                                 <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Nombre</Label>
                                                 <Input

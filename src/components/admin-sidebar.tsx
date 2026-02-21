@@ -1,10 +1,9 @@
 'use client';
 
-import { LayoutDashboard, Store, Settings, LogOut, Package, CreditCard, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
+import { LayoutDashboard, Settings, LogOut, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: 'Resumen', href: '/dashboard' },
@@ -16,11 +15,12 @@ export function Sidebar() {
     const pathname = usePathname();
 
     return (
-        <div className="flex h-full w-64 flex-col border-r bg-gray-900 text-white">
-            <div className="flex h-16 items-center border-b border-gray-800 px-6">
-                <span className="text-xl font-bold">Daltri Admin</span>
+        <div className="w-full md:w-64 md:h-screen border-b md:border-b-0 md:border-r bg-gray-900 text-white">
+            <div className="flex h-14 sm:h-16 items-center border-b border-gray-800 px-4 sm:px-6">
+                <span className="text-base sm:text-xl font-bold">Daltri Admin</span>
             </div>
-            <nav className="flex-1 space-y-1 px-3 py-4">
+            <nav className="px-2 sm:px-3 py-2 sm:py-4 overflow-x-auto md:overflow-visible">
+                <div className="flex md:block gap-1 whitespace-nowrap">
                 {sidebarItems.map((item) => {
                     const isActive = pathname === item.href;
                     return (
@@ -28,7 +28,7 @@ export function Sidebar() {
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                                'inline-flex md:flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors',
                                 isActive
                                     ? 'bg-gray-800 text-white'
                                     : 'text-gray-400 hover:bg-gray-800 hover:text-white'
@@ -39,11 +39,12 @@ export function Sidebar() {
                         </Link>
                     );
                 })}
+                </div>
             </nav>
-            <div className="border-t border-gray-800 p-4">
+            <div className="border-t border-gray-800 p-2 sm:p-4">
                 <Link
                     href="/login"
-                    className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white"
+                    className="inline-flex md:flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white"
                     onClick={() => {
                         localStorage.removeItem('merchant_id');
                         localStorage.removeItem('merchant_slug');

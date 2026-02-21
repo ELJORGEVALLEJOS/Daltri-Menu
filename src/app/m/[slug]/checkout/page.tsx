@@ -97,25 +97,25 @@ export default function CheckoutPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
-            <div className="bg-[#EEDC82] pt-6 pb-12 px-4 rounded-b-[2rem] shadow-sm mb-[-2rem] relative z-0">
+        <div className="min-h-screen bg-gray-50 pb-16 sm:pb-20">
+            <div className="bg-[#EEDC82] pt-5 sm:pt-6 pb-10 sm:pb-12 px-4 rounded-b-[2rem] shadow-sm mb-[-2rem] relative z-0">
                 <div className="container mx-auto max-w-md">
                     <div className="flex items-center mb-2">
-                        <Link href={cartHref} className="mr-4 bg-white/20 p-2 rounded-full hover:bg-white/40 transition">
-                            <ArrowLeft className="h-6 w-6 text-gray-900" />
+                        <Link href={cartHref} className="mr-3 sm:mr-4 bg-white/20 p-2 rounded-full hover:bg-white/40 transition">
+                            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6 text-gray-900" />
                         </Link>
-                        <h1 className="text-2xl font-serif font-bold text-gray-900">Finalizar pedido</h1>
+                        <h1 className="text-xl sm:text-2xl font-serif font-bold text-gray-900">Finalizar pedido</h1>
                     </div>
                 </div>
             </div>
 
             <div className="container mx-auto p-4 max-w-md relative z-10">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 mb-6">
                     <h2 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-50 pb-2">Resumen del pedido</h2>
                     <div className="space-y-3 mb-4">
                         {items.map((i) => (
                             <div key={i.id} className="flex justify-between text-sm">
-                                <span className="text-gray-600 font-medium">{i.quantity}x {i.name}</span>
+                                <span className="text-gray-600 font-medium pr-3 truncate">{i.quantity}x {i.name}</span>
                                 <span className="font-bold text-gray-900">{formatAmount(i.price * i.quantity)}</span>
                             </div>
                         ))}
@@ -138,11 +138,11 @@ export default function CheckoutPage() {
 
                     <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-xl text-gray-900 mt-2">
                         <span>Total</span>
-                        <span className="text-gold-dark font-serif font-black">{formatAmount(finalTotal)}</span>
+                        <span className="text-gold-dark font-serif font-black text-2xl sm:text-3xl">{formatAmount(finalTotal)}</span>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 space-y-5">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 mb-8 space-y-5">
                     <div>
                         <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">Nombre completo</label>
                         <input
@@ -175,7 +175,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <Button
-                    className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white h-16 text-lg font-bold rounded-2xl shadow-xl shadow-green-900/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale cursor-pointer"
+                    className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white h-14 sm:h-16 text-base sm:text-lg font-bold rounded-2xl shadow-xl shadow-green-900/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale cursor-pointer"
                     onClick={handleWhatsAppOrder}
                     disabled={!name || !phone || !merchantPhone || !slug}
                 >
