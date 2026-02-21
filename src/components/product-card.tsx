@@ -39,14 +39,14 @@ export function ProductCard({ item }: ProductCardProps) {
     };
 
     return (
-        <div className="rounded-[2rem] p-4 sm:p-6 shadow-premium border mb-6 flex flex-col gap-5 sm:gap-6 group hover:scale-[1.01] transition-all"
+        <div className="h-full rounded-2xl p-3 sm:p-4 shadow-premium border flex flex-col gap-3 sm:gap-4 group hover:scale-[1.01] transition-all"
             style={{
                 backgroundColor: 'var(--menu-surface, #ffffff)',
                 borderColor: 'rgba(148, 163, 184, 0.25)',
             }}
         >
             {item.imageUrl && (
-                <div className="w-full aspect-square rounded-[1.5rem] overflow-hidden relative shadow-inner border border-gray-100">
+                <div className="w-full aspect-square rounded-xl overflow-hidden relative shadow-inner border border-gray-100">
                     <img
                         src={item.imageUrl}
                         alt={item.name}
@@ -55,31 +55,31 @@ export function ProductCard({ item }: ProductCardProps) {
                 </div>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-3">
                 <div className="flex justify-between items-start">
                     <div className="space-y-1">
-                        <h3 className="text-xl sm:text-2xl font-sans font-black text-gray-900 tracking-tight leading-tight">
+                        <h3 className="text-base sm:text-lg font-sans font-black text-gray-900 tracking-tight leading-tight">
                             {item.name}
                         </h3>
-                        <p className="text-sm font-medium text-gray-400 italic">Producto</p>
+                        <p className="text-xs font-medium text-gray-400 italic">Producto</p>
                     </div>
                 </div>
 
                 {item.description && (
-                    <p className="text-gray-600 text-base leading-relaxed line-clamp-3">
+                    <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
                         {item.description}
                     </p>
                 )}
 
-                <div className="flex items-end justify-between pt-2">
+                <div className="flex items-end justify-between pt-1">
                     <div className="flex flex-col">
                         {hasOffer && (
-                            <span className="text-sm font-mono font-bold text-gray-300 line-through -mb-1">
+                            <span className="text-xs font-mono font-bold text-gray-300 line-through -mb-0.5">
                                 {formatMoney((originalPriceCents || 0) / 100)}
                             </span>
                         )}
                         <div
-                            className="text-3xl sm:text-4xl font-mono font-bold tracking-tighter"
+                            className="text-2xl sm:text-3xl font-mono font-bold tracking-tighter"
                             style={{ color: 'var(--menu-accent, #2563eb)' }}
                         >
                             {formatMoney(currentPriceCents / 100)}
@@ -97,7 +97,7 @@ export function ProductCard({ item }: ProductCardProps) {
                 </div>
 
                 <Button
-                    className="w-full rounded-xl h-11 sm:h-12 font-bold shadow-lg"
+                    className="w-full rounded-xl h-10 sm:h-11 text-sm font-bold shadow-lg"
                     style={{
                         backgroundColor: 'var(--menu-accent, #111827)',
                         color: 'var(--menu-button-text, #ffffff)',

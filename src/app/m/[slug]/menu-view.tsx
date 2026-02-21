@@ -162,11 +162,11 @@ export function MenuView({
                     </div>
                 </header>
 
-                <div className="container mx-auto max-w-md px-4 sm:px-6 pt-8 sm:pt-12 pb-28 sm:pb-32 uppercase tracking-tighter">
+                <div className="container mx-auto max-w-7xl px-4 sm:px-6 pt-8 sm:pt-12 pb-28 sm:pb-32 uppercase tracking-tighter">
                     <h2 className="text-3xl sm:text-4xl font-sans font-black mb-8 sm:mb-12" style={{ color: theme.text }}>
                         {selectedCategory.name}
                     </h2>
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                         {selectedCategory.items.map((item) => {
                             const normalizedItem = {
                                 ...item,
