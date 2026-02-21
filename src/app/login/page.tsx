@@ -6,20 +6,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import { loginMerchant } from "@/lib/admin-api";
+import { loginMerchant, resendVerificationEmail } from "@/lib/admin-api";
 import { ChefHat, Lock, Mail } from 'lucide-react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [info, setInfo] = useState('');
     const [loading, setLoading] = useState(false);
+    const [resending, setResending] = useState(false);
     const router = useRouter();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setInfo('');
 
         try {
             await loginMerchant(email, password);
@@ -29,6 +32,27 @@ export default function LoginPage() {
             setError(message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const shouldShowResend = error.toLowerCase().includes('verificar tu correo');
+
+    const handleResendVerification = async () => {
+        if (!email.trim()) {
+            setError('Ingresa tu email para reenviar la verificación.');
+            return;
+        }
+
+        setResending(true);
+        setInfo('');
+        try {
+            await resendVerificationEmail(email.trim().toLowerCase());
+            setInfo('Si el correo existe y esta pendiente, enviamos un nuevo enlace.');
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'No se pudo reenviar el correo';
+            setError(message);
+        } finally {
+            setResending(false);
         }
     };
 
@@ -88,6 +112,24 @@ export default function LoginPage() {
                         <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm font-medium border border-red-100 animate-shake">
                             {error}
                         </div>
+                    )}
+
+                    {info && (
+                        <div className="bg-blue-50 text-blue-700 p-4 rounded-2xl text-sm font-medium border border-blue-100">
+                            {info}
+                        </div>
+                    )}
+
+                    {shouldShowResend && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleResendVerification}
+                            disabled={resending}
+                            className="w-full h-12 rounded-2xl border-gray-200 text-gray-800 hover:bg-gray-50"
+                        >
+                            {resending ? 'Reenviando enlace...' : 'Reenviar verificación'}
+                        </Button>
                     )}
 
                     <Button type="submit" className="w-full h-14 bg-[#C5A059] hover:bg-[#B48F4D] text-white text-lg font-bold rounded-2xl shadow-xl shadow-[#C5A059]/20 transition-all active:scale-[0.98] disabled:opacity-50" disabled={loading}>

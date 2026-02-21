@@ -73,7 +73,9 @@ export default function RegisterPage() {
                     </div>
 
                     <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                        <p className="text-xs text-blue-400 font-medium">Usa tu email y contrasena para entrar al panel de administracion.</p>
+                        <p className="text-xs text-blue-400 font-medium">
+                            Revisa tu correo y verifica tu cuenta antes de entrar al panel de administracion.
+                        </p>
                     </div>
 
                     <div className="flex flex-col gap-3 pt-4">

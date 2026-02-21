@@ -95,6 +95,28 @@ export async function loginMerchant(email: string, password: string) {
     return data;
 }
 
+export async function verifyEmailToken(token: string) {
+    const res = await fetch(`${API_URL}/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+    });
+
+    if (res.ok) return res.json();
+    throw new Error(await parseError(res, 'No se pudo verificar el correo'));
+}
+
+export async function resendVerificationEmail(email: string) {
+    const res = await fetch(`${API_URL}/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+    });
+
+    if (res.ok) return res.json();
+    throw new Error(await parseError(res, 'No se pudo reenviar el correo'));
+}
+
 export async function fetchRestaurant() {
     const res = await fetch(`${API_URL}/admin/restaurant`, {
         headers: getAuthHeaders(),
