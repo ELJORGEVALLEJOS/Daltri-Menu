@@ -128,7 +128,7 @@ export function MenuView({
                 </div>
             </div>
 
-            <div className="container mx-auto max-w-md px-4 sm:px-6 -mt-8 sm:-mt-10 relative z-20">
+            <div className="container mx-auto max-w-md px-4 sm:px-6 -mt-8 sm:-mt-10 pb-28 sm:pb-36 relative z-20">
                 <div className="space-y-3 sm:space-y-4 mb-10 sm:mb-12">
                     {menu.map((category) => (
                         <button
