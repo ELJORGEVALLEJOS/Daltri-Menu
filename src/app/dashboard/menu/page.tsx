@@ -54,12 +54,23 @@ export default function MenuPage() {
         loadMenu();
     }, []);
 
-    const handleCreateCategory = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newCategoryName) return;
-        await createCategory(newCategoryName);
-        setNewCategoryName('');
-        loadMenu();
+    const handleCreateCategory = async () => {
+        const categoryName = newCategoryName.trim();
+        if (!categoryName) {
+            setFormError('Escribe un nombre para la categoría.');
+            return;
+        }
+
+        try {
+            await createCategory(categoryName);
+            setFormError('');
+            setNewCategoryName('');
+            loadMenu();
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : 'No se pudo crear la categoría';
+            setFormError(message);
+        }
     };
 
     const handleUpdateCategory = async (id: string) => {
@@ -224,15 +235,35 @@ export default function MenuPage() {
                 <div className="bg-white p-2 rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                     <Input
                         value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onChange={(e) => {
+                            setNewCategoryName(e.target.value);
+                            if (formError) setFormError('');
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                void handleCreateCategory();
+                            }
+                        }}
                         placeholder="Nueva categoría (ej. Vinos)"
                         className="h-12 w-full sm:w-64 border-none bg-gray-50/50 rounded-xl text-gray-900 placeholder:text-[#99A1AF] focus:ring-1 focus:ring-[#C5A059]/30"
                     />
-                    <Button onClick={handleCreateCategory} className="bg-[#C5A059] hover:bg-[#B48F4D] text-white rounded-xl h-12 px-6 shadow-lg shadow-[#C5A059]/20 w-full sm:w-auto">
+                    <Button
+                        type="button"
+                        onClick={() => void handleCreateCategory()}
+                        disabled={!newCategoryName.trim()}
+                        className="bg-[#C5A059] hover:bg-[#B48F4D] text-white rounded-xl h-12 px-6 shadow-lg shadow-[#C5A059]/20 w-full sm:w-auto disabled:opacity-60"
+                    >
                         <Plus className="h-5 w-5 mr-2" /> Añadir
                     </Button>
                 </div>
             </header>
+
+            {formError && (
+                <div className="text-sm text-red-600 font-medium bg-red-50 border border-red-100 rounded-xl p-3">
+                    {formError}
+                </div>
+            )}
 
             {/* Categories Grid */}
             <div className="space-y-6">

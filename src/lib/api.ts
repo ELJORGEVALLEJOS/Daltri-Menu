@@ -29,6 +29,14 @@ type MerchantSocialLinks = {
     tiktok?: string;
 };
 
+type MerchantThemeColors = {
+    primary?: string;
+    background?: string;
+    surface?: string;
+    text?: string;
+    button_text?: string;
+};
+
 export async function fetchMerchant(slug: string) {
     for (const baseUrl of API_BASES) {
         try {
@@ -47,9 +55,12 @@ export async function fetchMerchant(slug: string) {
                     slug: string;
                     whatsapp_phone: string;
                     currency?: string;
+                    logo_url?: string;
+                    cover_url?: string;
                     shipping_type?: 'free' | 'paid';
                     shipping_cost_cents?: number;
                     social_links?: MerchantSocialLinks;
+                    theme_colors?: MerchantThemeColors;
                 };
             };
 

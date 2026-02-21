@@ -10,6 +10,14 @@ export type MerchantSocialLinksPayload = {
     tiktok?: string;
 };
 
+export type MerchantThemeColorsPayload = {
+    primary?: string;
+    background?: string;
+    surface?: string;
+    text?: string;
+    button_text?: string;
+};
+
 export type UpdateMerchantPayload = {
     name?: string;
     slug?: string;
@@ -17,9 +25,11 @@ export type UpdateMerchantPayload = {
     currency?: string;
     address?: string;
     logo_url?: string;
+    cover_url?: string;
     shipping_type?: MerchantShippingType;
     shipping_cost_cents?: number;
     social_links?: MerchantSocialLinksPayload;
+    theme_colors?: MerchantThemeColorsPayload;
 };
 
 function getAuthHeaders() {
@@ -78,7 +88,7 @@ export async function updateMerchant(data: UpdateMerchantPayload) {
     });
 
     if (res.ok) return res.json();
-    throw new Error('Failed to update merchant');
+    throw new Error(await parseError(res, 'Failed to update merchant'));
 }
 
 export async function fetchMenu() {
@@ -96,7 +106,7 @@ export async function createCategory(name: string) {
         body: JSON.stringify({ name }),
     });
     if (res.ok) return res.json();
-    throw new Error('Failed to create category');
+    throw new Error(await parseError(res, 'Failed to create category'));
 }
 
 export async function updateCategory(id: string, name: string) {
@@ -106,7 +116,7 @@ export async function updateCategory(id: string, name: string) {
         body: JSON.stringify({ name }),
     });
     if (res.ok) return res.json();
-    throw new Error('Failed to update category');
+    throw new Error(await parseError(res, 'Failed to update category'));
 }
 
 export async function deleteCategory(id: string) {

@@ -6,10 +6,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { fetchRestaurant, updateMerchant, type MerchantShippingType } from '@/lib/admin-api';
 
+const DEFAULT_THEME = {
+    primary: '#c5a059',
+    background: '#f5f5f5',
+    surface: '#ffffff',
+    text: '#0f172a',
+    buttonText: '#ffffff',
+};
+
 type Merchant = {
     name?: string;
     slug?: string;
     whatsapp_phone?: string;
+    logo_url?: string;
+    cover_url?: string;
     shipping_type?: MerchantShippingType;
     shipping_cost_cents?: number;
     social_links?: {
@@ -18,6 +28,13 @@ type Merchant = {
         instagram?: string;
         facebook?: string;
         tiktok?: string;
+    };
+    theme_colors?: {
+        primary?: string;
+        background?: string;
+        surface?: string;
+        text?: string;
+        button_text?: string;
     };
 };
 
@@ -29,6 +46,8 @@ export default function SettingsPage() {
         name: '',
         slug: '',
         whatsappPhone: '',
+        logoUrl: '',
+        coverUrl: '',
         shippingType: 'free' as MerchantShippingType,
         shippingCost: '',
         uberEats: '',
@@ -36,6 +55,11 @@ export default function SettingsPage() {
         instagram: '',
         facebook: '',
         tiktok: '',
+        themePrimary: DEFAULT_THEME.primary,
+        themeBackground: DEFAULT_THEME.background,
+        themeSurface: DEFAULT_THEME.surface,
+        themeText: DEFAULT_THEME.text,
+        themeButtonText: DEFAULT_THEME.buttonText,
     });
 
     useEffect(() => {
@@ -50,6 +74,8 @@ export default function SettingsPage() {
                     name: data.name || '',
                     slug: data.slug || '',
                     whatsappPhone: data.whatsapp_phone || '',
+                    logoUrl: data.logo_url || '',
+                    coverUrl: data.cover_url || '',
                     shippingType: data.shipping_type === 'paid' ? 'paid' : 'free',
                     shippingCost:
                         data.shipping_type === 'paid'
@@ -60,6 +86,12 @@ export default function SettingsPage() {
                     instagram: data.social_links?.instagram || '',
                     facebook: data.social_links?.facebook || '',
                     tiktok: data.social_links?.tiktok || '',
+                    themePrimary: data.theme_colors?.primary || DEFAULT_THEME.primary,
+                    themeBackground: data.theme_colors?.background || DEFAULT_THEME.background,
+                    themeSurface: data.theme_colors?.surface || DEFAULT_THEME.surface,
+                    themeText: data.theme_colors?.text || DEFAULT_THEME.text,
+                    themeButtonText:
+                        data.theme_colors?.button_text || DEFAULT_THEME.buttonText,
                 });
 
                 if (data.slug) {
@@ -78,6 +110,45 @@ export default function SettingsPage() {
             active = false;
         };
     }, []);
+
+    const readFileAsDataUrl = (file: File) =>
+        new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => reject(new Error('No se pudo leer la imagen.'));
+            reader.readAsDataURL(file);
+        });
+
+    const handleMediaUpload = async (
+        event: React.ChangeEvent<HTMLInputElement>,
+        field: 'logoUrl' | 'coverUrl',
+    ) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            setError('Selecciona un archivo de imagen válido.');
+            event.target.value = '';
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            setError('La imagen no debe superar 5MB.');
+            event.target.value = '';
+            return;
+        }
+
+        try {
+            const dataUrl = await readFileAsDataUrl(file);
+            setFormData((prev) => ({ ...prev, [field]: dataUrl }));
+            setError('');
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'No se pudo cargar la imagen.';
+            setError(message);
+        } finally {
+            event.target.value = '';
+        }
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -108,6 +179,8 @@ export default function SettingsPage() {
                 name: formData.name.trim(),
                 slug: normalizedSlug,
                 whatsapp_phone: normalizedPhone,
+                logo_url: formData.logoUrl.trim(),
+                cover_url: formData.coverUrl.trim(),
                 shipping_type: formData.shippingType,
                 shipping_cost_cents: shippingCostValue,
                 social_links: {
@@ -116,6 +189,13 @@ export default function SettingsPage() {
                     instagram: formData.instagram.trim(),
                     facebook: formData.facebook.trim(),
                     tiktok: formData.tiktok.trim(),
+                },
+                theme_colors: {
+                    primary: formData.themePrimary.trim().toLowerCase(),
+                    background: formData.themeBackground.trim().toLowerCase(),
+                    surface: formData.themeSurface.trim().toLowerCase(),
+                    text: formData.themeText.trim().toLowerCase(),
+                    button_text: formData.themeButtonText.trim().toLowerCase(),
                 },
             });
 
@@ -173,6 +253,153 @@ export default function SettingsPage() {
                         className="mt-2"
                     />
                     <p className="text-xs text-gray-500 mt-1">Incluye codigo de pais sin espacios.</p>
+                </div>
+
+                <div className="space-y-4 border-t pt-4">
+                    <Label>Logo del restaurante</Label>
+                    <Input
+                        id="logoUrl"
+                        name="logoUrl"
+                        value={formData.logoUrl}
+                        onChange={handleChange}
+                        placeholder="URL del logo o usa el cargador de imagen"
+                        className="mt-2"
+                    />
+                    <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => void handleMediaUpload(event, 'logoUrl')}
+                        className="mt-2"
+                    />
+                    {formData.logoUrl && (
+                        <div className="h-24 w-24 rounded-xl overflow-hidden border border-gray-200 bg-white">
+                            <img src={formData.logoUrl} alt="Logo preview" className="h-full w-full object-contain" />
+                        </div>
+                    )}
+                </div>
+
+                <div className="space-y-4 border-t pt-4">
+                    <Label>Portada del menú</Label>
+                    <Input
+                        id="coverUrl"
+                        name="coverUrl"
+                        value={formData.coverUrl}
+                        onChange={handleChange}
+                        placeholder="URL de portada o usa el cargador de imagen"
+                        className="mt-2"
+                    />
+                    <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => void handleMediaUpload(event, 'coverUrl')}
+                        className="mt-2"
+                    />
+                    {formData.coverUrl && (
+                        <div className="h-28 w-full max-w-sm rounded-xl overflow-hidden border border-gray-200 bg-white">
+                            <img src={formData.coverUrl} alt="Cover preview" className="h-full w-full object-cover" />
+                        </div>
+                    )}
+                </div>
+
+                <div className="space-y-4 border-t pt-4">
+                    <Label>Colores del menú</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="themePrimary">Color primario</Label>
+                            <div className="flex gap-2 mt-2">
+                                <Input
+                                    id="themePrimary"
+                                    name="themePrimary"
+                                    type="color"
+                                    value={formData.themePrimary}
+                                    onChange={handleChange}
+                                    className="h-10 w-14 p-1"
+                                />
+                                <Input
+                                    name="themePrimary"
+                                    value={formData.themePrimary}
+                                    onChange={handleChange}
+                                    className="h-10"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <Label htmlFor="themeBackground">Fondo</Label>
+                            <div className="flex gap-2 mt-2">
+                                <Input
+                                    id="themeBackground"
+                                    name="themeBackground"
+                                    type="color"
+                                    value={formData.themeBackground}
+                                    onChange={handleChange}
+                                    className="h-10 w-14 p-1"
+                                />
+                                <Input
+                                    name="themeBackground"
+                                    value={formData.themeBackground}
+                                    onChange={handleChange}
+                                    className="h-10"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <Label htmlFor="themeSurface">Tarjetas</Label>
+                            <div className="flex gap-2 mt-2">
+                                <Input
+                                    id="themeSurface"
+                                    name="themeSurface"
+                                    type="color"
+                                    value={formData.themeSurface}
+                                    onChange={handleChange}
+                                    className="h-10 w-14 p-1"
+                                />
+                                <Input
+                                    name="themeSurface"
+                                    value={formData.themeSurface}
+                                    onChange={handleChange}
+                                    className="h-10"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <Label htmlFor="themeText">Texto</Label>
+                            <div className="flex gap-2 mt-2">
+                                <Input
+                                    id="themeText"
+                                    name="themeText"
+                                    type="color"
+                                    value={formData.themeText}
+                                    onChange={handleChange}
+                                    className="h-10 w-14 p-1"
+                                />
+                                <Input
+                                    name="themeText"
+                                    value={formData.themeText}
+                                    onChange={handleChange}
+                                    className="h-10"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <Label htmlFor="themeButtonText">Texto del botón</Label>
+                            <div className="flex gap-2 mt-2">
+                                <Input
+                                    id="themeButtonText"
+                                    name="themeButtonText"
+                                    type="color"
+                                    value={formData.themeButtonText}
+                                    onChange={handleChange}
+                                    className="h-10 w-14 p-1"
+                                />
+                                <Input
+                                    name="themeButtonText"
+                                    value={formData.themeButtonText}
+                                    onChange={handleChange}
+                                    className="h-10"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="space-y-4 border-t pt-4">

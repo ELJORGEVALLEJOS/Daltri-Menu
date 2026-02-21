@@ -20,7 +20,7 @@ export default async function MerchantPage({
     return (
         <>
             <MenuView merchant={merchant} menu={menu || []} />
-            <FloatingCart slug={slug} />
+            <FloatingCart slug={slug} themeColors={merchant.theme_colors} />
         </>
     );
 }

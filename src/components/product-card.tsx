@@ -39,7 +39,12 @@ export function ProductCard({ item }: ProductCardProps) {
     };
 
     return (
-        <div className="bg-white rounded-[2rem] p-4 sm:p-6 shadow-premium border border-gray-100/50 mb-6 flex flex-col gap-5 sm:gap-6 group hover:scale-[1.01] transition-all">
+        <div className="rounded-[2rem] p-4 sm:p-6 shadow-premium border mb-6 flex flex-col gap-5 sm:gap-6 group hover:scale-[1.01] transition-all"
+            style={{
+                backgroundColor: 'var(--menu-surface, #ffffff)',
+                borderColor: 'rgba(148, 163, 184, 0.25)',
+            }}
+        >
             {item.imageUrl && (
                 <div className="w-full aspect-square rounded-[1.5rem] overflow-hidden relative shadow-inner border border-gray-100">
                     <img
@@ -73,20 +78,30 @@ export function ProductCard({ item }: ProductCardProps) {
                                 {formatMoney((originalPriceCents || 0) / 100)}
                             </span>
                         )}
-                        <div className="text-3xl sm:text-4xl font-mono font-bold text-blue-600 tracking-tighter">
+                        <div
+                            className="text-3xl sm:text-4xl font-mono font-bold tracking-tighter"
+                            style={{ color: 'var(--menu-accent, #2563eb)' }}
+                        >
                             {formatMoney(currentPriceCents / 100)}
                         </div>
                     </div>
 
                     {hasOffer && (
-                        <div className="bg-amber-100 text-amber-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest animate-pulse">
+                        <div
+                            className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest animate-pulse"
+                            style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: 'var(--menu-accent, #d97706)' }}
+                        >
                             Oferta
                         </div>
                     )}
                 </div>
 
                 <Button
-                    className="w-full bg-zinc-900 hover:bg-black text-white rounded-xl h-11 sm:h-12 font-bold shadow-lg"
+                    className="w-full rounded-xl h-11 sm:h-12 font-bold shadow-lg"
+                    style={{
+                        backgroundColor: 'var(--menu-accent, #111827)',
+                        color: 'var(--menu-button-text, #ffffff)',
+                    }}
                     onClick={handleAdd}
                 >
                     Añadir al pedido <Plus className="ml-2 w-5 h-5" />

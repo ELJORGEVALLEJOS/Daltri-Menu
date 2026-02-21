@@ -6,9 +6,28 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { formatMoney } from '@/lib/format';
 
-export function FloatingCart({ slug }: { slug: string }) {
+type FloatingThemeColors = {
+    primary?: string;
+    button_text?: string;
+};
+
+function normalizeHexColor(value: string | undefined, fallback: string) {
+    if (!value) return fallback;
+    const normalized = value.trim().toLowerCase();
+    return /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(normalized) ? normalized : fallback;
+}
+
+export function FloatingCart({
+    slug,
+    themeColors,
+}: {
+    slug: string;
+    themeColors?: FloatingThemeColors;
+}) {
     const { items, total } = useCart();
     const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
+    const buttonColor = normalizeHexColor(themeColors?.primary, '#111827');
+    const buttonTextColor = normalizeHexColor(themeColors?.button_text, '#ffffff');
 
     if (itemCount === 0) return null;
 
@@ -16,7 +35,11 @@ export function FloatingCart({ slug }: { slug: string }) {
         <div className="fixed bottom-4 sm:bottom-10 left-0 right-0 px-4 sm:px-6 z-50 animate-in fade-in slide-in-from-bottom-8 duration-500">
             <Link href={`/m/${slug}/cart`}>
                 <Button
-                    className="w-full h-16 sm:h-20 bg-zinc-900 border border-white/10 text-white rounded-[1.5rem] sm:rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-between px-4 sm:px-8 hover:bg-black transition-all active:scale-[0.98] relative overflow-hidden group"
+                    className="w-full h-16 sm:h-20 border border-white/10 rounded-[1.5rem] sm:rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-between px-4 sm:px-8 transition-all active:scale-[0.98] relative overflow-hidden group"
+                    style={{
+                        backgroundColor: buttonColor,
+                        color: buttonTextColor,
+                    }}
                 >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
