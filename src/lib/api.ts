@@ -37,6 +37,12 @@ type MerchantThemeColors = {
     button_text?: string;
 };
 
+type MerchantMenuCopy = {
+    hero_title?: string;
+    hero_subtitle?: string;
+    hero_badge?: string;
+};
+
 export async function fetchMerchant(slug: string) {
     for (const baseUrl of API_BASES) {
         try {
@@ -61,6 +67,7 @@ export async function fetchMerchant(slug: string) {
                     shipping_cost_cents?: number;
                     social_links?: MerchantSocialLinks;
                     theme_colors?: MerchantThemeColors;
+                    menu_copy?: MerchantMenuCopy;
                 };
             };
 

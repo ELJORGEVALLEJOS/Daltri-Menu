@@ -38,6 +38,11 @@ type Merchant = {
     cover_url?: string;
     social_links?: MerchantSocialLinks;
     theme_colors?: MerchantThemeColors;
+    menu_copy?: {
+        hero_title?: string;
+        hero_subtitle?: string;
+        hero_badge?: string;
+    };
 };
 
 type ThemePalette = {
@@ -116,6 +121,10 @@ export function MenuView({
             }) as CSSProperties,
         [theme],
     );
+    const heroTitle = merchant.menu_copy?.hero_title?.trim() || 'Todo lo seleccionado';
+    const heroSubtitle =
+        merchant.menu_copy?.hero_subtitle?.trim() || 'Autenticas comidas y bebidas francesas.';
+    const heroBadge = merchant.menu_copy?.hero_badge?.trim() || 'Depuis 1978';
 
     if (selectedCategoryId && selectedCategory) {
         return (
@@ -224,16 +233,16 @@ export function MenuView({
                         className="font-sans font-black text-4xl sm:text-5xl leading-none mb-4 sm:mb-6 tracking-tighter"
                         style={{ color: theme.buttonText }}
                     >
-                        Todo lo seleccionado
+                        {heroTitle}
                     </h1>
 
                     <p className="text-lg sm:text-xl font-medium max-w-[280px] mx-auto leading-relaxed mb-4" style={{ color: withAlpha(theme.buttonText, 0.9) }}>
-                        Autenticas comidas y bebidas francesas.
+                        {heroSubtitle}
                     </p>
 
                     <div className="flex items-center justify-center gap-3">
                         <span className="h-0.5 w-6" style={{ backgroundColor: withAlpha(theme.buttonText, 0.2) }}></span>
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: withAlpha(theme.buttonText, 0.7) }}>Depuis 1978</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: withAlpha(theme.buttonText, 0.7) }}>{heroBadge}</span>
                         <span className="h-0.5 w-6" style={{ backgroundColor: withAlpha(theme.buttonText, 0.2) }}></span>
                     </div>
                 </div>

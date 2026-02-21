@@ -14,6 +14,12 @@ const DEFAULT_THEME = {
     buttonText: '#ffffff',
 };
 
+const DEFAULT_MENU_COPY = {
+    heroTitle: 'Todo lo seleccionado',
+    heroSubtitle: 'Autenticas comidas y bebidas francesas.',
+    heroBadge: 'Depuis 1978',
+};
+
 type Merchant = {
     name?: string;
     slug?: string;
@@ -35,6 +41,11 @@ type Merchant = {
         surface?: string;
         text?: string;
         button_text?: string;
+    };
+    menu_copy?: {
+        hero_title?: string;
+        hero_subtitle?: string;
+        hero_badge?: string;
     };
 };
 
@@ -60,6 +71,9 @@ export default function SettingsPage() {
         themeSurface: DEFAULT_THEME.surface,
         themeText: DEFAULT_THEME.text,
         themeButtonText: DEFAULT_THEME.buttonText,
+        heroTitle: DEFAULT_MENU_COPY.heroTitle,
+        heroSubtitle: DEFAULT_MENU_COPY.heroSubtitle,
+        heroBadge: DEFAULT_MENU_COPY.heroBadge,
     });
 
     useEffect(() => {
@@ -92,6 +106,10 @@ export default function SettingsPage() {
                     themeText: data.theme_colors?.text || DEFAULT_THEME.text,
                     themeButtonText:
                         data.theme_colors?.button_text || DEFAULT_THEME.buttonText,
+                    heroTitle: data.menu_copy?.hero_title || DEFAULT_MENU_COPY.heroTitle,
+                    heroSubtitle:
+                        data.menu_copy?.hero_subtitle || DEFAULT_MENU_COPY.heroSubtitle,
+                    heroBadge: data.menu_copy?.hero_badge || DEFAULT_MENU_COPY.heroBadge,
                 });
 
                 if (data.slug) {
@@ -198,6 +216,11 @@ export default function SettingsPage() {
                     surface: formData.themeSurface.trim().toLowerCase(),
                     text: formData.themeText.trim().toLowerCase(),
                     button_text: formData.themeButtonText.trim().toLowerCase(),
+                },
+                menu_copy: {
+                    hero_title: formData.heroTitle.trim(),
+                    hero_subtitle: formData.heroSubtitle.trim(),
+                    hero_badge: formData.heroBadge.trim(),
                 },
             });
 
@@ -326,6 +349,46 @@ export default function SettingsPage() {
                     </section>
 
                     <section className="space-y-6">
+                        <div className="space-y-4 rounded-lg border p-4">
+                            <Label>Textos principales del menu</Label>
+                            <div>
+                                <Label htmlFor="heroTitle">Titulo principal</Label>
+                                <Input
+                                    id="heroTitle"
+                                    name="heroTitle"
+                                    value={formData.heroTitle}
+                                    onChange={handleChange}
+                                    placeholder="Todo lo seleccionado"
+                                    className="mt-2"
+                                    maxLength={80}
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="heroSubtitle">Subtitulo</Label>
+                                <Input
+                                    id="heroSubtitle"
+                                    name="heroSubtitle"
+                                    value={formData.heroSubtitle}
+                                    onChange={handleChange}
+                                    placeholder="Autenticas comidas y bebidas francesas."
+                                    className="mt-2"
+                                    maxLength={140}
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="heroBadge">Etiqueta inferior</Label>
+                                <Input
+                                    id="heroBadge"
+                                    name="heroBadge"
+                                    value={formData.heroBadge}
+                                    onChange={handleChange}
+                                    placeholder="Depuis 1978"
+                                    className="mt-2"
+                                    maxLength={140}
+                                />
+                            </div>
+                        </div>
+
                         <div className="space-y-4 rounded-lg border p-4">
                             <Label>Colores del menú</Label>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

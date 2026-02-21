@@ -25,6 +25,12 @@ export type MerchantThemeColorsPayload = {
     button_text?: string;
 };
 
+export type MerchantMenuCopyPayload = {
+    hero_title?: string;
+    hero_subtitle?: string;
+    hero_badge?: string;
+};
+
 export type UpdateMerchantPayload = {
     name?: string;
     slug?: string;
@@ -37,6 +43,7 @@ export type UpdateMerchantPayload = {
     shipping_cost_cents?: number;
     social_links?: MerchantSocialLinksPayload;
     theme_colors?: MerchantThemeColorsPayload;
+    menu_copy?: MerchantMenuCopyPayload;
 };
 
 function getAuthHeaders() {
@@ -116,6 +123,7 @@ export async function updateMerchant(data: UpdateMerchantPayload) {
                     : undefined,
             cover_url: undefined,
             theme_colors: undefined,
+            menu_copy: undefined,
         };
 
         const legacyRes = await fetch(`${API_URL}/admin/restaurant`, {
