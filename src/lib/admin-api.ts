@@ -10,6 +10,13 @@ export type MerchantSocialLinksPayload = {
     tiktok?: string;
 };
 
+export type AdminOrder = {
+    id: string;
+    created_at: string;
+    status: string;
+    total_cents: number;
+};
+
 export type MerchantThemeColorsPayload = {
     primary?: string;
     background?: string;
@@ -188,4 +195,23 @@ export async function deleteProduct(id: string) {
     });
     if (res.ok) return true;
     throw new Error('Failed to delete product');
+}
+
+export async function fetchOrders(params?: {
+    from?: string;
+    to?: string;
+    status?: string;
+}) {
+    const query = new URLSearchParams();
+    if (params?.from) query.set('from', params.from);
+    if (params?.to) query.set('to', params.to);
+    if (params?.status) query.set('status', params.status);
+    const queryString = query.toString();
+    const url = `${API_URL}/admin/orders${queryString ? `?${queryString}` : ''}`;
+
+    const res = await fetch(url, {
+        headers: getAuthHeaders(),
+    });
+    if (res.ok) return (await res.json()) as AdminOrder[];
+    throw new Error(await parseError(res, 'Failed to fetch orders'));
 }
