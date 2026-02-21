@@ -25,11 +25,9 @@ export default function DashboardLayout({
     if (!authorized) return null;
 
     return (
-        <div className="flex min-h-screen flex-col md:flex-row bg-gray-100">
+        <div className="min-h-screen bg-gray-100 md:grid md:grid-cols-[16rem_minmax(0,1fr)]">
             <Sidebar />
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
-                {children}
-            </main>
+            <main className="min-w-0 p-4 sm:p-6 md:p-8">{children}</main>
         </div>
     );
 }

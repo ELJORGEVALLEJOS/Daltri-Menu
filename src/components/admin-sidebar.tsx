@@ -15,7 +15,7 @@ export function Sidebar() {
     const pathname = usePathname();
 
     return (
-        <div className="w-full md:w-64 md:h-screen border-b md:border-b-0 md:border-r bg-gray-900 text-white">
+        <div className="w-full md:w-64 md:min-h-screen border-b md:border-b-0 md:border-r bg-gray-900 text-white">
             <div className="flex h-14 sm:h-16 items-center border-b border-gray-800 px-4 sm:px-6">
                 <span className="text-base sm:text-xl font-bold">Daltri Admin</span>
             </div>

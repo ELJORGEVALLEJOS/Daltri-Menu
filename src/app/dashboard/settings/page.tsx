@@ -217,7 +217,7 @@ export default function SettingsPage() {
     if (loading) return <div>Loading...</div>;
 
     return (
-        <div className="max-w-2xl">
+        <div className="w-full">
             <h1 className="text-2xl font-bold mb-6">Configuracion del Restaurante</h1>
 
             <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow border">
