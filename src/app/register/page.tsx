@@ -12,6 +12,9 @@ type RegisteredMerchant = {
     name: string;
     slug: string;
     share_link: string;
+    verification_required?: boolean;
+    email_sent?: boolean;
+    preview_url?: string;
 };
 
 export default function RegisterPage() {
@@ -72,11 +75,26 @@ export default function RegisterPage() {
                         <p className="text-amber-500 font-mono text-sm break-all">{registeredMerchant.share_link}</p>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                        <p className="text-xs text-blue-400 font-medium">
-                            Revisa tu correo y verifica tu cuenta antes de entrar al panel de administracion.
-                        </p>
-                    </div>
+                    {registeredMerchant.verification_required ? (
+                        <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 space-y-2">
+                            <p className="text-xs text-blue-400 font-medium">
+                                {registeredMerchant.email_sent
+                                    ? 'Revisa tu correo y verifica tu cuenta antes de entrar al panel de administracion.'
+                                    : 'No se pudo enviar el correo de verificacion en este entorno. Contacta soporte o usa reenviar verificacion desde login.'}
+                            </p>
+                            {registeredMerchant.preview_url && (
+                                <p className="text-[11px] text-blue-300 break-all">
+                                    Enlace temporal: {registeredMerchant.preview_url}
+                                </p>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                            <p className="text-xs text-emerald-400 font-medium">
+                                Tu cuenta quedo activa. Puedes entrar al panel con tu email y contrasena.
+                            </p>
+                        </div>
+                    )}
 
                     <div className="flex flex-col gap-3 pt-4">
                         <Link href="/login">
