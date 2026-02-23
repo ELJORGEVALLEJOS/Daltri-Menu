@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { verifyEmailToken } from '@/lib/admin-api';
 import { Button } from '@/components/ui/button';
 
 type VerifyStatus = 'loading' | 'success' | 'error';
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
     const searchParams = useSearchParams();
     const token = searchParams.get('token') || '';
     const [status, setStatus] = useState<VerifyStatus>('loading');
@@ -70,5 +70,24 @@ export default function VerifyEmailPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+function VerifyEmailFallback() {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-[#FDFCFB] px-4 py-12">
+            <div className="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-8 shadow-2xl shadow-gray-200/60">
+                <h1 className="text-2xl font-bold text-gray-900">Verificacion de correo</h1>
+                <p className="mt-4 text-sm text-gray-600">Cargando verificacion...</p>
+            </div>
+        </div>
+    );
+}
+
+export default function VerifyEmailPage() {
+    return (
+        <Suspense fallback={<VerifyEmailFallback />}>
+            <VerifyEmailContent />
+        </Suspense>
     );
 }
