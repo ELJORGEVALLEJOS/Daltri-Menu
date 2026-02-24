@@ -14,6 +14,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [info, setInfo] = useState('');
+    const [previewUrl, setPreviewUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [resending, setResending] = useState(false);
     const router = useRouter();
@@ -23,6 +24,7 @@ export default function LoginPage() {
         setLoading(true);
         setError('');
         setInfo('');
+        setPreviewUrl('');
 
         try {
             await loginMerchant(email, password);
@@ -45,9 +47,15 @@ export default function LoginPage() {
 
         setResending(true);
         setInfo('');
+        setPreviewUrl('');
         try {
-            await resendVerificationEmail(email.trim().toLowerCase());
+            const response = (await resendVerificationEmail(
+                email.trim().toLowerCase(),
+            )) as { preview_url?: string };
             setInfo('Si el correo existe y esta pendiente, enviamos un nuevo enlace.');
+            if (response?.preview_url) {
+                setPreviewUrl(response.preview_url);
+            }
         } catch (err) {
             const message = err instanceof Error ? err.message : 'No se pudo reenviar el correo';
             setError(message);
@@ -117,6 +125,11 @@ export default function LoginPage() {
                     {info && (
                         <div className="bg-blue-50 text-blue-700 p-4 rounded-2xl text-sm font-medium border border-blue-100">
                             {info}
+                            {previewUrl && (
+                                <p className="mt-2 break-all text-xs">
+                                    Enlace temporal: {previewUrl}
+                                </p>
+                            )}
                         </div>
                     )}
 
