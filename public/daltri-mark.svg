@@ -1,0 +1,15 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="daltri_gold" x1="20" y1="16" x2="108" y2="112" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E0B65C"/>
+      <stop offset="1" stop-color="#B8862D"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="108" height="108" rx="28" fill="#0F172A"/>
+  <rect x="22" y="22" width="84" height="84" rx="21" fill="#111D35"/>
+  <circle cx="64" cy="64" r="31" fill="url(#daltri_gold)"/>
+  <path d="M48 46h6v12h5V46h6v12c0 3.9-3.1 7-7 7h-3c-3.9 0-7-3.1-7-7V46Z" fill="#0F172A"/>
+  <path d="M70 43c3.3 0 6 2.7 6 6v20h-6V43Z" fill="#0F172A"/>
+  <path d="M52 75c0-2.2 1.8-4 4-4h16c2.2 0 4 1.8 4 4v2H52v-2Z" fill="#0F172A"/>
+  <path d="M56 80h16v5H56v-5Z" fill="#0F172A"/>
+</svg>

@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import { loginMerchant, resendVerificationEmail } from "@/lib/admin-api";
-import { ChefHat, Lock, Mail } from 'lucide-react';
+import { Lock, Mail } from 'lucide-react';
+import { BrandMark } from '@/components/brand-mark';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -68,8 +69,8 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-[#FDFCFB] px-4 py-12 sm:px-6 lg:px-8 font-sans">
             <div className="w-full max-w-md space-y-10 bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100">
                 <div className="text-center">
-                    <div className="mx-auto h-20 w-20 bg-[#C5A059] rounded-3xl flex items-center justify-center shadow-lg shadow-[#C5A059]/30 mb-6 rotate-3">
-                        <ChefHat className="text-white h-10 w-10" />
+                    <div className="mx-auto mb-6 w-fit">
+                        <BrandMark size={80} className="h-20 w-20" priority />
                     </div>
                     <h2 className="text-3xl font-serif font-bold tracking-tight text-gray-900 leading-tight">
                         Bienvenido de nuevo
@@ -126,9 +127,14 @@ export default function LoginPage() {
                         <div className="bg-blue-50 text-blue-700 p-4 rounded-2xl text-sm font-medium border border-blue-100">
                             {info}
                             {previewUrl && (
-                                <p className="mt-2 break-all text-xs">
-                                    Enlace temporal: {previewUrl}
-                                </p>
+                                <a
+                                    href={previewUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="mt-2 block break-all text-xs underline underline-offset-2"
+                                >
+                                    Abrir enlace de verificacion: {previewUrl}
+                                </a>
                             )}
                         </div>
                     )}

@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ChefHat, ArrowLeft, SearchX } from 'lucide-react';
+import { SearchX } from 'lucide-react';
+import { BrandMark } from '@/components/brand-mark';
 
 export default function NotFound() {
     return (
@@ -14,7 +15,7 @@ export default function NotFound() {
                         <SearchX className="text-gray-900 h-10 w-10" />
                     </div>
                     <div className="absolute -top-4 -right-4 h-12 w-12 bg-white rounded-full shadow-lg border-2 border-[#EEDC82] flex items-center justify-center text-[#B8860B] animate-pulse">
-                        <ChefHat className="h-6 w-6" />
+                        <BrandMark size={24} className="h-6 w-6" />
                     </div>
                 </div>
 

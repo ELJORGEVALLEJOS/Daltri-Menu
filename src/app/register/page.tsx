@@ -5,8 +5,9 @@ import { registerMerchant } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChefHat, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { BrandMark } from '@/components/brand-mark';
 
 type RegisteredMerchant = {
     name: string;
@@ -80,12 +81,22 @@ export default function RegisterPage() {
                             <p className="text-xs text-blue-400 font-medium">
                                 {registeredMerchant.email_sent
                                     ? 'Revisa tu correo y verifica tu cuenta antes de entrar al panel de administracion.'
-                                    : 'No se pudo enviar el correo de verificacion en este entorno. Contacta soporte o usa reenviar verificacion desde login.'}
+                                    : 'No se pudo enviar el correo automatico. Usa este enlace para verificar tu cuenta.'}
                             </p>
                             {registeredMerchant.preview_url && (
-                                <p className="text-[11px] text-blue-300 break-all">
-                                    Enlace temporal: {registeredMerchant.preview_url}
-                                </p>
+                                <div className="space-y-2">
+                                    <a
+                                        href={registeredMerchant.preview_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center rounded-lg border border-blue-400/40 bg-blue-400/10 px-3 py-2 text-xs font-semibold text-blue-200 hover:bg-blue-400/20"
+                                    >
+                                        Abrir enlace de verificacion
+                                    </a>
+                                    <p className="text-[11px] text-blue-300 break-all">
+                                        {registeredMerchant.preview_url}
+                                    </p>
+                                </div>
                             )}
                         </div>
                     ) : (
@@ -123,9 +134,7 @@ export default function RegisterPage() {
 
                 <div className="bg-zinc-900/50 p-8 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-sm w-full">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="h-12 w-12 bg-gradient-to-tr from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                            <ChefHat className="text-black h-6 w-6" />
-                        </div>
+                        <BrandMark size={48} className="h-12 w-12" />
                         <div>
                             <h1 className="text-xl font-bold text-white">Registrar restaurante</h1>
                             <p className="text-zinc-500 text-xs text-balance">Crea tu cuenta y empieza a vender</p>

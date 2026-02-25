@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ChefHat, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { BrandMark } from '@/components/brand-mark';
 
 export default function Home() {
   const [slug, setSlug] = useState('');
@@ -24,9 +25,7 @@ export default function Home() {
       <main className="flex w-full max-w-md flex-col items-center text-center space-y-8">
         <div className="bg-zinc-900/50 p-6 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-sm w-full">
           <div className="flex justify-center mb-6">
-            <div className="h-16 w-16 bg-gradient-to-tr from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-6 transition-transform">
-              <ChefHat className="text-black h-8 w-8" strokeWidth={2.5} />
-            </div>
+            <BrandMark size={72} className="h-[72px] w-[72px] transition-transform hover:scale-105" priority />
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight mb-2 bg-gradient-to-br from-white to-zinc-400 bg-clip-text text-transparent">

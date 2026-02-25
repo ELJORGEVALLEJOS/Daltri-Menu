@@ -4,6 +4,7 @@ import { Settings, LogOut, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { BrandMark } from '@/components/brand-mark';
 
 const sidebarItems = [
     { icon: Menu, label: 'Gestión del Menú', href: '/dashboard/menu' },
@@ -15,7 +16,8 @@ export function Sidebar() {
 
     return (
         <div className="w-full md:w-64 md:min-h-screen border-b md:border-b-0 md:border-r bg-gray-900 text-white">
-            <div className="flex h-14 sm:h-16 items-center border-b border-gray-800 px-4 sm:px-6">
+            <div className="flex h-14 sm:h-16 items-center gap-2 border-b border-gray-800 px-4 sm:px-6">
+                <BrandMark size={24} className="h-6 w-6" />
                 <span className="text-base sm:text-xl font-bold">Daltri Admin</span>
             </div>
             <nav className="px-2 sm:px-3 py-2 sm:py-4 overflow-x-auto md:overflow-visible">
