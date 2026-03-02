@@ -78,11 +78,20 @@ export default function RegisterPage() {
 
                     {registeredMerchant.verification_required ? (
                         <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 space-y-2">
-                            <p className="text-xs text-blue-400 font-medium">
-                                {registeredMerchant.email_sent
+                            {(() => {
+                                const hasPreviewUrl = Boolean(registeredMerchant.preview_url);
+                                const verificationMessage = registeredMerchant.email_sent
                                     ? 'Revisa tu correo y verifica tu cuenta antes de entrar al panel de administracion.'
-                                    : 'No se pudo enviar el correo automatico. Usa este enlace para verificar tu cuenta.'}
-                            </p>
+                                    : hasPreviewUrl
+                                        ? 'No se pudo enviar el correo automatico. Usa este enlace para verificar tu cuenta.'
+                                        : 'No se pudo enviar el correo de verificacion. Reenviarlo desde login o contacta soporte.';
+
+                                return (
+                                    <p className="text-xs text-blue-400 font-medium">
+                                        {verificationMessage}
+                                    </p>
+                                );
+                            })()}
                             {registeredMerchant.preview_url && (
                                 <div className="space-y-2">
                                     <a
