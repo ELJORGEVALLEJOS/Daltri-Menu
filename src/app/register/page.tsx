@@ -58,6 +58,7 @@ export default function RegisterPage() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const [slugWasEdited, setSlugWasEdited] = useState(false);
+    const [errorSuggestedSlug, setErrorSuggestedSlug] = useState('');
     const [registeredMerchant, setRegisteredMerchant] = useState<RegisteredMerchant | null>(null);
     const slugSuggestions = buildSlugSuggestions(formData.name);
     const suggestedSlug = slugSuggestions[0] || '';
@@ -66,6 +67,7 @@ export default function RegisterPage() {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setErrorSuggestedSlug('');
 
         try {
             const result = await registerMerchant({
@@ -82,6 +84,8 @@ export default function RegisterPage() {
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Ocurrio un error durante el registro';
             setError(message);
+            const suggestedSlugFromMessage = message.match(/"([^"]+)"/)?.[1] || '';
+            setErrorSuggestedSlug(suggestedSlugFromMessage);
         } finally {
             setLoading(false);
         }
@@ -221,18 +225,21 @@ export default function RegisterPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <Label htmlFor="slug" className="text-zinc-400 text-xs ml-1">Codigo unico</Label>
+                                <Label htmlFor="slug" className="text-zinc-400 text-xs ml-1">Enlace publico de tu menu</Label>
                                 <Input
                                     id="slug"
                                     required
-                                    placeholder="palacio-pizzas"
+                                    placeholder="se genera automaticamente"
                                     value={formData.slug}
                                     onChange={(e) => handleSlugChange(e.target.value)}
                                     className="bg-black/40 border-white/10 text-white h-11 rounded-xl focus:ring-amber-500/50"
                                 />
                                 <div className="space-y-2 pt-1">
                                     <p className="text-[11px] text-zinc-500">
-                                        URL publica: `menu.daltrishop.com/m/{formData.slug || 'tu-codigo'}`
+                                        Se genera desde el nombre del restaurante. Puedes cambiarlo si quieres.
+                                    </p>
+                                    <p className="text-[11px] text-zinc-500">
+                                        URL publica: <span className="font-mono text-zinc-300">menu.daltrishop.com/m/{formData.slug || 'tu-menu'}</span>
                                     </p>
                                     {suggestedSlug && formData.slug !== suggestedSlug && (
                                         <p className="text-[11px] text-amber-400">
@@ -321,8 +328,18 @@ export default function RegisterPage() {
                         </div>
 
                         {error && (
-                            <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-xl text-xs">
-                                {error}
+                            <div className="space-y-3 bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-xl text-xs">
+                                <p>{error}</p>
+                                {errorSuggestedSlug && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => applySuggestedSlug(errorSuggestedSlug)}
+                                        className="h-9 border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200"
+                                    >
+                                        Usar sugerencia: {errorSuggestedSlug}
+                                    </Button>
+                                )}
                             </div>
                         )}
 
