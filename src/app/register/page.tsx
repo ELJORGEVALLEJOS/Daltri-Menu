@@ -182,11 +182,6 @@ export default function RegisterPage() {
                                 Ir a mi panel
                             </Button>
                         </Link>
-                        <Link href={`/m/${registeredMerchant.slug}`}>
-                            <Button variant="outline" className="w-full h-12 border-white/10 text-white hover:bg-white/5 font-bold rounded-xl">
-                                Ver menu publico
-                            </Button>
-                        </Link>
                     </div>
                 </div>
             </div>
