@@ -18,6 +18,32 @@ type RegisteredMerchant = {
     preview_url?: string;
 };
 
+function slugifyRestaurantName(value: string) {
+    return value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .replace(/-{2,}/g, '-')
+        .slice(0, 60);
+}
+
+function buildSlugSuggestions(name: string) {
+    const baseSlug = slugifyRestaurantName(name);
+    if (!baseSlug) {
+        return [];
+    }
+
+    const suggestions = [
+        baseSlug,
+        `${baseSlug}-menu`,
+        `${baseSlug}-oficial`,
+    ];
+
+    return Array.from(new Set(suggestions)).slice(0, 3);
+}
+
 export default function RegisterPage() {
     const [formData, setFormData] = useState({
         name: '',
@@ -31,7 +57,10 @@ export default function RegisterPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [slugWasEdited, setSlugWasEdited] = useState(false);
     const [registeredMerchant, setRegisteredMerchant] = useState<RegisteredMerchant | null>(null);
+    const slugSuggestions = buildSlugSuggestions(formData.name);
+    const suggestedSlug = slugSuggestions[0] || '';
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,6 +85,33 @@ export default function RegisterPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleNameChange = (value: string) => {
+        const normalizedName = value;
+        const nextSuggestedSlug = slugifyRestaurantName(normalizedName);
+
+        setFormData((current) => ({
+            ...current,
+            name: normalizedName,
+            slug: slugWasEdited ? current.slug : nextSuggestedSlug,
+        }));
+    };
+
+    const handleSlugChange = (value: string) => {
+        setSlugWasEdited(true);
+        setFormData((current) => ({
+            ...current,
+            slug: slugifyRestaurantName(value),
+        }));
+    };
+
+    const applySuggestedSlug = (value: string) => {
+        setSlugWasEdited(true);
+        setFormData((current) => ({
+            ...current,
+            slug: value,
+        }));
     };
 
     if (success && registeredMerchant) {
@@ -158,7 +214,7 @@ export default function RegisterPage() {
                                 required
                                 placeholder="El palacio de la pizza"
                                 value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                onChange={(e) => handleNameChange(e.target.value)}
                                 className="bg-black/40 border-white/10 text-white h-11 rounded-xl focus:ring-amber-500/50"
                             />
                         </div>
@@ -171,14 +227,35 @@ export default function RegisterPage() {
                                     required
                                     placeholder="palacio-pizzas"
                                     value={formData.slug}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            slug: e.target.value.toLowerCase().replace(/\s+/g, '-'),
-                                        })
-                                    }
+                                    onChange={(e) => handleSlugChange(e.target.value)}
                                     className="bg-black/40 border-white/10 text-white h-11 rounded-xl focus:ring-amber-500/50"
                                 />
+                                <div className="space-y-2 pt-1">
+                                    <p className="text-[11px] text-zinc-500">
+                                        URL publica: `menu.daltrishop.com/m/{formData.slug || 'tu-codigo'}`
+                                    </p>
+                                    {suggestedSlug && formData.slug !== suggestedSlug && (
+                                        <p className="text-[11px] text-amber-400">
+                                            Sugerencia principal: <button type="button" className="underline underline-offset-2" onClick={() => applySuggestedSlug(suggestedSlug)}>{suggestedSlug}</button>
+                                        </p>
+                                    )}
+                                    {slugSuggestions.length > 1 && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {slugSuggestions
+                                                .filter((option) => option !== formData.slug)
+                                                .map((option) => (
+                                                    <button
+                                                        key={option}
+                                                        type="button"
+                                                        onClick={() => applySuggestedSlug(option)}
+                                                        className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-zinc-300 hover:bg-white/10"
+                                                    >
+                                                        {option}
+                                                    </button>
+                                                ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div className="space-y-1.5">
                                 <Label htmlFor="whatsapp" className="text-zinc-400 text-xs ml-1">WhatsApp</Label>
