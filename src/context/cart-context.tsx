@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { CheckCircle2 } from 'lucide-react';
 
 type CartItem = {
     id: string; // Item ID + Options hash
@@ -23,6 +24,12 @@ type CartContextType = {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 const STORAGE_KEY = 'daltri-carts-v2';
 const LEGACY_KEY = 'daltri-cart';
+
+type CartToast = {
+    id: number;
+    title: string;
+    description: string;
+};
 
 function readStoredCartMap(): Record<string, CartItem[]> {
     if (typeof window === 'undefined') return {};
@@ -75,6 +82,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         return { [activeSlug]: legacyItems };
     });
+    const [cartToast, setCartToast] = useState<CartToast | null>(null);
 
     const items = activeSlug ? cartMap[activeSlug] || [] : [];
 
@@ -87,6 +95,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (typeof window === 'undefined') return;
         localStorage.removeItem(LEGACY_KEY);
     }, []);
+
+    useEffect(() => {
+        if (!cartToast) return;
+
+        const timeout = window.setTimeout(() => {
+            setCartToast(null);
+        }, 2400);
+
+        return () => window.clearTimeout(timeout);
+    }, [cartToast]);
 
     const addItem = (newItem: Omit<CartItem, 'id'>) => {
         if (!activeSlug) return;
@@ -105,6 +123,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 ...prevMap,
                 [activeSlug]: nextItems,
             };
+        });
+
+        setCartToast({
+            id: Date.now(),
+            title: 'Añadido al carrito',
+            description: `${newItem.name} x ${newItem.quantity}`,
         });
     };
 
@@ -144,6 +168,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return (
         <CartContext.Provider value={{ items, addItem, removeItem, clearCart, total }}>
             {children}
+            {cartToast && (
+                <div className="pointer-events-none fixed inset-x-0 top-4 z-[80] flex justify-center px-4 sm:top-6">
+                    <div
+                        role="status"
+                        aria-live="polite"
+                        className="flex w-full max-w-sm items-center gap-3 rounded-2xl border border-emerald-200/70 bg-white/95 px-4 py-3 shadow-[0_18px_45px_rgba(15,23,42,0.18)] backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-300"
+                    >
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                            <CheckCircle2 className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-sm font-black tracking-tight text-slate-900">
+                                {cartToast.title}
+                            </p>
+                            <p className="truncate text-xs font-medium text-slate-500">
+                                {cartToast.description}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </CartContext.Provider>
     );
 }
