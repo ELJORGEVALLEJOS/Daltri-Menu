@@ -92,9 +92,9 @@ export default function CartPage() {
                                 <div className="space-y-1 min-w-0">
                                     <h3 className="font-black text-lg sm:text-xl text-gray-900 leading-tight truncate">{item.name}</h3>
                                     <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400 font-bold uppercase tracking-widest">
-                                        <span>{formatMoney(item.price)} × {item.quantity}</span>
+                                        <span>{formatMoney(item.price)}</span>
                                         <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] tracking-[0.15em] text-gray-500">
-                                            {item.quantity === 1 ? '1 unidad' : `${item.quantity} unidades`}
+                                            Menu
                                         </span>
                                     </div>
                                 </div>
