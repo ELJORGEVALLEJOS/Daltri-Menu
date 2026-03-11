@@ -429,7 +429,7 @@ export default function MenuPage() {
                                                     className="h-14 bg-white rounded-2xl border-gray-100 px-5 text-[#99A1AF] placeholder:text-[#99A1AF] focus:ring-[#C5A059]/20"
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                 <div className="space-y-2">
                                                     <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Precio</Label>
                                                     <div className="relative">
@@ -510,11 +510,11 @@ export default function MenuPage() {
                                             </div>
                                         </div>
 
-                                        <div className="flex gap-4 pt-4">
-                                            <Button onClick={() => handleSaveItem(category.id)} className="flex-1 h-14 bg-[#C5A059] hover:bg-[#B48F4D] text-white text-lg font-bold rounded-2xl shadow-xl shadow-[#C5A059]/20">
+                                        <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:gap-4">
+                                            <Button onClick={() => handleSaveItem(category.id)} className="h-14 w-full flex-1 bg-[#C5A059] hover:bg-[#B48F4D] text-white text-lg font-bold rounded-2xl shadow-xl shadow-[#C5A059]/20">
                                                 {editingItem ? 'Actualizar Producto' : 'Guardar Producto'}
                                             </Button>
-                                            <Button variant="ghost" onClick={() => { setAddingItemTo(null); setEditingItem(null); setItemData({ ...EMPTY_ITEM_DATA }); }} className="h-14 px-8 text-[#99A1AF] font-bold rounded-2xl hover:bg-gray-100">
+                                            <Button variant="ghost" onClick={() => { setAddingItemTo(null); setEditingItem(null); setItemData({ ...EMPTY_ITEM_DATA }); }} className="h-14 w-full px-8 text-[#99A1AF] font-bold rounded-2xl hover:bg-gray-100 sm:w-auto">
                                                 Cancelar
                                             </Button>
                                         </div>

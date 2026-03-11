@@ -245,7 +245,7 @@ export default function SettingsPage() {
 
             <form
                 onSubmit={handleSubmit}
-                className="max-w-6xl space-y-6 rounded-lg border bg-white p-6 shadow"
+                className="max-w-6xl space-y-6 rounded-lg border bg-white p-4 shadow sm:p-6"
             >
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <section className="space-y-6">
@@ -263,8 +263,8 @@ export default function SettingsPage() {
 
                         <div>
                             <Label htmlFor="slug">Codigo del restaurante</Label>
-                            <div className="mt-2 flex items-center gap-2">
-                                <span className="text-sm text-gray-500">daltri.com/m/</span>
+                            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                                <span className="text-sm text-gray-500">menu.daltrishop.com/m/</span>
                                 <Input
                                     id="slug"
                                     name="slug"

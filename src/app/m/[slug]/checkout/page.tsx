@@ -105,7 +105,7 @@ export default function CheckoutPage() {
     return (
         <div className="min-h-screen bg-gray-50 pb-16 sm:pb-20">
             <div className="bg-[#EEDC82] pt-5 sm:pt-6 pb-10 sm:pb-12 px-4 rounded-b-[2rem] shadow-sm mb-[-2rem] relative z-0">
-                <div className="container mx-auto max-w-md">
+                <div className="container mx-auto max-w-4xl">
                     <div className="flex items-center mb-2">
                         <Link href={cartHref} className="mr-3 sm:mr-4 bg-white/20 p-2 rounded-full hover:bg-white/40 transition">
                             <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6 text-gray-900" />
@@ -115,79 +115,83 @@ export default function CheckoutPage() {
                 </div>
             </div>
 
-            <div className="container mx-auto p-4 max-w-md relative z-10">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 mb-6">
-                    <h2 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-50 pb-2">Resumen del pedido</h2>
-                    <div className="space-y-3 mb-4">
-                        {items.map((i) => (
-                            <div key={i.id} className="flex justify-between text-sm">
-                                <span className="text-gray-600 font-medium pr-3 truncate">{i.quantity}x {i.name}</span>
-                                <span className="font-bold text-gray-900">{formatAmount(i.price * i.quantity)}</span>
+            <div className="container mx-auto p-4 max-w-4xl relative z-10">
+                <div className="grid gap-6 lg:grid-cols-[minmax(20rem,0.8fr)_minmax(0,1.1fr)] lg:items-start lg:gap-8">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 lg:sticky lg:top-24">
+                        <h2 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-50 pb-2">Resumen del pedido</h2>
+                        <div className="space-y-3 mb-4">
+                            {items.map((i) => (
+                                <div key={i.id} className="flex justify-between text-sm gap-3">
+                                    <span className="text-gray-600 font-medium truncate">{i.quantity}x {i.name}</span>
+                                    <span className="font-bold text-gray-900 shrink-0">{formatAmount(i.price * i.quantity)}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="border-t border-gray-100 pt-3 space-y-2">
+                            <div className="flex justify-between text-gray-600">
+                                <span>Subtotal</span>
+                                <span>{formatAmount(total)}</span>
                             </div>
-                        ))}
-                    </div>
-
-                    <div className="border-t border-gray-100 pt-3 space-y-2">
-                        <div className="flex justify-between text-gray-600">
-                            <span>Subtotal</span>
-                            <span>{formatAmount(total)}</span>
+                            <div className="flex justify-between text-gray-600">
+                                <span>Envio</span>
+                                {shippingCost === 0 ? (
+                                    <span className="text-green-600 font-bold">GRATIS</span>
+                                ) : (
+                                    <span>{formatAmount(shippingCost)}</span>
+                                )}
+                            </div>
                         </div>
-                        <div className="flex justify-between text-gray-600">
-                            <span>Envio</span>
-                            {shippingCost === 0 ? (
-                                <span className="text-green-600 font-bold">GRATIS</span>
-                            ) : (
-                                <span>{formatAmount(shippingCost)}</span>
-                            )}
+
+                        <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-xl text-gray-900 mt-2 gap-4">
+                            <span>Total</span>
+                            <span className="text-gold-dark font-serif font-black text-2xl sm:text-3xl text-right">{formatAmount(finalTotal)}</span>
                         </div>
                     </div>
 
-                    <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-xl text-gray-900 mt-2">
-                        <span>Total</span>
-                        <span className="text-gold-dark font-serif font-black text-2xl sm:text-3xl">{formatAmount(finalTotal)}</span>
+                    <div className="space-y-6">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 space-y-5">
+                            <div>
+                                <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">Nombre completo</label>
+                                <input
+                                    type="text"
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all text-gray-800 font-medium"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="Ej: Juan Perez"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">WhatsApp / Telefono</label>
+                                <input
+                                    type="tel"
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all text-gray-800 font-medium"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="Ej: 5491112345678"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">Instrucciones o notas</label>
+                                <textarea
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all min-h-[100px] text-gray-800 font-medium"
+                                    value={note}
+                                    onChange={(e) => setNote(e.target.value)}
+                                    placeholder="Alergias, cambio de dinero, etc."
+                                />
+                            </div>
+                        </div>
+
+                        <Button
+                            className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white h-14 sm:h-16 text-base sm:text-lg font-bold rounded-2xl shadow-xl shadow-green-900/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale cursor-pointer"
+                            onClick={handleWhatsAppOrder}
+                            disabled={!name || !phone || !merchantPhone || !slug}
+                        >
+                            <MessageCircle className="w-6 h-6" />
+                            Enviar pedido por WhatsApp
+                        </Button>
                     </div>
                 </div>
-
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 mb-8 space-y-5">
-                    <div>
-                        <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">Nombre completo</label>
-                        <input
-                            type="text"
-                            className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all text-gray-800 font-medium"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Ej: Juan Perez"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">WhatsApp / Telefono</label>
-                        <input
-                            type="tel"
-                            className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all text-gray-800 font-medium"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            placeholder="Ej: 5491112345678"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">Instrucciones o notas</label>
-                        <textarea
-                            className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all min-h-[100px] text-gray-800 font-medium"
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
-                            placeholder="Alergias, cambio de dinero, etc."
-                        />
-                    </div>
-                </div>
-
-                <Button
-                    className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white h-14 sm:h-16 text-base sm:text-lg font-bold rounded-2xl shadow-xl shadow-green-900/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale cursor-pointer"
-                    onClick={handleWhatsAppOrder}
-                    disabled={!name || !phone || !merchantPhone || !slug}
-                >
-                    <MessageCircle className="w-6 h-6" />
-                    Enviar pedido por WhatsApp
-                </Button>
             </div>
         </div>
     );

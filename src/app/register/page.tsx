@@ -218,7 +218,7 @@ export default function RegisterPage() {
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-1.5">
                                 <Label htmlFor="slug" className="text-zinc-400 text-xs ml-1">Enlace publico de tu menu</Label>
                                 <Input

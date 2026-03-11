@@ -68,6 +68,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const match = (pathname || '').match(/^\/m\/([^/]+)/);
         return match?.[1]?.toLowerCase() || '';
     }, [pathname]);
+    const isPublicMenuSection = useMemo(
+        () => /^\/m\/[^/]+(?:$|\/)/.test(pathname || ''),
+        [pathname],
+    );
 
     const [cartMap, setCartMap] = useState<Record<string, CartItem[]>>(() => {
         const storedMap = readStoredCartMap();
@@ -169,7 +173,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         <CartContext.Provider value={{ items, addItem, removeItem, clearCart, total }}>
             {children}
             {cartToast && (
-                <div className="pointer-events-none fixed inset-x-0 top-4 z-[80] flex justify-center px-4 sm:top-6">
+                <div
+                    className="pointer-events-none fixed inset-x-0 z-[80] flex justify-center px-4"
+                    style={{
+                        top: isPublicMenuSection
+                            ? 'calc(env(safe-area-inset-top, 0px) + 5.25rem)'
+                            : 'calc(env(safe-area-inset-top, 0px) + 1rem)',
+                    }}
+                >
                     <div
                         role="status"
                         aria-live="polite"
