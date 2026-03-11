@@ -54,15 +54,6 @@ function getAuthHeaders() {
     };
 }
 
-function isHttpUrl(value: string) {
-    try {
-        const parsed = new URL(value);
-        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-    } catch {
-        return false;
-    }
-}
-
 async function parseError(res: Response, fallback: string) {
     const errorData = await res.json().catch(() => ({} as Record<string, unknown>));
     const message = errorData?.message;
@@ -73,6 +64,19 @@ async function parseError(res: Response, fallback: string) {
         return message;
     }
     return fallback;
+}
+
+function shouldRetryLegacyRestaurantUpdate(
+    errorMessage: string,
+    data: UpdateMerchantPayload,
+) {
+    const normalizedError = errorMessage.toLowerCase();
+    const isThemeCompatibilityIssue =
+        (normalizedError.includes('theme_colors') || normalizedError.includes('menu_copy')) &&
+        !normalizedError.includes('cover_url') &&
+        !normalizedError.includes('logo_url');
+
+    return isThemeCompatibilityIssue && Boolean(data.theme_colors || data.menu_copy);
 }
 
 export async function loginMerchant(email: string, password: string) {
@@ -136,14 +140,9 @@ export async function updateMerchant(data: UpdateMerchantPayload) {
 
     const firstError = await parseError(res, 'Failed to update merchant');
 
-    if (res.status === 400) {
+    if (res.status === 400 && shouldRetryLegacyRestaurantUpdate(firstError, data)) {
         const legacyPayload: UpdateMerchantPayload = {
             ...data,
-            logo_url:
-                typeof data.logo_url === 'string' && isHttpUrl(data.logo_url)
-                    ? data.logo_url
-                    : undefined,
-            cover_url: undefined,
             theme_colors: undefined,
             menu_copy: undefined,
         };
