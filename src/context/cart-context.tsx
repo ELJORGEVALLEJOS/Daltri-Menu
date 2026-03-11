@@ -16,6 +16,7 @@ type CartItem = {
 type CartContextType = {
     items: CartItem[];
     addItem: (item: Omit<CartItem, 'id'>) => void;
+    decrementItem: (id: string) => void;
     removeItem: (id: string) => void;
     clearCart: () => void;
     total: number;
@@ -28,7 +29,9 @@ const LEGACY_KEY = 'daltri-cart';
 type CartToast = {
     id: number;
     title: string;
-    description: string;
+    itemKey: string;
+    itemName: string;
+    quantityAdded: number;
 };
 
 function readStoredCartMap(): Record<string, CartItem[]> {
@@ -112,10 +115,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     const addItem = (newItem: Omit<CartItem, 'id'>) => {
         if (!activeSlug) return;
+        const id = `${newItem.itemId}-${JSON.stringify(newItem.options || [])}`;
 
         setCartMap((prevMap) => {
             const previousItems = prevMap[activeSlug] || [];
-            const id = `${newItem.itemId}-${JSON.stringify(newItem.options || [])}`;
             const existing = previousItems.find((i) => i.id === id);
             const nextItems = existing
                 ? previousItems.map((i) =>
@@ -129,10 +132,46 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             };
         });
 
-        setCartToast({
-            id: Date.now(),
-            title: 'Añadido al carrito',
-            description: `${newItem.name} x ${newItem.quantity}`,
+        setCartToast((prevToast) => {
+            if (prevToast?.itemKey === id) {
+                return {
+                    ...prevToast,
+                    id: Date.now(),
+                    quantityAdded: prevToast.quantityAdded + newItem.quantity,
+                };
+            }
+
+            return {
+                id: Date.now(),
+                title: 'Añadido al carrito',
+                itemKey: id,
+                itemName: newItem.name,
+                quantityAdded: newItem.quantity,
+            };
+        });
+    };
+
+    const decrementItem = (id: string) => {
+        if (!activeSlug) return;
+
+        setCartMap((prevMap) => {
+            const previousItems = prevMap[activeSlug] || [];
+            const nextItems = previousItems
+                .map((item) =>
+                    item.id === id ? { ...item, quantity: item.quantity - 1 } : item,
+                )
+                .filter((item) => item.quantity > 0);
+
+            if (nextItems.length === 0) {
+                const nextMap = { ...prevMap };
+                delete nextMap[activeSlug];
+                return nextMap;
+            }
+
+            return {
+                ...prevMap,
+                [activeSlug]: nextItems,
+            };
         });
     };
 
@@ -170,7 +209,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
     return (
-        <CartContext.Provider value={{ items, addItem, removeItem, clearCart, total }}>
+        <CartContext.Provider
+            value={{ items, addItem, decrementItem, removeItem, clearCart, total }}
+        >
             {children}
             {cartToast && (
                 <div
@@ -194,7 +235,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                                 {cartToast.title}
                             </p>
                             <p className="truncate text-xs font-medium text-slate-500">
-                                {cartToast.description}
+                                {cartToast.itemName} · {cartToast.quantityAdded}{' '}
+                                {cartToast.quantityAdded === 1 ? 'unidad' : 'unidades'}
                             </p>
                         </div>
                     </div>

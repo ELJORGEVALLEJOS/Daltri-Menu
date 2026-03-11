@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
-import { Trash2, ArrowLeft, MessageCircle } from 'lucide-react';
+import { Trash2, ArrowLeft, MessageCircle, Minus } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { fetchMerchant } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 
 export default function CartPage() {
-    const { items, removeItem, total } = useCart();
+    const { items, decrementItem, removeItem, total } = useCart();
     const [merchantPhone, setMerchantPhone] = useState<string | null>(null);
     const [shippingCost, setShippingCost] = useState(0);
     const params = useParams<{ slug?: string | string[] }>();
@@ -91,15 +91,35 @@ export default function CartPage() {
                             <div key={item.id} className={`flex justify-between items-center p-4 sm:p-6 gap-4 ${index !== items.length - 1 ? 'border-b border-gray-50' : ''}`}>
                                 <div className="space-y-1 min-w-0">
                                     <h3 className="font-black text-lg sm:text-xl text-gray-900 leading-tight truncate">{item.name}</h3>
-                                    <div className="text-sm text-gray-400 font-bold uppercase tracking-widest">
-                                        {formatMoney(item.price)} × {item.quantity}
+                                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400 font-bold uppercase tracking-widest">
+                                        <span>{formatMoney(item.price)} × {item.quantity}</span>
+                                        <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] tracking-[0.15em] text-gray-500">
+                                            {item.quantity === 1 ? '1 unidad' : `${item.quantity} unidades`}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 sm:gap-6 shrink-0">
                                     <span className="font-mono font-bold text-blue-600 text-xl sm:text-2xl tracking-tighter">{formatMoney(item.price * item.quantity)}</span>
-                                    <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="h-10 w-10 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
-                                        <Trash2 className="h-5 w-5" />
-                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => decrementItem(item.id)}
+                                            className="h-10 w-10 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all"
+                                            aria-label={`Quitar una unidad de ${item.name}`}
+                                        >
+                                            <Minus className="h-5 w-5" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => removeItem(item.id)}
+                                            className="h-10 w-10 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                            aria-label={`Eliminar ${item.name} del carrito`}
+                                        >
+                                            <Trash2 className="h-5 w-5" />
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
