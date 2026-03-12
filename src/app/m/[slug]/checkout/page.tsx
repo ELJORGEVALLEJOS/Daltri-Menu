@@ -14,6 +14,7 @@ export default function CheckoutPage() {
     const { items, total, clearCart } = useCart();
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
+    const [address, setAddress] = useState('');
     const [note, setNote] = useState('');
     const [merchant, setMerchant] = useState<PublicMerchant | null>(null);
     const router = useRouter();
@@ -51,12 +52,14 @@ export default function CheckoutPage() {
 
     const handleWhatsAppOrder = async () => {
         if (!merchant?.whatsapp_phone || !slug) return;
+        const trimmedAddress = address.trim();
 
         try {
             const orderData = {
                 customer_name: name,
                 customer_phone: phone.replace(/\D/g, ''),
-                delivery: 'pickup' as const,
+                delivery: 'delivery' as const,
+                delivery_address: trimmedAddress,
                 notes: note,
                 items: items.map((item) => ({
                     product_id: item.itemId,
@@ -81,6 +84,7 @@ export default function CheckoutPage() {
 
                 message += `\nSubtotal: ${formatAmount(total)}\n`;
                 message += shippingCost > 0 ? `Envio: ${formatAmount(shippingCost)}\n` : 'Envio: GRATIS\n';
+                message += `Direccion: ${trimmedAddress}\n`;
 
                 if (note) message += `\n*Nota:* ${note}\n`;
                 message += `\n*Total a Pagar: ${formatAmount(finalTotal)}*`;
@@ -179,6 +183,16 @@ export default function CheckoutPage() {
                                 />
                             </div>
                             <div>
+                                <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">Dirección de entrega</label>
+                                <input
+                                    type="text"
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all text-gray-800 font-medium"
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    placeholder="Ej: Calle 123, depto 4, barrio..."
+                                />
+                            </div>
+                            <div>
                                 <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">Instrucciones o notas</label>
                                 <textarea
                                     className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all min-h-[100px] text-gray-800 font-medium"
@@ -192,7 +206,7 @@ export default function CheckoutPage() {
                         <Button
                             className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white h-14 sm:h-16 text-base sm:text-lg font-bold rounded-2xl shadow-xl shadow-green-900/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale cursor-pointer"
                             onClick={handleWhatsAppOrder}
-                            disabled={!name || !phone || !merchant?.whatsapp_phone || !slug}
+                            disabled={!name.trim() || !phone.trim() || !address.trim() || !merchant?.whatsapp_phone || !slug}
                         >
                             <MessageCircle className="w-6 h-6" />
                             Enviar pedido por WhatsApp
