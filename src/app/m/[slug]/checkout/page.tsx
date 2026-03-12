@@ -4,18 +4,18 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { useParams, usePathname, useRouter } from 'next/navigation';
-import { fetchMerchant, createOrder } from '@/lib/api';
+import { fetchMerchant, createOrder, type PublicMerchant } from '@/lib/api';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { formatMoney } from '@/lib/format';
+import { getShippingPreview } from '@/lib/shipping';
 
 export default function CheckoutPage() {
     const { items, total, clearCart } = useCart();
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [note, setNote] = useState('');
-    const [merchantPhone, setMerchantPhone] = useState<string | null>(null);
-    const [shippingCost, setShippingCost] = useState(0);
+    const [merchant, setMerchant] = useState<PublicMerchant | null>(null);
     const router = useRouter();
     const params = useParams<{ slug?: string | string[] }>();
     const pathname = usePathname();
@@ -31,9 +31,7 @@ export default function CheckoutPage() {
 
         fetchMerchant(slug).then((m) => {
             if (!m) return;
-            setMerchantPhone(m.whatsapp_phone);
-            const costCents = m.shipping_type === 'paid' ? m.shipping_cost_cents || 0 : 0;
-            setShippingCost(costCents / 100);
+            setMerchant(m);
         });
     }, [slug]);
 
@@ -45,12 +43,14 @@ export default function CheckoutPage() {
 
     if (items.length === 0) return null;
 
+    const shippingPreview = getShippingPreview(total, merchant);
+    const shippingCost = shippingPreview.shippingCost;
     const finalTotal = total + shippingCost;
     const formatAmount = (value: number) =>
         formatMoney(value, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
     const handleWhatsAppOrder = async () => {
-        if (!merchantPhone || !slug) return;
+        if (!merchant?.whatsapp_phone || !slug) return;
 
         try {
             const orderData = {
@@ -92,7 +92,7 @@ export default function CheckoutPage() {
                 }
 
                 const encodedMessage = encodeURIComponent(message);
-                const url = `https://wa.me/${merchantPhone.replace(/\D/g, '')}?text=${encodedMessage}`;
+                const url = `https://wa.me/${merchant.whatsapp_phone.replace(/\D/g, '')}?text=${encodedMessage}`;
                 clearCart();
                 window.location.href = url;
             }
@@ -141,6 +141,13 @@ export default function CheckoutPage() {
                                     <span>{formatAmount(shippingCost)}</span>
                                 )}
                             </div>
+                            {shippingPreview.hasFreeShippingThreshold && (
+                                <p className="text-xs leading-relaxed text-gray-500">
+                                    {shippingPreview.qualifiesForFreeShipping
+                                        ? `Envio gratis aplicado por compras desde ${formatAmount(shippingPreview.freeShippingOverAmount || 0)}.`
+                                        : `Te faltan ${formatAmount(shippingPreview.remainingForFreeShippingAmount)} para obtener envio gratis.`}
+                                </p>
+                            )}
                         </div>
 
                         <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-xl text-gray-900 mt-2 gap-4">
@@ -185,7 +192,7 @@ export default function CheckoutPage() {
                         <Button
                             className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white h-14 sm:h-16 text-base sm:text-lg font-bold rounded-2xl shadow-xl shadow-green-900/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale cursor-pointer"
                             onClick={handleWhatsAppOrder}
-                            disabled={!name || !phone || !merchantPhone || !slug}
+                            disabled={!name || !phone || !merchant?.whatsapp_phone || !slug}
                         >
                             <MessageCircle className="w-6 h-6" />
                             Enviar pedido por WhatsApp

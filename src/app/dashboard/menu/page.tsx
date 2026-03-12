@@ -1,10 +1,20 @@
 'use client';
 
 import { useEffect, useState, type ChangeEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { fetchMenu, createCategory, updateCategory, deleteCategory, createProduct, updateProduct, deleteProduct } from '@/lib/admin-api';
+import {
+    AUTH_REQUIRED_ERROR,
+    fetchMenu,
+    createCategory,
+    updateCategory,
+    deleteCategory,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+} from '@/lib/admin-api';
 import { Trash2, Plus, ChevronDown, LayoutGrid, Package, DollarSign, Image as ImageIcon, Edit2, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -21,6 +31,7 @@ export default function MenuPage() {
     const [loading, setLoading] = useState(true);
     const [newCategoryName, setNewCategoryName] = useState('');
     const [formError, setFormError] = useState('');
+    const router = useRouter();
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
     // Edit/Add States
@@ -44,6 +55,10 @@ export default function MenuPage() {
                 setExpandedCategories([activeCategories[0].id]);
             }
         } catch (error) {
+            if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
+                router.replace('/login');
+                return;
+            }
             console.error('Failed to load menu', error);
         } finally {
             setLoading(false);
@@ -52,7 +67,7 @@ export default function MenuPage() {
 
     useEffect(() => {
         loadMenu();
-    }, []);
+    }, [router]);
 
     const handleCreateCategory = async () => {
         const categoryName = newCategoryName.trim();
@@ -67,6 +82,10 @@ export default function MenuPage() {
             setNewCategoryName('');
             loadMenu();
         } catch (error) {
+            if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
+                router.replace('/login');
+                return;
+            }
             const message =
                 error instanceof Error ? error.message : 'No se pudo crear la categoría';
             setFormError(message);
@@ -75,9 +94,19 @@ export default function MenuPage() {
 
     const handleUpdateCategory = async (id: string) => {
         if (!categoryEditName) return;
-        await updateCategory(id, categoryEditName);
-        setEditingCategory(null);
-        loadMenu();
+        try {
+            await updateCategory(id, categoryEditName);
+            setEditingCategory(null);
+            loadMenu();
+        } catch (error) {
+            if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
+                router.replace('/login');
+                return;
+            }
+            const message =
+                error instanceof Error ? error.message : 'No se pudo actualizar la categoría';
+            setFormError(message);
+        }
     };
 
     const handleDeleteCategory = async (id: string) => {
@@ -88,6 +117,10 @@ export default function MenuPage() {
             setExpandedCategories((prev) => prev.filter((categoryId) => categoryId !== id));
             loadMenu();
         } catch (error) {
+            if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
+                router.replace('/login');
+                return;
+            }
             const message =
                 error instanceof Error ? error.message : 'No se pudo eliminar la categoría';
             alert(message);
@@ -187,6 +220,10 @@ export default function MenuPage() {
                 await createProduct(payload);
             }
         } catch (error) {
+            if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
+                router.replace('/login');
+                return;
+            }
             const message =
                 error instanceof Error ? error.message : 'No se pudo guardar el producto';
             setFormError(message);
@@ -213,8 +250,18 @@ export default function MenuPage() {
 
     const handleDeleteItem = async (id: string) => {
         if (!confirm('¿Seguro quieres eliminar este producto?')) return;
-        await deleteProduct(id);
-        loadMenu();
+        try {
+            await deleteProduct(id);
+            loadMenu();
+        } catch (error) {
+            if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
+                router.replace('/login');
+                return;
+            }
+            const message =
+                error instanceof Error ? error.message : 'No se pudo eliminar el producto';
+            setFormError(message);
+        }
     };
 
     if (loading) return (

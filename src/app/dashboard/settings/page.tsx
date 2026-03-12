@@ -1,10 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { fetchRestaurant, updateMerchant, type MerchantShippingType } from '@/lib/admin-api';
+import {
+    AUTH_REQUIRED_ERROR,
+    fetchRestaurant,
+    updateMerchant,
+    type MerchantShippingType,
+} from '@/lib/admin-api';
+import { formatMoney } from '@/lib/format';
 
 const DEFAULT_THEME = {
     primary: '#c5a059',
@@ -28,6 +35,7 @@ type Merchant = {
     cover_url?: string;
     shipping_type?: MerchantShippingType;
     shipping_cost_cents?: number;
+    free_shipping_over_cents?: number | null;
     social_links?: {
         uber_eats?: string;
         google?: string;
@@ -53,6 +61,7 @@ export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    const router = useRouter();
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
@@ -61,6 +70,7 @@ export default function SettingsPage() {
         coverUrl: '',
         shippingType: 'free' as MerchantShippingType,
         shippingCost: '',
+        freeShippingOver: '',
         uberEats: '',
         google: '',
         instagram: '',
@@ -95,6 +105,12 @@ export default function SettingsPage() {
                         data.shipping_type === 'paid'
                             ? String((data.shipping_cost_cents || 0) / 100)
                             : '',
+                    freeShippingOver:
+                        data.shipping_type === 'paid' &&
+                        typeof data.free_shipping_over_cents === 'number' &&
+                        data.free_shipping_over_cents > 0
+                            ? String(data.free_shipping_over_cents / 100)
+                            : '',
                     uberEats: data.social_links?.uber_eats || '',
                     google: data.social_links?.google || '',
                     instagram: data.social_links?.instagram || '',
@@ -115,8 +131,12 @@ export default function SettingsPage() {
                 if (data.slug) {
                     localStorage.setItem('merchant_slug', data.slug);
                 }
-            } catch {
+            } catch (error) {
                 if (!active) return;
+                if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
+                    router.replace('/login');
+                    return;
+                }
                 setError('No se pudieron cargar los ajustes del restaurante.');
             } finally {
                 if (active) setLoading(false);
@@ -127,7 +147,7 @@ export default function SettingsPage() {
         return () => {
             active = false;
         };
-    }, []);
+    }, [router]);
 
     const readFileAsDataUrl = (file: File) =>
         new Promise<string>((resolve, reject) => {
@@ -193,6 +213,10 @@ export default function SettingsPage() {
             formData.shippingType === 'paid'
                 ? Math.max(0, Math.round(Number(formData.shippingCost || 0) * 100))
                 : 0;
+        const freeShippingOverValue =
+            formData.shippingType === 'paid' && Number(formData.freeShippingOver || 0) > 0
+                ? Math.max(0, Math.round(Number(formData.freeShippingOver) * 100))
+                : null;
 
         try {
             await updateMerchant({
@@ -203,6 +227,7 @@ export default function SettingsPage() {
                 cover_url: normalizedCoverUrl || undefined,
                 shipping_type: formData.shippingType,
                 shipping_cost_cents: shippingCostValue,
+                free_shipping_over_cents: freeShippingOverValue,
                 social_links: {
                     uber_eats: formData.uberEats.trim(),
                     google: formData.google.trim(),
@@ -227,6 +252,10 @@ export default function SettingsPage() {
             localStorage.setItem('merchant_slug', normalizedSlug);
             alert('Configuracion guardada correctamente');
         } catch (error) {
+            if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
+                router.replace('/login');
+                return;
+            }
             const message =
                 error instanceof Error && error.message.trim()
                     ? error.message
@@ -530,6 +559,38 @@ export default function SettingsPage() {
                                 <p className="mt-1 text-xs text-gray-500">
                                     Si eliges envio gratis, este valor no se usa.
                                 </p>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="freeShippingOver">
+                                    Envio gratis desde (opcional)
+                                </Label>
+                                <Input
+                                    id="freeShippingOver"
+                                    name="freeShippingOver"
+                                    type="number"
+                                    value={formData.freeShippingOver}
+                                    onChange={handleChange}
+                                    placeholder="30000"
+                                    min={0}
+                                    step="1"
+                                    disabled={formData.shippingType === 'free'}
+                                    className="mt-2"
+                                />
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Si el subtotal del pedido supera este monto, el envio pasa a ser gratis.
+                                </p>
+                                {formData.shippingType === 'paid' &&
+                                    Number(formData.freeShippingOver || 0) > 0 && (
+                                        <p className="mt-2 text-xs font-medium text-emerald-600">
+                                            Los pedidos desde{' '}
+                                            {formatMoney(Number(formData.freeShippingOver), {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                            })}{' '}
+                                            tendran envio gratis.
+                                        </p>
+                                    )}
                             </div>
                         </div>
 

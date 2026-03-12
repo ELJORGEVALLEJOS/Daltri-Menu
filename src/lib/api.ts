@@ -43,6 +43,22 @@ type MerchantMenuCopy = {
     hero_badge?: string;
 };
 
+export type PublicMerchant = {
+    id: string;
+    name: string;
+    slug: string;
+    whatsapp_phone: string;
+    currency?: string;
+    logo_url?: string;
+    cover_url?: string;
+    shipping_type?: 'free' | 'paid';
+    shipping_cost_cents?: number;
+    free_shipping_over_cents?: number | null;
+    social_links?: MerchantSocialLinks;
+    theme_colors?: MerchantThemeColors;
+    menu_copy?: MerchantMenuCopy;
+};
+
 export async function fetchMerchant(slug: string) {
     for (const baseUrl of API_BASES) {
         try {
@@ -55,20 +71,7 @@ export async function fetchMerchant(slug: string) {
             }
 
             const data = (await res.json()) as {
-                restaurant?: {
-                    id: string;
-                    name: string;
-                    slug: string;
-                    whatsapp_phone: string;
-                    currency?: string;
-                    logo_url?: string;
-                    cover_url?: string;
-                    shipping_type?: 'free' | 'paid';
-                    shipping_cost_cents?: number;
-                    social_links?: MerchantSocialLinks;
-                    theme_colors?: MerchantThemeColors;
-                    menu_copy?: MerchantMenuCopy;
-                };
+                restaurant?: PublicMerchant;
             };
 
             if (data.restaurant) {

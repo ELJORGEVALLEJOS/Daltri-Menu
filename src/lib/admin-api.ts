@@ -1,4 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://server.daltrishop.com';
+export const AUTH_REQUIRED_ERROR = 'AUTH_REQUIRED';
 
 export type MerchantShippingType = 'free' | 'paid';
 
@@ -41,17 +42,36 @@ export type UpdateMerchantPayload = {
     cover_url?: string;
     shipping_type?: MerchantShippingType;
     shipping_cost_cents?: number;
+    free_shipping_over_cents?: number | null;
     social_links?: MerchantSocialLinksPayload;
     theme_colors?: MerchantThemeColorsPayload;
     menu_copy?: MerchantMenuCopyPayload;
 };
 
-function getAuthHeaders() {
+function clearAdminSession() {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('merchant_id');
+    localStorage.removeItem('merchant_slug');
+}
+
+function getRequiredAuthHeaders() {
     const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    if (!token) {
+        clearAdminSession();
+        throw new Error(AUTH_REQUIRED_ERROR);
+    }
+
     return {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        'Authorization': `Bearer ${token}`,
     };
+}
+
+function handleUnauthorized(res: Response) {
+    if (res.status !== 401) return;
+    clearAdminSession();
+    throw new Error(AUTH_REQUIRED_ERROR);
 }
 
 async function parseError(res: Response, fallback: string) {
@@ -123,8 +143,9 @@ export async function resendVerificationEmail(email: string) {
 
 export async function fetchRestaurant() {
     const res = await fetch(`${API_URL}/admin/restaurant`, {
-        headers: getAuthHeaders(),
+        headers: getRequiredAuthHeaders(),
     });
+    handleUnauthorized(res);
     if (!res.ok) throw new Error('Failed to fetch restaurant');
     return res.json();
 }
@@ -132,10 +153,11 @@ export async function fetchRestaurant() {
 export async function updateMerchant(data: UpdateMerchantPayload) {
     const res = await fetch(`${API_URL}/admin/restaurant`, {
         method: 'PUT',
-        headers: getAuthHeaders(),
+        headers: getRequiredAuthHeaders(),
         body: JSON.stringify(data),
     });
 
+    handleUnauthorized(res);
     if (res.ok) return res.json();
 
     const firstError = await parseError(res, 'Failed to update merchant');
@@ -149,10 +171,11 @@ export async function updateMerchant(data: UpdateMerchantPayload) {
 
         const legacyRes = await fetch(`${API_URL}/admin/restaurant`, {
             method: 'PUT',
-            headers: getAuthHeaders(),
+            headers: getRequiredAuthHeaders(),
             body: JSON.stringify(legacyPayload),
         });
 
+        handleUnauthorized(legacyRes);
         if (legacyRes.ok) return legacyRes.json();
         throw new Error(await parseError(legacyRes, firstError));
     }
@@ -162,8 +185,9 @@ export async function updateMerchant(data: UpdateMerchantPayload) {
 
 export async function fetchMenu() {
     const res = await fetch(`${API_URL}/admin/categories`, {
-        headers: getAuthHeaders(),
+        headers: getRequiredAuthHeaders(),
     });
+    handleUnauthorized(res);
     if (res.ok) return res.json();
     return [];
 }
@@ -171,9 +195,10 @@ export async function fetchMenu() {
 export async function createCategory(name: string) {
     const res = await fetch(`${API_URL}/admin/categories`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: getRequiredAuthHeaders(),
         body: JSON.stringify({ name }),
     });
+    handleUnauthorized(res);
     if (res.ok) return res.json();
     throw new Error(await parseError(res, 'Failed to create category'));
 }
@@ -181,9 +206,10 @@ export async function createCategory(name: string) {
 export async function updateCategory(id: string, name: string) {
     const res = await fetch(`${API_URL}/admin/categories/${id}`, {
         method: 'PUT',
-        headers: getAuthHeaders(),
+        headers: getRequiredAuthHeaders(),
         body: JSON.stringify({ name }),
     });
+    handleUnauthorized(res);
     if (res.ok) return res.json();
     throw new Error(await parseError(res, 'Failed to update category'));
 }
@@ -191,8 +217,9 @@ export async function updateCategory(id: string, name: string) {
 export async function deleteCategory(id: string) {
     const res = await fetch(`${API_URL}/admin/categories/${id}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(),
+        headers: getRequiredAuthHeaders(),
     });
+    handleUnauthorized(res);
     if (res.ok) return true;
     throw new Error('Failed to delete category');
 }
@@ -200,9 +227,10 @@ export async function deleteCategory(id: string) {
 export async function createProduct(data: { category_id: string; name: string; price_cents: number; original_price_cents?: number; description?: string; image_url?: string }) {
     const res = await fetch(`${API_URL}/admin/products`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: getRequiredAuthHeaders(),
         body: JSON.stringify(data),
     });
+    handleUnauthorized(res);
     if (res.ok) return res.json();
     throw new Error(await parseError(res, 'Failed to create product'));
 }
@@ -210,9 +238,10 @@ export async function createProduct(data: { category_id: string; name: string; p
 export async function updateProduct(id: string, data: { category_id?: string; name?: string; price_cents?: number; original_price_cents?: number; description?: string; image_url?: string; active?: boolean }) {
     const res = await fetch(`${API_URL}/admin/products/${id}`, {
         method: 'PUT',
-        headers: getAuthHeaders(),
+        headers: getRequiredAuthHeaders(),
         body: JSON.stringify(data),
     });
+    handleUnauthorized(res);
     if (res.ok) return res.json();
     throw new Error(await parseError(res, 'Failed to update product'));
 }
@@ -220,8 +249,9 @@ export async function updateProduct(id: string, data: { category_id?: string; na
 export async function deleteProduct(id: string) {
     const res = await fetch(`${API_URL}/admin/products/${id}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(),
+        headers: getRequiredAuthHeaders(),
     });
+    handleUnauthorized(res);
     if (res.ok) return true;
     throw new Error('Failed to delete product');
 }
@@ -239,8 +269,9 @@ export async function fetchOrders(params?: {
     const url = `${API_URL}/admin/orders${queryString ? `?${queryString}` : ''}`;
 
     const res = await fetch(url, {
-        headers: getAuthHeaders(),
+        headers: getRequiredAuthHeaders(),
     });
+    handleUnauthorized(res);
     if (res.ok) return (await res.json()) as AdminOrder[];
     throw new Error(await parseError(res, 'Failed to fetch orders'));
 }

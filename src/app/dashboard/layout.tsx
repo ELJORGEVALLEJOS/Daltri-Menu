@@ -14,9 +14,11 @@ export default function DashboardLayout({
     const [authorized, setAuthorized] = useState(false);
 
     useEffect(() => {
-        const merchantId = localStorage.getItem('merchant_id');
-        if (!merchantId) {
-            router.push('/login');
+        const accessToken = localStorage.getItem('access_token');
+        if (!accessToken) {
+            localStorage.removeItem('merchant_id');
+            localStorage.removeItem('merchant_slug');
+            router.replace('/login');
         } else {
             setAuthorized(true);
         }
