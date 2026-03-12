@@ -266,15 +266,17 @@ export default function SettingsPage() {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) {
+        return <div className="font-medium text-gray-950">Cargando configuración...</div>;
+    }
 
     return (
-        <div className="w-full">
+        <div className="w-full text-gray-950">
             <h1 className="text-2xl font-bold mb-6">Configuracion del Restaurante</h1>
 
             <form
                 onSubmit={handleSubmit}
-                className="max-w-6xl space-y-6 rounded-lg border bg-white p-4 shadow sm:p-6"
+                className="max-w-6xl space-y-6 rounded-lg border bg-white p-4 text-gray-950 shadow sm:p-6 [&_input]:text-gray-950 [&_input]:placeholder:text-gray-500 [&_label]:text-gray-950"
             >
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <section className="space-y-6">
@@ -293,7 +295,9 @@ export default function SettingsPage() {
                         <div>
                             <Label htmlFor="slug">Codigo del restaurante</Label>
                             <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                                <span className="text-sm text-gray-500">menu.daltrishop.com/m/</span>
+                                <span className="text-sm font-medium text-gray-950">
+                                    menu.daltrishop.com/m/
+                                </span>
                                 <Input
                                     id="slug"
                                     name="slug"
@@ -302,7 +306,7 @@ export default function SettingsPage() {
                                     required
                                 />
                             </div>
-                            <p className="mt-1 text-xs text-gray-500">
+                            <p className="mt-1 text-xs font-medium text-gray-900">
                                 Este codigo define tu URL publica.
                             </p>
                         </div>
@@ -317,7 +321,7 @@ export default function SettingsPage() {
                                 placeholder="54911..."
                                 className="mt-2"
                             />
-                            <p className="mt-1 text-xs text-gray-500">
+                            <p className="mt-1 text-xs font-medium text-gray-900">
                                 Incluye codigo de pais sin espacios.
                             </p>
                         </div>
@@ -556,7 +560,7 @@ export default function SettingsPage() {
                                     disabled={formData.shippingType === 'free'}
                                     className="mt-2"
                                 />
-                                <p className="mt-1 text-xs text-gray-500">
+                                <p className="mt-1 text-xs font-medium text-gray-900">
                                     Si eliges envio gratis, este valor no se usa.
                                 </p>
                             </div>
@@ -577,7 +581,7 @@ export default function SettingsPage() {
                                     disabled={formData.shippingType === 'free'}
                                     className="mt-2"
                                 />
-                                <p className="mt-1 text-xs text-gray-500">
+                                <p className="mt-1 text-xs font-medium text-gray-900">
                                     Si el subtotal del pedido supera este monto, el envio pasa a ser gratis.
                                 </p>
                                 {formData.shippingType === 'paid' &&

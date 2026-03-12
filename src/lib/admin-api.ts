@@ -13,9 +13,43 @@ export type MerchantSocialLinksPayload = {
 
 export type AdminOrder = {
     id: string;
+    order_number: string;
+    short_code: number;
     created_at: string;
+    updated_at: string;
     status: string;
+    customer_name: string;
+    customer_phone: string;
+    delivery: string;
+    delivery_address?: string | null;
+    notes?: string | null;
     total_cents: number;
+    whatsapp_url?: string | null;
+    items: Array<{
+        id: string;
+        product_id: string;
+        product_name: string;
+        qty: number;
+        notes?: string | null;
+        unit_price_cents: number;
+        line_total_cents: number;
+    }>;
+};
+
+export type AdminOrderAnalytics = {
+    totals: {
+        confirmed_orders: number;
+        revenue_cents: number;
+        items_sold: number;
+        average_ticket_cents: number;
+    };
+    top_products: Array<{
+        product_id: string;
+        product_name: string;
+        total_qty: number;
+        total_revenue_cents: number;
+        confirmed_orders: number;
+    }>;
 };
 
 export type MerchantThemeColorsPayload = {
@@ -274,4 +308,36 @@ export async function fetchOrders(params?: {
     handleUnauthorized(res);
     if (res.ok) return (await res.json()) as AdminOrder[];
     throw new Error(await parseError(res, 'Failed to fetch orders'));
+}
+
+export async function updateOrderStatus(
+    id: string,
+    status: 'COMPLETED' | 'CANCELLED',
+) {
+    const res = await fetch(`${API_URL}/admin/orders/${id}/status`, {
+        method: 'PATCH',
+        headers: getRequiredAuthHeaders(),
+        body: JSON.stringify({ status }),
+    });
+    handleUnauthorized(res);
+    if (res.ok) return (await res.json()) as AdminOrder;
+    throw new Error(await parseError(res, 'Failed to update order status'));
+}
+
+export async function fetchOrderAnalytics(params?: {
+    from?: string;
+    to?: string;
+}) {
+    const query = new URLSearchParams();
+    if (params?.from) query.set('from', params.from);
+    if (params?.to) query.set('to', params.to);
+    const queryString = query.toString();
+    const url = `${API_URL}/admin/analytics/orders${queryString ? `?${queryString}` : ''}`;
+
+    const res = await fetch(url, {
+        headers: getRequiredAuthHeaders(),
+    });
+    handleUnauthorized(res);
+    if (res.ok) return (await res.json()) as AdminOrderAnalytics;
+    throw new Error(await parseError(res, 'Failed to fetch order analytics'));
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings, LogOut, Menu } from 'lucide-react';
+import { Settings, LogOut, Menu, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ import { BrandMark } from '@/components/brand-mark';
 
 const sidebarItems = [
     { icon: Menu, label: 'Gestión del Menú', href: '/dashboard/menu' },
+    { icon: BarChart3, label: 'Pedidos y Analíticas', href: '/dashboard/orders' },
     { icon: Settings, label: 'Configuración', href: '/dashboard/settings' },
 ];
 
@@ -47,6 +48,7 @@ export function Sidebar() {
                     href="/login"
                     className="inline-flex md:flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white"
                     onClick={() => {
+                        localStorage.removeItem('access_token');
                         localStorage.removeItem('merchant_id');
                         localStorage.removeItem('merchant_slug');
                     }}
