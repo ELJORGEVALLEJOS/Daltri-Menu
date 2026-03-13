@@ -110,6 +110,8 @@ export default function OrdersPage() {
         [orders],
     );
 
+    const topProduct = analytics?.top_products?.[0] || null;
+
     const handleOrderAction = async (
         orderId: string,
         status: 'COMPLETED' | 'CANCELLED',
@@ -230,7 +232,7 @@ export default function OrdersPage() {
                 </div>
             )}
 
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                 <article className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">
                         Pedidos confirmados
@@ -262,6 +264,33 @@ export default function OrdersPage() {
                     <p className="mt-3 text-3xl font-black text-gray-900">
                         {formatMoneyFromCents(analytics?.totals.average_ticket_cents || 0)}
                     </p>
+                </article>
+                <article className="rounded-3xl border border-[#C5A059]/20 bg-[#FFF9F0] p-5 shadow-sm">
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A67C2E]">
+                        Producto más vendido
+                    </p>
+                    {topProduct ? (
+                        <>
+                            <p className="mt-3 truncate text-xl font-black text-gray-900">
+                                {topProduct.product_name}
+                            </p>
+                            <p className="mt-2 text-sm font-semibold text-gray-600">
+                                {topProduct.total_qty} vendidos
+                            </p>
+                            <p className="mt-1 text-sm font-medium text-gray-500">
+                                {formatMoneyFromCents(topProduct.total_revenue_cents)} en ventas
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <p className="mt-3 text-xl font-black text-gray-900">
+                                Sin datos
+                            </p>
+                            <p className="mt-2 text-sm font-medium text-gray-500">
+                                Aún no hay pedidos confirmados.
+                            </p>
+                        </>
+                    )}
                 </article>
             </section>
 
