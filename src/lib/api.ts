@@ -159,7 +159,7 @@ export async function createOrder(
     slug: string,
     orderData: {
         customer_name: string;
-        customer_phone: string;
+        customer_phone?: string;
         delivery: 'pickup' | 'delivery';
         delivery_address?: string;
         notes?: string;
