@@ -111,6 +111,8 @@ export default function OrdersPage() {
     );
 
     const topProduct = analytics?.top_products?.[0] || null;
+    const totalItemsSold = analytics?.totals.items_sold || 0;
+    const soldProductsCount = analytics?.top_products.length || 0;
 
     const handleOrderAction = async (
         orderId: string,
@@ -412,13 +414,18 @@ export default function OrdersPage() {
                 </section>
 
                 <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-                    <div className="mb-5">
-                        <h2 className="text-xl font-serif font-bold text-gray-900">
-                            Productos más demandados
-                        </h2>
-                        <p className="text-sm text-gray-500">
-                            Ranking calculado con pedidos confirmados.
-                        </p>
+                    <div className="mb-5 flex items-start justify-between gap-3">
+                        <div>
+                            <h2 className="text-xl font-serif font-bold text-gray-900">
+                                Rendimiento por producto
+                            </h2>
+                            <p className="text-sm text-gray-500">
+                                Cuántos menús vendió cada producto, cuántos pedidos lo incluyeron y cuánto facturó.
+                            </p>
+                        </div>
+                        <span className="rounded-full bg-[#F8F1E3] px-3 py-1 text-xs font-bold uppercase tracking-[0.15em] text-[#A67C2E]">
+                            {soldProductsCount} con ventas
+                        </span>
                     </div>
 
                     <div className="space-y-3">
@@ -440,20 +447,21 @@ export default function OrdersPage() {
                                             <h3 className="truncate text-base font-bold text-gray-900">
                                                 {product.product_name}
                                             </h3>
+                                            <p className="mt-1 text-sm text-gray-500">
+                                                Se vendieron {product.total_qty} menús de este producto.
+                                            </p>
                                         </div>
                                         <span className="text-right text-sm font-bold text-gray-900">
                                             {product.total_qty} vendidos
                                         </span>
                                     </div>
-                                    <div className="mt-3 grid grid-cols-2 gap-3 text-sm text-gray-600">
+                                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-gray-600">
                                         <div>
                                             <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400">
-                                                Ingresos
+                                                Menús vendidos
                                             </p>
                                             <p className="mt-1 font-semibold text-gray-900">
-                                                {formatMoneyFromCents(
-                                                    product.total_revenue_cents,
-                                                )}
+                                                {product.total_qty}
                                             </p>
                                         </div>
                                         <div>
@@ -462,6 +470,26 @@ export default function OrdersPage() {
                                             </p>
                                             <p className="mt-1 font-semibold text-gray-900">
                                                 {product.confirmed_orders}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400">
+                                                Participación
+                                            </p>
+                                            <p className="mt-1 font-semibold text-gray-900">
+                                                {totalItemsSold > 0
+                                                    ? `${Math.round((product.total_qty / totalItemsSold) * 100)}%`
+                                                    : '0%'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400">
+                                                Ingresos
+                                            </p>
+                                            <p className="mt-1 font-semibold text-gray-900">
+                                                {formatMoneyFromCents(
+                                                    product.total_revenue_cents,
+                                                )}
                                             </p>
                                         </div>
                                     </div>
