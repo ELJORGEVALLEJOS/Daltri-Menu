@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
     AUTH_REQUIRED_ERROR,
+    downloadOrderAnalyticsReport,
     fetchOrderAnalytics,
     fetchOrders,
     type AdminOrder,
@@ -61,6 +62,7 @@ export default function OrdersPage() {
     const [orders, setOrders] = useState<AdminOrder[]>([]);
     const [analytics, setAnalytics] = useState<AdminOrderAnalytics | null>(null);
     const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+    const [downloadingReport, setDownloadingReport] = useState<'weekly' | 'monthly' | null>(null);
 
     const loadData = useCallback(
         async (showLoading = false) => {
@@ -136,6 +138,38 @@ export default function OrdersPage() {
         }
     };
 
+    const handleDownloadReport = async (period: 'weekly' | 'monthly') => {
+        setDownloadingReport(period);
+        setError('');
+
+        try {
+            const { blob, fileName } = await downloadOrderAnalyticsReport(period);
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (downloadError) {
+            if (
+                downloadError instanceof Error &&
+                downloadError.message === AUTH_REQUIRED_ERROR
+            ) {
+                router.replace('/login');
+                return;
+            }
+            const message =
+                downloadError instanceof Error && downloadError.message.trim()
+                    ? downloadError.message
+                    : 'No se pudo descargar el reporte.';
+            setError(message);
+        } finally {
+            setDownloadingReport(null);
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex min-h-[60vh] items-center justify-center">
@@ -155,15 +189,39 @@ export default function OrdersPage() {
                         Las métricas cuentan solo pedidos confirmados por el restaurante.
                     </p>
                 </div>
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => void loadData()}
-                    disabled={refreshing}
-                    className="h-11 rounded-xl"
-                >
-                    {refreshing ? 'Actualizando...' : 'Actualizar'}
-                </Button>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => void handleDownloadReport('weekly')}
+                        disabled={downloadingReport !== null}
+                        className="h-11 rounded-xl border-[#C5A059]/40 text-gray-900 hover:bg-[#F8F1E3]"
+                    >
+                        {downloadingReport === 'weekly'
+                            ? 'Descargando semanal...'
+                            : 'Reporte semanal'}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => void handleDownloadReport('monthly')}
+                        disabled={downloadingReport !== null}
+                        className="h-11 rounded-xl border-[#0F172A]/20 text-gray-900 hover:bg-gray-100"
+                    >
+                        {downloadingReport === 'monthly'
+                            ? 'Descargando mensual...'
+                            : 'Reporte mensual'}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => void loadData()}
+                        disabled={refreshing}
+                        className="h-11 rounded-xl"
+                    >
+                        {refreshing ? 'Actualizando...' : 'Actualizar'}
+                    </Button>
+                </div>
             </header>
 
             {error && (

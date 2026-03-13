@@ -341,3 +341,25 @@ export async function fetchOrderAnalytics(params?: {
     if (res.ok) return (await res.json()) as AdminOrderAnalytics;
     throw new Error(await parseError(res, 'Failed to fetch order analytics'));
 }
+
+export async function downloadOrderAnalyticsReport(
+    period: 'weekly' | 'monthly',
+) {
+    const res = await fetch(`${API_URL}/admin/analytics/orders/report?period=${period}`, {
+        headers: getRequiredAuthHeaders(),
+    });
+
+    handleUnauthorized(res);
+    if (!res.ok) {
+        throw new Error(await parseError(res, 'No se pudo descargar el reporte'));
+    }
+
+    const blob = await res.blob();
+    const contentDisposition = res.headers.get('content-disposition') || '';
+    const fileNameMatch = contentDisposition.match(/filename=\"?([^"]+)\"?/i);
+
+    return {
+        blob,
+        fileName: fileNameMatch?.[1] || `reporte-${period}.xlsx`,
+    };
+}
