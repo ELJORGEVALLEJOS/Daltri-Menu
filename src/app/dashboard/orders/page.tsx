@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +26,12 @@ function formatDate(value: string) {
         dateStyle: 'medium',
         timeStyle: 'short',
     }).format(new Date(value));
+}
+
+function formatDateOnly(value: string) {
+    return new Intl.DateTimeFormat('es-AR', {
+        dateStyle: 'medium',
+    }).format(new Date(`${value}T00:00:00`));
 }
 
 function getStatusLabel(status: string) {
@@ -54,15 +60,34 @@ function getStatusClasses(status: string) {
     }
 }
 
+type CustomRange = {
+    from: string;
+    to: string;
+};
+
+function toApiRange(range: CustomRange | null) {
+    if (!range?.from || !range?.to) return undefined;
+    return {
+        from: `${range.from}T00:00:00.000Z`,
+        to: `${range.to}T23:59:59.999Z`,
+    };
+}
+
 export default function OrdersPage() {
     const router = useRouter();
+    const hasLoadedInitially = useRef(false);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState('');
     const [orders, setOrders] = useState<AdminOrder[]>([]);
     const [analytics, setAnalytics] = useState<AdminOrderAnalytics | null>(null);
     const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
-    const [downloadingReport, setDownloadingReport] = useState<'weekly' | 'monthly' | null>(null);
+    const [downloadingReport, setDownloadingReport] = useState<'weekly' | 'monthly' | 'custom' | null>(null);
+    const [customFrom, setCustomFrom] = useState('');
+    const [customTo, setCustomTo] = useState('');
+    const [activeRange, setActiveRange] = useState<CustomRange | null>(null);
+
+    const activeApiRange = useMemo(() => toApiRange(activeRange), [activeRange]);
 
     const loadData = useCallback(
         async (showLoading = false) => {
@@ -75,8 +100,8 @@ export default function OrdersPage() {
 
             try {
                 const [ordersResponse, analyticsResponse] = await Promise.all([
-                    fetchOrders(),
-                    fetchOrderAnalytics(),
+                    fetchOrders(activeApiRange),
+                    fetchOrderAnalytics(activeApiRange),
                 ]);
                 setOrders(ordersResponse);
                 setAnalytics(analyticsResponse);
@@ -98,11 +123,17 @@ export default function OrdersPage() {
                 setRefreshing(false);
             }
         },
-        [router],
+        [activeApiRange, router],
     );
 
     useEffect(() => {
-        void loadData(true);
+        if (!hasLoadedInitially.current) {
+            hasLoadedInitially.current = true;
+            void loadData(true);
+            return;
+        }
+
+        void loadData();
     }, [loadData]);
 
     const pendingOrders = useMemo(
@@ -142,12 +173,60 @@ export default function OrdersPage() {
         }
     };
 
-    const handleDownloadReport = async (period: 'weekly' | 'monthly') => {
+    const getValidatedCustomRange = () => {
+        if (!customFrom || !customTo) {
+            setError('Selecciona fecha inicial y fecha final para el rango personalizado.');
+            return null;
+        }
+
+        if (customFrom > customTo) {
+            setError('La fecha inicial no puede ser mayor que la fecha final.');
+            return null;
+        }
+
+        return {
+            from: customFrom,
+            to: customTo,
+        } satisfies CustomRange;
+    };
+
+    const handleApplyCustomRange = () => {
+        setError('');
+        const range = getValidatedCustomRange();
+        if (!range) return;
+        setActiveRange(range);
+    };
+
+    const handleClearCustomRange = () => {
+        setError('');
+        setCustomFrom('');
+        setCustomTo('');
+        setActiveRange(null);
+    };
+
+    const handleDownloadReport = async (period: 'weekly' | 'monthly' | 'custom') => {
         setDownloadingReport(period);
         setError('');
 
         try {
-            const { blob, fileName } = await downloadOrderAnalyticsReport(period);
+            const request =
+                period === 'custom'
+                    ? (() => {
+                        const range = getValidatedCustomRange();
+                        if (!range) return null;
+                        return downloadOrderAnalyticsReport({
+                            period: 'custom',
+                            ...toApiRange(range),
+                        });
+                    })()
+                    : downloadOrderAnalyticsReport({ period });
+
+            if (!request) {
+                setDownloadingReport(null);
+                return;
+            }
+
+            const { blob, fileName } = await request;
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -227,6 +306,74 @@ export default function OrdersPage() {
                     </Button>
                 </div>
             </header>
+
+            <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                    <div>
+                        <h2 className="text-xl font-serif font-bold text-gray-900">
+                            Periodo personalizado
+                        </h2>
+                        <p className="text-sm text-gray-500">
+                            Filtra el panel y descarga un Excel exacto para el rango que elijas.
+                        </p>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(10rem,1fr)_minmax(10rem,1fr)_auto_auto_auto]">
+                        <label className="space-y-2 text-sm font-medium text-gray-700">
+                            <span>Desde</span>
+                            <input
+                                type="date"
+                                value={customFrom}
+                                onChange={(event) => setCustomFrom(event.target.value)}
+                                className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-gray-900 outline-none transition focus:border-[#C5A059] focus:ring-2 focus:ring-[#C5A059]/20"
+                            />
+                        </label>
+                        <label className="space-y-2 text-sm font-medium text-gray-700">
+                            <span>Hasta</span>
+                            <input
+                                type="date"
+                                value={customTo}
+                                onChange={(event) => setCustomTo(event.target.value)}
+                                className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-gray-900 outline-none transition focus:border-[#C5A059] focus:ring-2 focus:ring-[#C5A059]/20"
+                            />
+                        </label>
+                        <Button
+                            type="button"
+                            onClick={handleApplyCustomRange}
+                            disabled={refreshing}
+                            className="h-11 rounded-xl bg-[#0F172A] text-white hover:bg-[#111f38]"
+                        >
+                            Aplicar rango
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleClearCustomRange}
+                            disabled={refreshing}
+                            className="h-11 rounded-xl"
+                        >
+                            Limpiar
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => void handleDownloadReport('custom')}
+                            disabled={downloadingReport !== null}
+                            className="h-11 rounded-xl border-[#C5A059]/40 text-gray-900 hover:bg-[#F8F1E3]"
+                        >
+                            {downloadingReport === 'custom'
+                                ? 'Descargando personalizado...'
+                                : 'Reporte personalizado'}
+                        </Button>
+                    </div>
+                </div>
+
+                <p className="mt-4 text-sm font-medium text-gray-500">
+                    {activeRange
+                        ? `Periodo activo: ${formatDateOnly(activeRange.from)} al ${formatDateOnly(activeRange.to)}`
+                        : 'Periodo activo: historico completo'}
+                </p>
+            </section>
 
             {error && (
                 <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-medium text-red-600">

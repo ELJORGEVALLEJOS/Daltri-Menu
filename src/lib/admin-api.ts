@@ -342,10 +342,18 @@ export async function fetchOrderAnalytics(params?: {
     throw new Error(await parseError(res, 'Failed to fetch order analytics'));
 }
 
-export async function downloadOrderAnalyticsReport(
-    period: 'weekly' | 'monthly',
-) {
-    const res = await fetch(`${API_URL}/admin/analytics/orders/report?period=${period}`, {
+export async function downloadOrderAnalyticsReport(params: {
+    period?: 'weekly' | 'monthly' | 'custom';
+    from?: string;
+    to?: string;
+}) {
+    const query = new URLSearchParams();
+    if (params.period) query.set('period', params.period);
+    if (params.from) query.set('from', params.from);
+    if (params.to) query.set('to', params.to);
+    const queryString = query.toString();
+
+    const res = await fetch(`${API_URL}/admin/analytics/orders/report${queryString ? `?${queryString}` : ''}`, {
         headers: getRequiredAuthHeaders(),
     });
 
@@ -360,6 +368,6 @@ export async function downloadOrderAnalyticsReport(
 
     return {
         blob,
-        fileName: fileNameMatch?.[1] || `reporte-${period}.xlsx`,
+        fileName: fileNameMatch?.[1] || `reporte-${params.period || 'personalizado'}.xlsx`,
     };
 }
