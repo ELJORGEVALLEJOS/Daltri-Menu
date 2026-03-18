@@ -120,8 +120,8 @@ export default function RegisterPage() {
 
     if (success && registeredMerchant) {
         return (
-            <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white p-6 font-sans">
-                <div className="bg-zinc-900/50 p-8 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-sm w-full max-w-md text-center space-y-6">
+            <div className="flex min-h-screen flex-col items-center justify-center bg-black p-4 text-white font-sans sm:p-6">
+                <div className="w-full max-w-md space-y-6 rounded-3xl border border-white/10 bg-zinc-900/50 p-6 text-center shadow-2xl backdrop-blur-sm sm:p-8">
                     <div className="flex justify-center">
                         <div className="h-20 w-20 bg-green-500/20 rounded-full flex items-center justify-center border border-green-500/30">
                             <CheckCircle2 className="text-green-500 h-10 w-10" />
@@ -189,14 +189,14 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white p-6 font-sans">
-            <main className="flex w-full max-w-md flex-col space-y-8 py-10">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-black p-4 text-white font-sans sm:p-6">
+            <main className="flex w-full max-w-md flex-col space-y-6 py-6 sm:space-y-8 sm:py-10">
                 <Link href="/" className="inline-flex items-center text-zinc-500 hover:text-zinc-300 transition-colors w-fit">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Volver
                 </Link>
 
-                <div className="bg-zinc-900/50 p-8 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-sm w-full">
+                <div className="w-full rounded-3xl border border-white/10 bg-zinc-900/50 p-5 shadow-2xl backdrop-blur-sm sm:p-8">
                     <div className="flex items-center gap-3 mb-6">
                         <BrandMark size={48} className="h-12 w-12" />
                         <div>

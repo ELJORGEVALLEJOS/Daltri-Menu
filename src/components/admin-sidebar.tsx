@@ -16,13 +16,13 @@ export function Sidebar() {
     const pathname = usePathname();
 
     return (
-        <div className="w-full md:w-64 md:min-h-screen border-b md:border-b-0 md:border-r bg-gray-900 text-white">
+        <div className="sticky top-0 z-40 w-full border-b bg-gray-900 text-white md:min-h-screen md:w-64 md:border-b-0 md:border-r">
             <div className="flex h-14 sm:h-16 items-center gap-2 border-b border-gray-800 px-4 sm:px-6">
                 <BrandMark size={24} className="h-6 w-6" />
                 <span className="text-base sm:text-xl font-bold">Daltri Admin</span>
             </div>
-            <nav className="px-2 sm:px-3 py-2 sm:py-4 overflow-x-auto md:overflow-visible">
-                <div className="flex md:block gap-1 whitespace-nowrap">
+            <nav className="overflow-x-auto px-2 py-2 sm:px-3 sm:py-4 md:overflow-visible">
+                <div className="flex gap-1 whitespace-nowrap md:block">
                 {sidebarItems.map((item) => {
                     const isActive = pathname === item.href;
                     return (
@@ -30,7 +30,7 @@ export function Sidebar() {
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                'inline-flex md:flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                                'inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors md:flex',
                                 isActive
                                     ? 'bg-gray-800 text-white'
                                     : 'text-gray-400 hover:bg-gray-800 hover:text-white'
@@ -46,7 +46,7 @@ export function Sidebar() {
             <div className="border-t border-gray-800 p-2 sm:p-4">
                 <Link
                     href="/login"
-                    className="inline-flex md:flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white"
+                    className="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white md:flex"
                     onClick={() => {
                         localStorage.removeItem('access_token');
                         localStorage.removeItem('merchant_id');

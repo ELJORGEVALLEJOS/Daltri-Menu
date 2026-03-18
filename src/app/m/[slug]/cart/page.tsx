@@ -52,8 +52,8 @@ export default function CartPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-28 sm:pb-32">
-            <div className="bg-[#EEDC83] pt-8 sm:pt-12 pb-14 sm:pb-20 px-4 sm:px-6 rounded-b-[2.5rem] sm:rounded-b-[4rem] shadow-premium mb-[-2.5rem] sm:mb-[-3rem] relative z-0">
+        <div className="min-h-screen bg-gray-50/50 pb-24 sm:pb-32">
+            <div className="bg-[#EEDC83] pt-6 sm:pt-12 pb-12 sm:pb-20 px-4 sm:px-6 rounded-b-[2rem] sm:rounded-b-[4rem] shadow-premium mb-[-2rem] sm:mb-[-3rem] relative z-0">
                 <div className="container mx-auto max-w-3xl">
                     <div className="flex items-center mb-4">
                         <Link href={menuHref} className="mr-4 sm:mr-6 bg-white/30 backdrop-blur-md p-2.5 sm:p-3 rounded-full hover:bg-white/50 transition-all border border-white/20">
@@ -64,12 +64,12 @@ export default function CartPage() {
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 sm:px-6 max-w-3xl relative z-10">
-                <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(20rem,0.95fr)] lg:items-start lg:gap-8">
+            <div className="container mx-auto px-4 sm:px-6 max-w-5xl relative z-10">
+                <div className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,0.95fr)] lg:items-start lg:gap-8">
                     <div className="bg-white rounded-[2.5rem] shadow-premium border border-gray-100 overflow-hidden">
                         {items.map((item, index) => (
-                            <div key={item.id} className={`flex justify-between items-center p-4 sm:p-6 gap-4 ${index !== items.length - 1 ? 'border-b border-gray-50' : ''}`}>
-                                <div className="space-y-1 min-w-0">
+                            <div key={item.id} className={`flex flex-col gap-4 p-4 sm:p-6 ${index !== items.length - 1 ? 'border-b border-gray-50' : ''} sm:flex-row sm:items-center sm:justify-between`}>
+                                <div className="min-w-0 space-y-1">
                                     <h3 className="font-black text-lg sm:text-xl text-gray-900 leading-tight truncate">{item.name}</h3>
                                     <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400 font-bold uppercase tracking-widest">
                                         <span>{formatMoney(item.price)}</span>
@@ -78,7 +78,7 @@ export default function CartPage() {
                                         </span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+                                <div className="flex items-center justify-between gap-3 sm:gap-6 sm:shrink-0">
                                     <span className="font-mono font-bold text-blue-600 text-xl sm:text-2xl tracking-tighter">{formatMoney(item.price * item.quantity)}</span>
                                     <div className="flex items-center gap-2">
                                         <Button
@@ -105,13 +105,13 @@ export default function CartPage() {
                         ))}
                     </div>
 
-                    <div className="space-y-6 lg:sticky lg:top-24">
+                    <div className="space-y-5 lg:sticky lg:top-24">
                         <div className="bg-white rounded-3xl shadow-premium border border-gray-100 p-6 sm:p-8 space-y-4">
-                            <div className="flex justify-between items-center text-sm text-gray-500 font-bold uppercase tracking-[0.15em]">
+                            <div className="flex items-center justify-between gap-3 text-sm text-gray-500 font-bold uppercase tracking-[0.15em]">
                                 <span>Subtotal</span>
                                 <span className="text-gray-900">{formatMoney(total)}</span>
                             </div>
-                            <div className="flex justify-between items-center text-sm text-gray-500 font-bold uppercase tracking-[0.15em]">
+                            <div className="flex items-center justify-between gap-3 text-sm text-gray-500 font-bold uppercase tracking-[0.15em]">
                                 <span>Envio</span>
                                 <span className="text-gray-900">{shippingCost > 0 ? formatMoney(shippingCost) : 'Gratis'}</span>
                             </div>
@@ -123,7 +123,7 @@ export default function CartPage() {
                                 </p>
                             )}
                             <div className="h-px bg-gray-100" />
-                            <div className="flex justify-between items-center gap-4">
+                            <div className="flex items-end justify-between gap-4">
                                 <span className="text-gray-400 font-black uppercase tracking-[0.2em] text-[10px]">Total estimado</span>
                                 <span className="text-3xl sm:text-4xl font-mono font-bold text-gray-900 tracking-tighter text-right">{formatMoney(finalTotal)}</span>
                             </div>
@@ -131,7 +131,7 @@ export default function CartPage() {
 
                         <Link href={checkoutHref} className={!slug ? 'pointer-events-none opacity-50' : ''}>
                             <Button
-                                className="w-full bg-[#25D366] hover:bg-[#1fa34e] text-white h-16 sm:h-20 text-lg sm:text-xl font-black rounded-[1.5rem] sm:rounded-[2rem] shadow-[0_20px_50px_rgba(37,211,102,0.2)] flex items-center justify-center gap-3 sm:gap-4 transition-all active:scale-[0.98] border-b-4 sm:border-b-8 border-[#1a9447]"
+                                className="w-full bg-[#25D366] hover:bg-[#1fa34e] text-white h-14 sm:h-20 text-base sm:text-xl font-black rounded-[1.25rem] sm:rounded-[2rem] shadow-[0_20px_50px_rgba(37,211,102,0.2)] flex items-center justify-center gap-3 sm:gap-4 transition-all active:scale-[0.98] border-b-4 sm:border-b-8 border-[#1a9447]"
                                 disabled={!slug}
                             >
                                 <ArrowRight className="h-6 w-6 sm:h-8 sm:w-8" />

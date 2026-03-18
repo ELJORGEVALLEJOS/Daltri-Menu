@@ -262,8 +262,8 @@ export default function OrdersPage() {
     }
 
     return (
-        <div className="mx-auto max-w-6xl space-y-8 pb-16">
-            <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div className="mx-auto max-w-6xl space-y-6 pb-16 sm:space-y-8">
+            <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
                     <h1 className="text-3xl font-serif font-bold text-gray-900">
                         Pedidos y Analíticas
@@ -272,7 +272,7 @@ export default function OrdersPage() {
                         Las métricas cuentan solo pedidos confirmados por el restaurante.
                     </p>
                 </div>
-                <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="grid gap-2 sm:grid-cols-3">
                     <Button
                         type="button"
                         variant="outline"
@@ -307,7 +307,7 @@ export default function OrdersPage() {
                 </div>
             </header>
 
-            <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+            <section className="rounded-[2rem] border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                     <div>
                         <h2 className="text-xl font-serif font-bold text-gray-900">
@@ -381,7 +381,7 @@ export default function OrdersPage() {
                 </div>
             )}
 
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 <article className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">
                         Pedidos confirmados
@@ -445,7 +445,7 @@ export default function OrdersPage() {
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.9fr)]">
                 <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-                    <div className="mb-5 flex items-center justify-between gap-3">
+                    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h2 className="text-xl font-serif font-bold text-gray-900">
                                 Pedidos pendientes
@@ -454,7 +454,7 @@ export default function OrdersPage() {
                                 Confírmalos para que entren en las analíticas reales.
                             </p>
                         </div>
-                        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.15em] text-amber-700">
+                        <span className="rounded-full bg-amber-50 px-3 py-1 text-center text-xs font-bold uppercase tracking-[0.15em] text-amber-700">
                             {pendingOrders.length} pendientes
                         </span>
                     </div>
@@ -533,7 +533,7 @@ export default function OrdersPage() {
                                                         )
                                                     }
                                                     disabled={updatingOrderId === order.id}
-                                                    className="rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
+                                                    className="w-full rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 sm:w-auto"
                                                 >
                                                     Confirmar pedido
                                                 </Button>
@@ -547,7 +547,7 @@ export default function OrdersPage() {
                                                         )
                                                     }
                                                     disabled={updatingOrderId === order.id}
-                                                    className="rounded-xl border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                                    className="w-full rounded-xl border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 sm:w-auto"
                                                 >
                                                     Cancelar
                                                 </Button>
@@ -561,7 +561,7 @@ export default function OrdersPage() {
                 </section>
 
                 <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-                    <div className="mb-5 flex items-start justify-between gap-3">
+                    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                             <h2 className="text-xl font-serif font-bold text-gray-900">
                                 Rendimiento por producto
@@ -570,7 +570,7 @@ export default function OrdersPage() {
                                 Cuántos menús vendió cada producto, cuántos pedidos lo incluyeron y cuánto facturó.
                             </p>
                         </div>
-                        <span className="rounded-full bg-[#F8F1E3] px-3 py-1 text-xs font-bold uppercase tracking-[0.15em] text-[#A67C2E]">
+                        <span className="rounded-full bg-[#F8F1E3] px-3 py-1 text-center text-xs font-bold uppercase tracking-[0.15em] text-[#A67C2E]">
                             {soldProductsCount} con ventas
                         </span>
                     </div>
@@ -586,7 +586,7 @@ export default function OrdersPage() {
                                     key={product.product_id}
                                     className="rounded-2xl border border-gray-100 bg-[#FDFCFB] p-4"
                                 >
-                                    <div className="flex items-start justify-between gap-4">
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div className="min-w-0">
                                             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#C5A059]">
                                                 Top {index + 1}
@@ -598,7 +598,7 @@ export default function OrdersPage() {
                                                 Se vendieron {product.total_qty} menús de este producto.
                                             </p>
                                         </div>
-                                        <span className="text-right text-sm font-bold text-gray-900">
+                                        <span className="text-sm font-bold text-gray-900 sm:text-right">
                                             {product.total_qty} vendidos
                                         </span>
                                     </div>

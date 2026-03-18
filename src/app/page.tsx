@@ -21,9 +21,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-black font-sans text-white p-6">
-      <main className="flex w-full max-w-md flex-col items-center text-center space-y-8">
-        <div className="bg-zinc-900/50 p-6 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-sm w-full">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-black p-4 font-sans text-white sm:p-6">
+      <main className="flex w-full max-w-md flex-col items-center space-y-6 text-center sm:space-y-8">
+        <div className="w-full rounded-3xl border border-white/10 bg-zinc-900/50 p-5 shadow-2xl backdrop-blur-sm sm:p-6">
           <div className="flex justify-center mb-6">
             <BrandMark size={72} className="h-[72px] w-[72px] transition-transform hover:scale-105" priority />
           </div>

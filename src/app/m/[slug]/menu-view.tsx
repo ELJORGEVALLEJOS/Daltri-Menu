@@ -162,8 +162,8 @@ export function MenuView({
                     </div>
                 </header>
 
-                <div className="container mx-auto max-w-7xl px-4 sm:px-6 pt-8 sm:pt-12 pb-28 sm:pb-32 uppercase tracking-tighter">
-                    <h2 className="text-3xl sm:text-4xl font-sans font-black mb-8 sm:mb-12" style={{ color: theme.text }}>
+                <div className="container mx-auto max-w-7xl px-4 sm:px-6 pt-6 sm:pt-10 pb-24 sm:pb-32 uppercase tracking-tighter">
+                    <h2 className="text-2xl sm:text-4xl font-sans font-black mb-6 sm:mb-10" style={{ color: theme.text }}>
                         {selectedCategory.name}
                     </h2>
                     <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
@@ -187,7 +187,7 @@ export function MenuView({
     return (
         <div className="min-h-screen" style={{ ...themeVars, backgroundColor: theme.background, color: theme.text }}>
             <div
-                className="pt-12 sm:pt-20 pb-16 sm:pb-24 px-4 sm:px-6 rounded-b-[2.5rem] sm:rounded-b-[4rem] shadow-premium relative overflow-hidden mb-10 sm:mb-12"
+                className="pt-8 sm:pt-16 pb-12 sm:pb-20 px-4 sm:px-6 rounded-b-[2rem] sm:rounded-b-[4rem] shadow-premium relative overflow-hidden mb-8 sm:mb-12"
                 style={{ backgroundColor: theme.primary }}
             >
                 {merchant.cover_url && (
@@ -208,9 +208,9 @@ export function MenuView({
                     <div className="absolute top-1/2 -right-24 w-80 h-80 bg-white/40 rounded-full blur-3xl"></div>
                 </div>
 
-                <div className="container mx-auto max-w-md text-center relative z-10">
+                <div className="container mx-auto max-w-xl text-center relative z-10">
                     <div
-                        className="p-2.5 sm:p-3 rounded-[2rem] sm:rounded-[3rem] w-40 h-40 sm:w-56 sm:h-56 mx-auto shadow-premium mb-8 sm:mb-10 flex items-center justify-center border-4 sm:border-8 overflow-hidden group"
+                        className="p-2 sm:p-3 rounded-[1.75rem] sm:rounded-[3rem] w-28 h-28 sm:w-48 sm:h-48 lg:w-56 lg:h-56 mx-auto shadow-premium mb-6 sm:mb-8 flex items-center justify-center border-4 sm:border-8 overflow-hidden group"
                         style={{ backgroundColor: theme.surface, borderColor: withAlpha(theme.surface, 0.9) }}
                     >
                         {merchant.logoUrl || merchant.logo_url ? (
@@ -221,7 +221,7 @@ export function MenuView({
                             />
                         ) : (
                             <div
-                                className="w-full h-full rounded-[2rem] flex items-center justify-center font-serif text-6xl font-black italic shadow-inner"
+                                className="w-full h-full rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center font-serif text-4xl sm:text-6xl font-black italic shadow-inner"
                                 style={{ color: theme.primary, backgroundColor: withAlpha(theme.surface, 0.92) }}
                             >
                                 {merchant.name.charAt(0)}
@@ -230,13 +230,13 @@ export function MenuView({
                     </div>
 
                     <h1
-                        className="font-sans font-black text-4xl sm:text-5xl leading-none mb-4 sm:mb-6 tracking-tighter"
+                        className="font-sans font-black text-3xl sm:text-5xl leading-none mb-3 sm:mb-6 tracking-tighter"
                         style={{ color: theme.buttonText }}
                     >
                         {heroTitle}
                     </h1>
 
-                    <p className="text-lg sm:text-xl font-medium max-w-[280px] mx-auto leading-relaxed mb-4" style={{ color: withAlpha(theme.buttonText, 0.9) }}>
+                    <p className="text-base sm:text-xl font-medium max-w-[18rem] sm:max-w-[28rem] mx-auto leading-relaxed mb-4" style={{ color: withAlpha(theme.buttonText, 0.9) }}>
                         {heroSubtitle}
                     </p>
 
@@ -248,17 +248,17 @@ export function MenuView({
                 </div>
             </div>
 
-            <div className="container mx-auto max-w-md px-4 sm:px-6 -mt-8 sm:-mt-10 pb-28 sm:pb-36 relative z-20">
-                <div className="space-y-3 sm:space-y-4 mb-10 sm:mb-12">
+            <div className="container mx-auto max-w-6xl px-4 sm:px-6 -mt-6 sm:-mt-10 pb-28 sm:pb-36 relative z-20">
+                <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3 mb-10 sm:mb-12">
                     {menu.map((category) => (
                         <button
                             key={category.id}
                             onClick={() => setSelectedCategoryId(category.id)}
-                            className="w-full text-left group block rounded-2xl p-5 sm:p-6 shadow-premium border hover:scale-[1.01] transition-all active:scale-[0.99]"
+                            className="w-full text-left group block rounded-2xl p-4 sm:p-6 shadow-premium border hover:scale-[1.01] transition-all active:scale-[0.99]"
                             style={{ backgroundColor: theme.surface, borderColor: withAlpha(theme.text, 0.08) }}
                         >
                             <div className="flex items-center justify-between">
-                                <span className="text-xl sm:text-2xl font-sans font-black tracking-tight leading-none" style={{ color: theme.text }}>
+                                <span className="text-lg sm:text-2xl font-sans font-black tracking-tight leading-none" style={{ color: theme.text }}>
                                     {category.name}
                                 </span>
                                 <div

@@ -102,7 +102,7 @@ export default function CheckoutPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-16 sm:pb-20">
-            <div className="bg-[#EEDC82] pt-5 sm:pt-6 pb-10 sm:pb-12 px-4 rounded-b-[2rem] shadow-sm mb-[-2rem] relative z-0">
+            <div className="bg-[#EEDC82] pt-4 sm:pt-6 pb-8 sm:pb-12 px-4 rounded-b-[2rem] shadow-sm mb-[-2rem] relative z-0">
                 <div className="container mx-auto max-w-4xl">
                     <div className="flex items-center mb-2">
                         <Link href={cartHref} className="mr-3 sm:mr-4 bg-white/20 p-2 rounded-full hover:bg-white/40 transition">
@@ -113,14 +113,14 @@ export default function CheckoutPage() {
                 </div>
             </div>
 
-            <div className="container mx-auto p-4 max-w-4xl relative z-10">
-                <div className="grid gap-6 lg:grid-cols-[minmax(20rem,0.8fr)_minmax(0,1.1fr)] lg:items-start lg:gap-8">
+            <div className="container mx-auto p-4 max-w-5xl relative z-10">
+                <div className="grid gap-5 lg:grid-cols-[minmax(18rem,0.82fr)_minmax(0,1.1fr)] lg:items-start lg:gap-8">
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 lg:sticky lg:top-24">
                         <h2 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-50 pb-2">Resumen del pedido</h2>
                         <div className="space-y-3 mb-4">
                             {items.map((i) => (
-                                <div key={i.id} className="flex justify-between text-sm gap-3">
-                                    <span className="text-gray-600 font-medium truncate">{i.quantity}x {i.name}</span>
+                                <div key={i.id} className="flex items-start justify-between text-sm gap-3">
+                                    <span className="text-gray-600 font-medium break-words">{i.quantity}x {i.name}</span>
                                     <span className="font-bold text-gray-900 shrink-0">{formatAmount(i.price * i.quantity)}</span>
                                 </div>
                             ))}
@@ -183,7 +183,7 @@ export default function CheckoutPage() {
                             onClick={handleWhatsAppOrder}
                             disabled={!name.trim() || !address.trim() || !merchant?.whatsapp_phone || !slug}
                         >
-                            <MessageCircle className="w-6 h-6" />
+                            <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
                             Enviar pedido por WhatsApp
                         </Button>
                     </div>

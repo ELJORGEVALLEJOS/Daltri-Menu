@@ -271,15 +271,15 @@ export default function MenuPage() {
     );
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8 sm:space-y-10 font-sans pb-16 sm:pb-20">
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="mx-auto max-w-6xl space-y-6 sm:space-y-10 font-sans pb-16 sm:pb-20">
+            <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
                     <h1 className="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-2 leading-tight">Gestión del Menú</h1>
                     <p className="text-gray-500 font-medium">Crea una experiencia gastronómica inolvidable</p>
                 </div>
 
                 {/* Add Category Quick Form */}
-                <div className="bg-white p-2 rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <div className="flex w-full flex-col gap-2 rounded-2xl border border-gray-100 bg-white p-2 shadow-xl shadow-gray-200/50 md:w-auto md:min-w-[22rem]">
                     <Input
                         value={newCategoryName}
                         onChange={(e) => {
@@ -293,13 +293,13 @@ export default function MenuPage() {
                             }
                         }}
                         placeholder="Nueva categoría (ej. Vinos)"
-                        className="h-12 w-full sm:w-64 border-none bg-gray-50/50 rounded-xl text-gray-900 placeholder:text-[#99A1AF] focus:ring-1 focus:ring-[#C5A059]/30"
+                        className="h-12 w-full border-none bg-gray-50/50 rounded-xl text-gray-900 placeholder:text-[#99A1AF] focus:ring-1 focus:ring-[#C5A059]/30"
                     />
                     <Button
                         type="button"
                         onClick={() => void handleCreateCategory()}
                         disabled={!newCategoryName.trim()}
-                        className="bg-[#C5A059] hover:bg-[#B48F4D] text-white rounded-xl h-12 px-6 shadow-lg shadow-[#C5A059]/20 w-full sm:w-auto disabled:opacity-60"
+                        className="h-12 w-full rounded-xl bg-[#C5A059] px-6 text-white shadow-lg shadow-[#C5A059]/20 hover:bg-[#B48F4D] disabled:opacity-60"
                     >
                         <Plus className="h-5 w-5 mr-2" /> Añadir
                     </Button>
@@ -318,25 +318,25 @@ export default function MenuPage() {
                     <div key={category.id} className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/40 border border-gray-100 overflow-hidden transition-all duration-300">
                         <div
                             className={cn(
-                                "flex items-center justify-between p-6 cursor-pointer select-none transition-colors",
+                                "flex cursor-pointer select-none flex-col gap-4 p-4 transition-colors sm:flex-row sm:items-center sm:justify-between sm:p-6",
                                 expandedCategories.includes(category.id) ? "bg-[#FDFCFB]/80" : "hover:bg-gray-50/50"
                             )}
                             onClick={() => toggleCategory(category.id)}
                         >
-                            <div className="flex items-center gap-4">
+                            <div className="flex min-w-0 items-start gap-4">
                                 <div className={cn(
-                                    "h-12 w-12 rounded-2xl flex items-center justify-center transition-all shadow-md shadow-gray-200/50",
+                                    "mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-all shadow-md shadow-gray-200/50 sm:h-12 sm:w-12",
                                     expandedCategories.includes(category.id) ? "bg-[#C5A059] text-white rotate-6" : "bg-gray-100 text-[#99A1AF]"
                                 )}>
                                     <LayoutGrid className="h-6 w-6" />
                                 </div>
-                                <div className="flex-1">
+                                <div className="min-w-0 flex-1">
                                     {editingCategory === category.id ? (
-                                        <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                        <div className="flex flex-wrap items-center gap-2" onClick={e => e.stopPropagation()}>
                                             <Input
                                                 value={categoryEditName}
                                                 onChange={e => setCategoryEditName(e.target.value)}
-                                                className="h-10 w-48 font-serif font-bold"
+                                                className="h-10 w-full min-w-[12rem] font-serif font-bold sm:w-48"
                                                 autoFocus
                                             />
                                             <Button size="icon" variant="ghost" onClick={() => handleUpdateCategory(category.id)} className="h-10 w-10 text-green-500 hover:bg-green-50">
@@ -351,7 +351,7 @@ export default function MenuPage() {
                                             <h3 className="text-xl font-serif font-bold text-gray-900 flex items-center gap-2 group/cat">
                                                 {category.name}
                                                 <Edit2
-                                                    className="h-3 w-3 text-[#99A1AF] opacity-0 group-hover/cat:opacity-100 cursor-pointer hover:text-[#C5A059] transition-all"
+                                                    className="h-3 w-3 cursor-pointer text-[#99A1AF] opacity-100 transition-all hover:text-[#C5A059] md:opacity-0 md:group-hover/cat:opacity-100"
                                                     onClick={(e) => { e.stopPropagation(); setEditingCategory(category.id); setCategoryEditName(category.name); }}
                                                 />
                                             </h3>
@@ -361,7 +361,7 @@ export default function MenuPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-end gap-3 self-end sm:self-auto">
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -378,7 +378,7 @@ export default function MenuPage() {
 
                         {expandedCategories.includes(category.id) && (
                             <div className="p-4 sm:p-8 bg-white border-t border-gray-50">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                                <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 sm:gap-6">
                                     {category.items.map((item: any) => (
                                         <div key={item.id} className="group relative bg-[#FDFCFB] p-5 rounded-3xl border border-gray-100 hover:border-[#C5A059]/30 transition-all hover:shadow-2xl hover:shadow-gray-200/60 overflow-hidden flex flex-col">
                                             <div className="flex justify-between items-start mb-4">
@@ -393,7 +393,7 @@ export default function MenuPage() {
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-9 w-9 text-gray-200 hover:text-[#C5A059] hover:bg-[#C5A059]/5 rounded-xl transition-colors"
+                                                        className="h-9 w-9 rounded-xl text-gray-400 transition-colors hover:bg-[#C5A059]/5 hover:text-[#C5A059] md:text-gray-200"
                                                         onClick={() => startEditingItem(item, category.id)}
                                                     >
                                                         <Edit2 className="h-4 w-4" />
@@ -401,7 +401,7 @@ export default function MenuPage() {
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-9 w-9 text-gray-200 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                                        className="h-9 w-9 rounded-xl text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 md:text-gray-200"
                                                         onClick={() => handleDeleteItem(item.id)}
                                                     >
                                                         <Trash2 className="h-4 w-4" />
@@ -446,7 +446,7 @@ export default function MenuPage() {
                                     {addingItemTo !== category.id && (
                                         <button
                                             onClick={() => setAddingItemTo(category.id)}
-                                            className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-gray-100 rounded-3xl hover:border-[#C5A059]/40 hover:bg-[#FDFCFB] transition-all group text-[#99A1AF] hover:text-[#C5A059]"
+                                            className="flex min-h-[15rem] flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-gray-100 p-8 text-[#99A1AF] transition-all group hover:border-[#C5A059]/40 hover:bg-[#FDFCFB] hover:text-[#C5A059]"
                                         >
                                             <div className="h-14 w-14 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:bg-[#C5A059]/10 group-hover:scale-110 transition-all">
                                                 <Plus className="h-8 w-8" />
@@ -463,7 +463,7 @@ export default function MenuPage() {
                                             <div className="h-10 w-10 bg-[#C5A059] rounded-xl flex items-center justify-center shadow-lg shadow-[#C5A059]/20">
                                                 <Package className="h-5 w-5 text-white" />
                                             </div>
-                                            <h4 className="text-xl font-serif font-bold text-gray-900">{editingItem ? 'Editar Producto' : 'Nuevo Producto'}</h4>
+                                            <h4 className="text-lg sm:text-xl font-serif font-bold text-gray-900">{editingItem ? 'Editar Producto' : 'Nuevo Producto'}</h4>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">

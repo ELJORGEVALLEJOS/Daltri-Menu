@@ -572,12 +572,12 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="w-full text-gray-950">
-            <h1 className="text-2xl font-bold mb-6">Configuracion del Restaurante</h1>
+        <div className="mx-auto w-full max-w-6xl text-gray-950">
+            <h1 className="mb-4 text-2xl font-bold sm:mb-6 sm:text-3xl">Configuracion del Restaurante</h1>
 
             <form
                 onSubmit={handleSubmit}
-                className="max-w-6xl space-y-6 rounded-lg border bg-white p-4 text-gray-950 shadow sm:p-6 [&_input]:text-gray-950 [&_input]:placeholder:text-gray-500 [&_label]:text-gray-950"
+                className="space-y-6 rounded-3xl border bg-white p-4 text-gray-950 shadow sm:p-6 [&_input]:text-gray-950 [&_input]:placeholder:text-gray-500 [&_label]:text-gray-950"
             >
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <section className="space-y-6">
@@ -612,8 +612,8 @@ export default function SettingsPage() {
                             </p>
                         </div>
 
-                        <div className="space-y-4 rounded-lg border p-4">
-                            <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <Link2 className="h-4 w-4 text-gray-700" />
@@ -633,8 +633,8 @@ export default function SettingsPage() {
                                 </p>
                             </div>
 
-                            <div className="flex flex-wrap gap-3">
-                                <div className="min-w-[160px]">
+                            <div className="grid gap-4 lg:grid-cols-[minmax(12rem,15rem)_minmax(0,1fr)]">
+                                <div className="min-w-0">
                                     <Label htmlFor="qrLayout">Tamaño del archivo QR</Label>
                                     <select
                                         id="qrLayout"
@@ -653,13 +653,13 @@ export default function SettingsPage() {
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap gap-3">
+                            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={() => void handleCopyMenuLink()}
                                     disabled={!publicMenuUrl}
-                                    className="h-10"
+                                    className="h-10 w-full"
                                 >
                                     {copyState === 'copied' ? (
                                         <>
@@ -678,7 +678,7 @@ export default function SettingsPage() {
                                     variant="outline"
                                     onClick={handleDownloadQr}
                                     disabled={!qrPosterUrl}
-                                    className="h-10"
+                                    className="h-10 w-full"
                                 >
                                     <Download className="mr-2 h-4 w-4" />
                                     Descargar archivo
@@ -688,14 +688,14 @@ export default function SettingsPage() {
                                     variant="outline"
                                     onClick={handlePrintQr}
                                     disabled={!qrPosterUrl}
-                                    className="h-10"
+                                    className="h-10 w-full"
                                 >
                                     <Printer className="mr-2 h-4 w-4" />
                                     Imprimir QR
                                 </Button>
                             </div>
 
-                            <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-5">
+                            <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-4 sm:p-5">
                                 <div className="mb-4 flex items-center gap-2">
                                     <QrCode className="h-4 w-4 text-gray-700" />
                                     <p className="text-sm font-semibold text-gray-950">
@@ -708,7 +708,7 @@ export default function SettingsPage() {
                                         <img
                                             src={qrPosterUrl || qrDataUrl}
                                             alt="QR del menú"
-                                            className="w-full max-w-[24rem] rounded-2xl border border-gray-200 bg-white"
+                                            className="w-full max-w-[22rem] rounded-2xl border border-gray-200 bg-white"
                                         />
                                         <p className="text-center text-xs font-medium text-gray-700">
                                             El archivo se generará en tamaño {QR_LAYOUTS[qrLayout].label.toLowerCase()} y, si tienes logo cargado, saldrá junto al QR.
@@ -737,7 +737,7 @@ export default function SettingsPage() {
                             </p>
                         </div>
 
-                        <div className="space-y-4 rounded-lg border p-4">
+                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <Label>Logo del restaurante</Label>
                             <Input
                                 id="logoUrl"
@@ -764,7 +764,7 @@ export default function SettingsPage() {
                             )}
                         </div>
 
-                        <div className="space-y-4 rounded-lg border p-4">
+                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <Label>Portada del menú</Label>
                             <Input
                                 id="coverUrl"
@@ -793,7 +793,7 @@ export default function SettingsPage() {
                     </section>
 
                     <section className="space-y-6">
-                        <div className="space-y-4 rounded-lg border p-4">
+                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <Label>Textos principales del menu</Label>
                             <div>
                                 <Label htmlFor="heroTitle">Titulo principal</Label>
@@ -833,7 +833,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <div className="space-y-4 rounded-lg border p-4">
+                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <Label>Colores del menú</Label>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
@@ -851,7 +851,7 @@ export default function SettingsPage() {
                                             name="themePrimary"
                                             value={formData.themePrimary}
                                             onChange={handleChange}
-                                            className="h-10"
+                                            className="h-10 min-w-0"
                                         />
                                     </div>
                                 </div>
@@ -870,7 +870,7 @@ export default function SettingsPage() {
                                             name="themeBackground"
                                             value={formData.themeBackground}
                                             onChange={handleChange}
-                                            className="h-10"
+                                            className="h-10 min-w-0"
                                         />
                                     </div>
                                 </div>
@@ -889,7 +889,7 @@ export default function SettingsPage() {
                                             name="themeSurface"
                                             value={formData.themeSurface}
                                             onChange={handleChange}
-                                            className="h-10"
+                                            className="h-10 min-w-0"
                                         />
                                     </div>
                                 </div>
@@ -908,7 +908,7 @@ export default function SettingsPage() {
                                             name="themeText"
                                             value={formData.themeText}
                                             onChange={handleChange}
-                                            className="h-10"
+                                            className="h-10 min-w-0"
                                         />
                                     </div>
                                 </div>
@@ -927,22 +927,22 @@ export default function SettingsPage() {
                                             name="themeButtonText"
                                             value={formData.themeButtonText}
                                             onChange={handleChange}
-                                            className="h-10"
+                                            className="h-10 min-w-0"
                                         />
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="space-y-4 rounded-lg border p-4">
+                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <div>
                                 <Label>Envio</Label>
-                                <div className="mt-2 flex gap-3">
+                                <div className="mt-2 grid grid-cols-2 gap-3">
                                     <Button
                                         type="button"
                                         variant={formData.shippingType === 'free' ? 'default' : 'outline'}
                                         onClick={() => handleShippingTypeChange('free')}
-                                        className="h-10"
+                                        className="h-10 w-full"
                                     >
                                         Gratis
                                     </Button>
@@ -950,7 +950,7 @@ export default function SettingsPage() {
                                         type="button"
                                         variant={formData.shippingType === 'paid' ? 'default' : 'outline'}
                                         onClick={() => handleShippingTypeChange('paid')}
-                                        className="h-10"
+                                        className="h-10 w-full"
                                     >
                                         Pago
                                     </Button>
@@ -1009,7 +1009,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <div className="space-y-4 rounded-lg border p-4">
+                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <Label>Redes sociales (opcional)</Label>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
@@ -1075,7 +1075,7 @@ export default function SettingsPage() {
                 {error && <p className="text-sm text-red-600">{error}</p>}
 
                 <div className="pt-2">
-                    <Button type="submit" disabled={saving}>
+                    <Button type="submit" disabled={saving} className="w-full sm:w-auto">
                         {saving ? 'Guardando...' : 'Guardar cambios'}
                     </Button>
                 </div>

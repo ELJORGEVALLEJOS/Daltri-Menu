@@ -66,8 +66,8 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-[#FDFCFB] px-4 py-12 sm:px-6 lg:px-8 font-sans">
-            <div className="w-full max-w-md space-y-10 bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100">
+        <div className="flex min-h-screen items-center justify-center bg-[#FDFCFB] px-4 py-8 sm:px-6 lg:px-8 font-sans">
+            <div className="w-full max-w-md space-y-8 rounded-[2rem] border border-gray-100 bg-white p-6 shadow-2xl shadow-gray-200/50 sm:space-y-10 sm:rounded-[2.5rem] sm:p-10">
                 <div className="text-center">
                     <div className="mx-auto mb-6 w-fit">
                         <BrandMark size={80} className="h-20 w-20" priority />
