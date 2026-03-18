@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import QRCode from 'qrcode';
+import { Check, Copy, Link2, Printer, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -61,6 +63,8 @@ export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
+    const [qrDataUrl, setQrDataUrl] = useState('');
     const router = useRouter();
     const [formData, setFormData] = useState({
         name: '',
@@ -85,6 +89,11 @@ export default function SettingsPage() {
         heroSubtitle: DEFAULT_MENU_COPY.heroSubtitle,
         heroBadge: DEFAULT_MENU_COPY.heroBadge,
     });
+
+    const normalizedSlug = formData.slug.trim().toLowerCase().replace(/\s+/g, '-');
+    const publicMenuUrl = normalizedSlug
+        ? `https://menu.daltrishop.com/m/${normalizedSlug}`
+        : '';
 
     useEffect(() => {
         let active = true;
@@ -149,6 +158,42 @@ export default function SettingsPage() {
         };
     }, [router]);
 
+    useEffect(() => {
+        let active = true;
+
+        async function generateQr() {
+            if (!publicMenuUrl) {
+                if (active) setQrDataUrl('');
+                return;
+            }
+
+            try {
+                const dataUrl = await QRCode.toDataURL(publicMenuUrl, {
+                    width: 320,
+                    margin: 1,
+                    color: {
+                        dark: '#0f172a',
+                        light: '#ffffff',
+                    },
+                });
+
+                if (active) {
+                    setQrDataUrl(dataUrl);
+                }
+            } catch {
+                if (active) {
+                    setQrDataUrl('');
+                }
+            }
+        }
+
+        void generateQr();
+
+        return () => {
+            active = false;
+        };
+    }, [publicMenuUrl]);
+
     const readFileAsDataUrl = (file: File) =>
         new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
@@ -200,12 +245,123 @@ export default function SettingsPage() {
         }));
     };
 
+    const handleCopyMenuLink = async () => {
+        if (!publicMenuUrl) {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(publicMenuUrl);
+            setCopyState('copied');
+            window.setTimeout(() => setCopyState('idle'), 2200);
+        } catch {
+            setError('No se pudo copiar el link del menú.');
+        }
+    };
+
+    const handlePrintQr = () => {
+        if (!qrDataUrl || !publicMenuUrl) {
+            return;
+        }
+
+        const printWindow = window.open('', '_blank', 'width=900,height=700');
+        if (!printWindow) {
+            setError('No se pudo abrir la ventana de impresión.');
+            return;
+        }
+
+        const safeName = (formData.name.trim() || 'Mi restaurante').replace(/</g, '&lt;');
+        const safeUrl = publicMenuUrl.replace(/</g, '&lt;');
+        const safeLogo = formData.logoUrl.trim();
+
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html lang="es">
+            <head>
+              <meta charset="utf-8" />
+              <title>QR del menú - ${safeName}</title>
+              <style>
+                body {
+                  margin: 0;
+                  font-family: Arial, sans-serif;
+                  background: #f8fafc;
+                  color: #0f172a;
+                }
+                .sheet {
+                  width: 720px;
+                  margin: 32px auto;
+                  background: #ffffff;
+                  border: 1px solid #e5e7eb;
+                  border-radius: 24px;
+                  padding: 32px;
+                  text-align: center;
+                }
+                .logo {
+                  width: 96px;
+                  height: 96px;
+                  margin: 0 auto 20px;
+                  border-radius: 24px;
+                  object-fit: contain;
+                  border: 1px solid #e5e7eb;
+                  background: #ffffff;
+                }
+                .title {
+                  font-size: 34px;
+                  font-weight: 800;
+                  margin: 0 0 10px;
+                }
+                .subtitle {
+                  font-size: 18px;
+                  color: #475569;
+                  margin: 0 0 26px;
+                }
+                .qr {
+                  width: 320px;
+                  height: 320px;
+                  margin: 0 auto 24px;
+                  display: block;
+                  border-radius: 20px;
+                  border: 1px solid #e5e7eb;
+                  padding: 12px;
+                  background: white;
+                }
+                .link {
+                  font-size: 18px;
+                  font-weight: 700;
+                  word-break: break-word;
+                }
+                .note {
+                  margin-top: 12px;
+                  color: #64748b;
+                  font-size: 14px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="sheet">
+                ${safeLogo ? `<img src="${safeLogo}" alt="Logo" class="logo" />` : ''}
+                <h1 class="title">${safeName}</h1>
+                <p class="subtitle">Escanea este código para abrir el menú.</p>
+                <img src="${qrDataUrl}" alt="QR del menú" class="qr" />
+                <p class="link">${safeUrl}</p>
+                <p class="note">Comparte o imprime este código para tus clientes.</p>
+              </div>
+              <script>
+                window.onload = function () {
+                  window.print();
+                };
+              </script>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
         setError('');
 
-        const normalizedSlug = formData.slug.trim().toLowerCase().replace(/\s+/g, '-');
         const normalizedPhone = formData.whatsappPhone.trim();
         const normalizedLogoUrl = formData.logoUrl.trim();
         const normalizedCoverUrl = formData.coverUrl.trim();
@@ -309,6 +465,86 @@ export default function SettingsPage() {
                             <p className="mt-1 text-xs font-medium text-gray-900">
                                 Este codigo define tu URL publica.
                             </p>
+                        </div>
+
+                        <div className="space-y-4 rounded-lg border p-4">
+                            <div className="flex items-start justify-between gap-3">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <Link2 className="h-4 w-4 text-gray-700" />
+                                        <Label className="text-base font-semibold">
+                                            Link del menú
+                                        </Label>
+                                    </div>
+                                    <p className="mt-1 text-sm font-medium text-gray-900">
+                                        Copia tu link público o imprime el QR para compartirlo.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                                <p className="break-all text-sm font-semibold text-gray-950">
+                                    {publicMenuUrl || 'Define un código de restaurante para generar tu link.'}
+                                </p>
+                            </div>
+
+                            <div className="flex flex-wrap gap-3">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => void handleCopyMenuLink()}
+                                    disabled={!publicMenuUrl}
+                                    className="h-10"
+                                >
+                                    {copyState === 'copied' ? (
+                                        <>
+                                            <Check className="mr-2 h-4 w-4" />
+                                            Link copiado
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Copy className="mr-2 h-4 w-4" />
+                                            Copiar link
+                                        </>
+                                    )}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handlePrintQr}
+                                    disabled={!qrDataUrl}
+                                    className="h-10"
+                                >
+                                    <Printer className="mr-2 h-4 w-4" />
+                                    Imprimir QR
+                                </Button>
+                            </div>
+
+                            <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-5">
+                                <div className="mb-4 flex items-center gap-2">
+                                    <QrCode className="h-4 w-4 text-gray-700" />
+                                    <p className="text-sm font-semibold text-gray-950">
+                                        Código QR del menú
+                                    </p>
+                                </div>
+
+                                {qrDataUrl ? (
+                                    <div className="flex flex-col items-center gap-4">
+                                        <img
+                                            src={qrDataUrl}
+                                            alt="QR del menú"
+                                            className="h-48 w-48 rounded-2xl border border-gray-200 bg-white p-3"
+                                        />
+                                        <p className="text-center text-xs font-medium text-gray-700">
+                                            Escaneando este QR, el cliente abre directamente tu menú público.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm font-medium text-gray-500">
+                                        El QR aparecerá cuando tengas definido el link público del menú.
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
                         <div>
