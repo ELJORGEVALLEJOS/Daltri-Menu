@@ -63,7 +63,7 @@ export async function fetchMerchant(slug: string) {
     for (const baseUrl of API_BASES) {
         try {
             const res = await fetch(`${baseUrl}/public/restaurants/${slug}/menu`, {
-                next: { revalidate: 60 },
+                cache: 'no-store',
             });
 
             if (!res.ok) {
@@ -89,7 +89,7 @@ export async function fetchRestaurantMenu(slug: string) {
     for (const baseUrl of API_BASES) {
         try {
             const res = await fetch(`${baseUrl}/public/restaurants/${slug}/menu`, {
-                next: { revalidate: 60 },
+                cache: 'no-store',
             });
 
             if (!res.ok) {
@@ -139,7 +139,7 @@ export async function fetchPublicOrder(slug: string, orderId: string) {
         try {
             const res = await fetch(
                 `${baseUrl}/public/restaurants/${slug}/orders/${orderId}`,
-                { next: { revalidate: 30 } },
+                { cache: 'no-store' },
             );
 
             if (!res.ok) {

@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { fetchPublicOrder } from '@/lib/api';
 
+export const dynamic = 'force-dynamic';
+
 function formatMoney(cents: number, currency: string) {
     const amount = (Number(cents) || 0) / 100;
     const normalizedCurrency = currency?.trim().toUpperCase() || 'USD';

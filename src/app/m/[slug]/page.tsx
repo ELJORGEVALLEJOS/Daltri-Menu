@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { MenuView } from "./menu-view";
 import { FloatingCart } from "@/components/floating-cart";
 
+export const dynamic = 'force-dynamic';
+
 export default async function MerchantPage({
     params,
 }: {
