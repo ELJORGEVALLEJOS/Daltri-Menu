@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
-import { Check, Copy, Link2, Printer, QrCode } from 'lucide-react';
+import { Check, Copy, Download, Link2, Printer, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,6 +28,41 @@ const DEFAULT_MENU_COPY = {
     heroSubtitle: 'Autenticas comidas y bebidas francesas.',
     heroBadge: 'Depuis 1978',
 };
+
+const QR_LAYOUTS = {
+    compact: {
+        label: 'Pequeño',
+        qrSize: 180,
+        cardWidth: 300,
+        logoSize: 56,
+        padding: 18,
+        titleSize: 20,
+        subtitleSize: 12,
+        urlSize: 10,
+    },
+    medium: {
+        label: 'Mediano',
+        qrSize: 240,
+        cardWidth: 380,
+        logoSize: 72,
+        padding: 24,
+        titleSize: 24,
+        subtitleSize: 14,
+        urlSize: 11,
+    },
+    large: {
+        label: 'Grande',
+        qrSize: 320,
+        cardWidth: 480,
+        logoSize: 88,
+        padding: 28,
+        titleSize: 30,
+        subtitleSize: 16,
+        urlSize: 12,
+    },
+} as const;
+
+type QrLayoutKey = keyof typeof QR_LAYOUTS;
 
 type Merchant = {
     name?: string;
@@ -59,12 +94,150 @@ type Merchant = {
     };
 };
 
+function loadImageElement(src: string) {
+    return new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new Image();
+        image.crossOrigin = 'anonymous';
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('No se pudo cargar la imagen del logo.'));
+        image.src = src;
+    });
+}
+
+async function buildQrPoster(options: {
+    menuUrl: string;
+    restaurantName: string;
+    logoUrl?: string;
+    layout: (typeof QR_LAYOUTS)[QrLayoutKey];
+}) {
+    const { menuUrl, restaurantName, logoUrl, layout } = options;
+    const qrDataUrl = await QRCode.toDataURL(menuUrl, {
+        width: layout.qrSize,
+        margin: 1,
+        color: {
+            dark: '#0f172a',
+            light: '#ffffff',
+        },
+    });
+
+    const qrImage = await loadImageElement(qrDataUrl);
+
+    let logoImage: HTMLImageElement | null = null;
+    if (logoUrl) {
+        try {
+            logoImage = await loadImageElement(logoUrl);
+        } catch {
+            logoImage = null;
+        }
+    }
+
+    const lineHeight = layout.subtitleSize + 6;
+    const cardHeight =
+        layout.padding * 2 +
+        (logoImage ? layout.logoSize + 18 : 0) +
+        layout.titleSize +
+        14 +
+        lineHeight +
+        18 +
+        layout.qrSize +
+        20 +
+        lineHeight * 2;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = layout.cardWidth;
+    canvas.height = cardHeight;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        throw new Error('No se pudo generar el QR.');
+    }
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
+
+    let cursorY = layout.padding;
+
+    if (logoImage) {
+        const logoX = (canvas.width - layout.logoSize) / 2;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(logoX, cursorY, layout.logoSize, layout.logoSize);
+        ctx.drawImage(logoImage, logoX, cursorY, layout.logoSize, layout.logoSize);
+        cursorY += layout.logoSize + 18;
+    }
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `800 ${layout.titleSize}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.fillText(
+        restaurantName || 'Mi restaurante',
+        canvas.width / 2,
+        cursorY + layout.titleSize,
+    );
+    cursorY += layout.titleSize + 14;
+
+    ctx.fillStyle = '#475569';
+    ctx.font = `500 ${layout.subtitleSize}px Arial`;
+    ctx.fillText('Escanea para ver el menú', canvas.width / 2, cursorY + layout.subtitleSize);
+    cursorY += layout.subtitleSize + 18;
+
+    const qrX = (canvas.width - layout.qrSize) / 2;
+    ctx.drawImage(qrImage, qrX, cursorY, layout.qrSize, layout.qrSize);
+    cursorY += layout.qrSize + 20;
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `700 ${layout.urlSize}px Arial`;
+    const urlLines = splitTextIntoLines(
+        ctx,
+        menuUrl,
+        canvas.width - layout.padding * 2,
+    );
+    for (const line of urlLines) {
+        ctx.fillText(line, canvas.width / 2, cursorY + layout.urlSize);
+        cursorY += layout.urlSize + 6;
+    }
+
+    return {
+        qrDataUrl,
+        posterDataUrl: canvas.toDataURL('image/png'),
+    };
+}
+
+function splitTextIntoLines(
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    maxWidth: number,
+) {
+    const lines: string[] = [];
+    let current = '';
+
+    for (const char of text) {
+        const next = current + char;
+        if (ctx.measureText(next).width > maxWidth && current) {
+            lines.push(current);
+            current = char;
+        } else {
+            current = next;
+        }
+    }
+
+    if (current) {
+        lines.push(current);
+    }
+
+    return lines;
+}
+
 export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
     const [qrDataUrl, setQrDataUrl] = useState('');
+    const [qrPosterUrl, setQrPosterUrl] = useState('');
+    const [qrLayout, setQrLayout] = useState<QrLayoutKey>('medium');
     const router = useRouter();
     const [formData, setFormData] = useState({
         name: '',
@@ -94,6 +267,7 @@ export default function SettingsPage() {
     const publicMenuUrl = normalizedSlug
         ? `https://menu.daltrishop.com/m/${normalizedSlug}`
         : '';
+    const qrLayoutConfig = QR_LAYOUTS[qrLayout];
 
     useEffect(() => {
         let active = true;
@@ -163,26 +337,29 @@ export default function SettingsPage() {
 
         async function generateQr() {
             if (!publicMenuUrl) {
-                if (active) setQrDataUrl('');
+                if (active) {
+                    setQrDataUrl('');
+                    setQrPosterUrl('');
+                }
                 return;
             }
 
             try {
-                const dataUrl = await QRCode.toDataURL(publicMenuUrl, {
-                    width: 320,
-                    margin: 1,
-                    color: {
-                        dark: '#0f172a',
-                        light: '#ffffff',
-                    },
+                const result = await buildQrPoster({
+                    menuUrl: publicMenuUrl,
+                    restaurantName: formData.name.trim() || 'Mi restaurante',
+                    logoUrl: formData.logoUrl.trim() || undefined,
+                    layout: qrLayoutConfig,
                 });
 
                 if (active) {
-                    setQrDataUrl(dataUrl);
+                    setQrDataUrl(result.qrDataUrl);
+                    setQrPosterUrl(result.posterDataUrl);
                 }
             } catch {
                 if (active) {
                     setQrDataUrl('');
+                    setQrPosterUrl('');
                 }
             }
         }
@@ -192,7 +369,7 @@ export default function SettingsPage() {
         return () => {
             active = false;
         };
-    }, [publicMenuUrl]);
+    }, [formData.logoUrl, formData.name, publicMenuUrl, qrLayoutConfig]);
 
     const readFileAsDataUrl = (file: File) =>
         new Promise<string>((resolve, reject) => {
@@ -260,7 +437,7 @@ export default function SettingsPage() {
     };
 
     const handlePrintQr = () => {
-        if (!qrDataUrl || !publicMenuUrl) {
+        if (!qrPosterUrl || !publicMenuUrl) {
             return;
         }
 
@@ -271,8 +448,8 @@ export default function SettingsPage() {
         }
 
         const safeName = (formData.name.trim() || 'Mi restaurante').replace(/</g, '&lt;');
-        const safeUrl = publicMenuUrl.replace(/</g, '&lt;');
-        const safeLogo = formData.logoUrl.trim();
+        const safePoster = qrPosterUrl.replace(/</g, '&lt;');
+        const printWidth = qrLayoutConfig.cardWidth;
 
         printWindow.document.write(`
           <!DOCTYPE html>
@@ -288,63 +465,19 @@ export default function SettingsPage() {
                   color: #0f172a;
                 }
                 .sheet {
-                  width: 720px;
-                  margin: 32px auto;
-                  background: #ffffff;
-                  border: 1px solid #e5e7eb;
-                  border-radius: 24px;
-                  padding: 32px;
+                  width: ${printWidth}px;
+                  margin: 24px auto;
                   text-align: center;
                 }
-                .logo {
-                  width: 96px;
-                  height: 96px;
-                  margin: 0 auto 20px;
-                  border-radius: 24px;
-                  object-fit: contain;
-                  border: 1px solid #e5e7eb;
-                  background: #ffffff;
-                }
-                .title {
-                  font-size: 34px;
-                  font-weight: 800;
-                  margin: 0 0 10px;
-                }
-                .subtitle {
-                  font-size: 18px;
-                  color: #475569;
-                  margin: 0 0 26px;
-                }
-                .qr {
-                  width: 320px;
-                  height: 320px;
-                  margin: 0 auto 24px;
+                .poster {
+                  width: 100%;
                   display: block;
-                  border-radius: 20px;
-                  border: 1px solid #e5e7eb;
-                  padding: 12px;
-                  background: white;
-                }
-                .link {
-                  font-size: 18px;
-                  font-weight: 700;
-                  word-break: break-word;
-                }
-                .note {
-                  margin-top: 12px;
-                  color: #64748b;
-                  font-size: 14px;
                 }
               </style>
             </head>
             <body>
               <div class="sheet">
-                ${safeLogo ? `<img src="${safeLogo}" alt="Logo" class="logo" />` : ''}
-                <h1 class="title">${safeName}</h1>
-                <p class="subtitle">Escanea este código para abrir el menú.</p>
-                <img src="${qrDataUrl}" alt="QR del menú" class="qr" />
-                <p class="link">${safeUrl}</p>
-                <p class="note">Comparte o imprime este código para tus clientes.</p>
+                <img src="${safePoster}" alt="QR del menú de ${safeName}" class="poster" />
               </div>
               <script>
                 window.onload = function () {
@@ -355,6 +488,18 @@ export default function SettingsPage() {
           </html>
         `);
         printWindow.document.close();
+    };
+
+    const handleDownloadQr = () => {
+        if (!qrPosterUrl || !publicMenuUrl) {
+            return;
+        }
+
+        const safeSlug = normalizedSlug || 'menu';
+        const link = document.createElement('a');
+        link.href = qrPosterUrl;
+        link.download = `${safeSlug}-qr-${qrLayout}.png`;
+        link.click();
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -489,6 +634,26 @@ export default function SettingsPage() {
                             </div>
 
                             <div className="flex flex-wrap gap-3">
+                                <div className="min-w-[160px]">
+                                    <Label htmlFor="qrLayout">Tamaño del archivo QR</Label>
+                                    <select
+                                        id="qrLayout"
+                                        value={qrLayout}
+                                        onChange={(event) =>
+                                            setQrLayout(event.target.value as QrLayoutKey)
+                                        }
+                                        className="mt-2 h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm font-medium text-gray-950 outline-none transition focus:border-[#2467F7]"
+                                    >
+                                        {Object.entries(QR_LAYOUTS).map(([key, option]) => (
+                                            <option key={key} value={key}>
+                                                {option.label} - QR {option.qrSize}px
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-3">
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -511,8 +676,18 @@ export default function SettingsPage() {
                                 <Button
                                     type="button"
                                     variant="outline"
+                                    onClick={handleDownloadQr}
+                                    disabled={!qrPosterUrl}
+                                    className="h-10"
+                                >
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Descargar archivo
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
                                     onClick={handlePrintQr}
-                                    disabled={!qrDataUrl}
+                                    disabled={!qrPosterUrl}
                                     className="h-10"
                                 >
                                     <Printer className="mr-2 h-4 w-4" />
@@ -531,12 +706,12 @@ export default function SettingsPage() {
                                 {qrDataUrl ? (
                                     <div className="flex flex-col items-center gap-4">
                                         <img
-                                            src={qrDataUrl}
+                                            src={qrPosterUrl || qrDataUrl}
                                             alt="QR del menú"
-                                            className="h-48 w-48 rounded-2xl border border-gray-200 bg-white p-3"
+                                            className="w-full max-w-[24rem] rounded-2xl border border-gray-200 bg-white"
                                         />
                                         <p className="text-center text-xs font-medium text-gray-700">
-                                            Escaneando este QR, el cliente abre directamente tu menú público.
+                                            El archivo se generará en tamaño {QR_LAYOUTS[qrLayout].label.toLowerCase()} y, si tienes logo cargado, saldrá junto al QR.
                                         </p>
                                     </div>
                                 ) : (
