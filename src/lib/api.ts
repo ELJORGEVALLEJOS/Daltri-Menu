@@ -1,3 +1,5 @@
+import type { MerchantOpeningHours } from '@/lib/opening-hours';
+
 const FALLBACK_API_URL = 'https://server.daltrishop.com';
 const API_BASES = Array.from(
     new Set([process.env.NEXT_PUBLIC_API_URL, FALLBACK_API_URL].filter(Boolean)),
@@ -57,6 +59,7 @@ export type PublicMerchant = {
     social_links?: MerchantSocialLinks;
     theme_colors?: MerchantThemeColors;
     menu_copy?: MerchantMenuCopy;
+    opening_hours?: MerchantOpeningHours;
 };
 
 export async function fetchMerchant(slug: string) {

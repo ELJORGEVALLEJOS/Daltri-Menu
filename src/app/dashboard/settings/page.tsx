@@ -14,6 +14,13 @@ import {
     type MerchantShippingType,
 } from '@/lib/admin-api';
 import { formatMoney } from '@/lib/format';
+import {
+    OPENING_HOURS_DAYS,
+    buildDefaultOpeningHours,
+    normalizeOpeningHours,
+    type MerchantOpeningHours,
+    type OpeningHoursDayKey,
+} from '@/lib/opening-hours';
 
 const DEFAULT_THEME = {
     primary: '#c5a059',
@@ -92,6 +99,7 @@ type Merchant = {
         hero_subtitle?: string;
         hero_badge?: string;
     };
+    opening_hours?: MerchantOpeningHours;
 };
 
 function loadImageElement(src: string) {
@@ -261,6 +269,7 @@ export default function SettingsPage() {
         heroTitle: DEFAULT_MENU_COPY.heroTitle,
         heroSubtitle: DEFAULT_MENU_COPY.heroSubtitle,
         heroBadge: DEFAULT_MENU_COPY.heroBadge,
+        openingHours: buildDefaultOpeningHours(),
     });
 
     const normalizedSlug = formData.slug.trim().toLowerCase().replace(/\s+/g, '-');
@@ -309,6 +318,7 @@ export default function SettingsPage() {
                     heroSubtitle:
                         data.menu_copy?.hero_subtitle || DEFAULT_MENU_COPY.heroSubtitle,
                     heroBadge: data.menu_copy?.hero_badge || DEFAULT_MENU_COPY.heroBadge,
+                    openingHours: normalizeOpeningHours(data.opening_hours),
                 });
 
                 if (data.slug) {
@@ -419,6 +429,23 @@ export default function SettingsPage() {
             ...prev,
             shippingType,
             shippingCost: shippingType === 'free' ? '' : prev.shippingCost || '0',
+        }));
+    };
+
+    const handleOpeningHoursChange = (
+        dayKey: OpeningHoursDayKey,
+        field: 'enabled' | 'open' | 'close',
+        value: boolean | string,
+    ) => {
+        setFormData((prev) => ({
+            ...prev,
+            openingHours: {
+                ...prev.openingHours,
+                [dayKey]: {
+                    ...prev.openingHours[dayKey],
+                    [field]: value,
+                },
+            },
         }));
     };
 
@@ -548,6 +575,7 @@ export default function SettingsPage() {
                     hero_subtitle: formData.heroSubtitle.trim(),
                     hero_badge: formData.heroBadge.trim(),
                 },
+                opening_hours: formData.openingHours,
             });
 
             localStorage.setItem('merchant_slug', normalizedSlug);
@@ -831,6 +859,87 @@ export default function SettingsPage() {
                                     maxLength={140}
                                 />
                             </div>
+                        </div>
+
+                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
+                            <div>
+                                <Label>Horarios de atención</Label>
+                                <p className="mt-1 text-sm font-medium text-gray-700">
+                                    Define los días y horarios en los que aparece abierto tu restaurante.
+                                </p>
+                            </div>
+
+                            <div className="space-y-3">
+                                {OPENING_HOURS_DAYS.map((day) => {
+                                    const schedule = formData.openingHours[day.key];
+
+                                    return (
+                                        <div
+                                            key={day.key}
+                                            className="grid gap-3 rounded-2xl border border-gray-100 p-3 sm:grid-cols-[minmax(0,1fr)_9rem_9rem] sm:items-center"
+                                        >
+                                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                                <div>
+                                                    <p className="font-semibold text-gray-950">
+                                                        {day.label}
+                                                    </p>
+                                                    <p className="text-xs font-medium text-gray-500">
+                                                        {schedule.enabled
+                                                            ? `${schedule.open} - ${schedule.close}`
+                                                            : 'Cerrado'}
+                                                    </p>
+                                                </div>
+
+                                                <Button
+                                                    type="button"
+                                                    variant={schedule.enabled ? 'default' : 'outline'}
+                                                    onClick={() =>
+                                                        handleOpeningHoursChange(
+                                                            day.key,
+                                                            'enabled',
+                                                            !schedule.enabled,
+                                                        )
+                                                    }
+                                                    className="h-10 w-full sm:w-auto"
+                                                >
+                                                    {schedule.enabled ? 'Abierto' : 'Cerrado'}
+                                                </Button>
+                                            </div>
+
+                                            <Input
+                                                type="time"
+                                                value={schedule.open}
+                                                onChange={(event) =>
+                                                    handleOpeningHoursChange(
+                                                        day.key,
+                                                        'open',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                disabled={!schedule.enabled}
+                                                className="h-10"
+                                            />
+                                            <Input
+                                                type="time"
+                                                value={schedule.close}
+                                                onChange={(event) =>
+                                                    handleOpeningHoursChange(
+                                                        day.key,
+                                                        'close',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                disabled={!schedule.enabled}
+                                                className="h-10"
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <p className="text-xs font-medium text-gray-500">
+                                El horario se mostrará en el menú público para indicar si el restaurante está abierto o cerrado.
+                            </p>
                         </div>
 
                         <div className="space-y-4 rounded-2xl border p-4 sm:p-5">

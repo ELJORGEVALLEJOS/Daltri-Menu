@@ -4,6 +4,13 @@ import { useMemo, useState, type CSSProperties } from 'react';
 import { ProductCard } from '@/components/product-card';
 import { SocialLinks, type MerchantSocialLinks } from '@/components/social-contact';
 import { ChevronLeft } from 'lucide-react';
+import {
+    OPENING_HOURS_DAYS,
+    formatOpeningHoursRange,
+    getOpeningHoursStatus,
+    normalizeOpeningHours,
+    type MerchantOpeningHours,
+} from '@/lib/opening-hours';
 
 type MenuItem = {
     id: string;
@@ -43,6 +50,7 @@ type Merchant = {
         hero_subtitle?: string;
         hero_badge?: string;
     };
+    opening_hours?: MerchantOpeningHours;
 };
 
 type ThemePalette = {
@@ -125,6 +133,14 @@ export function MenuView({
     const heroSubtitle =
         merchant.menu_copy?.hero_subtitle?.trim() || 'Autenticas comidas y bebidas francesas.';
     const heroBadge = merchant.menu_copy?.hero_badge?.trim() || 'Depuis 1978';
+    const openingHours = useMemo(
+        () => normalizeOpeningHours(merchant.opening_hours),
+        [merchant.opening_hours],
+    );
+    const openingStatus = useMemo(
+        () => getOpeningHoursStatus(openingHours),
+        [openingHours],
+    );
 
     if (selectedCategoryId && selectedCategory) {
         return (
@@ -249,6 +265,57 @@ export function MenuView({
             </div>
 
             <div className="container mx-auto max-w-6xl px-4 sm:px-6 -mt-6 sm:-mt-10 pb-28 sm:pb-36 relative z-20">
+                {openingStatus.hasAnyEnabledDay && (
+                    <div className="mb-8 grid gap-4 rounded-[2rem] border p-5 shadow-premium sm:p-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]" style={{ backgroundColor: theme.surface, borderColor: withAlpha(theme.text, 0.08) }}>
+                        <div className="space-y-3">
+                            <div className="flex flex-wrap items-center gap-3">
+                                <span
+                                    className="rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.18em]"
+                                    style={{
+                                        backgroundColor: openingStatus.isOpenNow
+                                            ? withAlpha(theme.primary, 0.16)
+                                            : withAlpha(theme.text, 0.08),
+                                        color: openingStatus.isOpenNow ? theme.primary : theme.text,
+                                    }}
+                                >
+                                    {openingStatus.isOpenNow ? 'Abierto ahora' : 'Cerrado ahora'}
+                                </span>
+                                <span className="text-sm font-medium" style={{ color: withAlpha(theme.text, 0.68) }}>
+                                    {openingStatus.todayLabel}: {openingStatus.todayRangeLabel}
+                                </span>
+                            </div>
+                            <div>
+                                <h2 className="text-lg sm:text-xl font-sans font-black tracking-tight" style={{ color: theme.text }}>
+                                    Horarios del restaurante
+                                </h2>
+                                <p className="mt-1 text-sm leading-relaxed" style={{ color: withAlpha(theme.text, 0.7) }}>
+                                    Tus clientes pueden ver de inmediato si hoy estás atendiendo y en qué horario.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+                            {OPENING_HOURS_DAYS.map((day) => (
+                                <div
+                                    key={day.key}
+                                    className="rounded-2xl border px-3 py-3"
+                                    style={{
+                                        backgroundColor: withAlpha(theme.background, 0.9),
+                                        borderColor: withAlpha(theme.text, 0.08),
+                                    }}
+                                >
+                                    <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: withAlpha(theme.text, 0.45) }}>
+                                        {day.shortLabel}
+                                    </p>
+                                    <p className="mt-2 text-sm font-semibold" style={{ color: theme.text }}>
+                                        {formatOpeningHoursRange(openingHours[day.key])}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3 mb-10 sm:mb-12">
                     {menu.map((category) => (
                         <button

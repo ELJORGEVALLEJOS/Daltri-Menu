@@ -66,6 +66,16 @@ export type MerchantMenuCopyPayload = {
     hero_badge?: string;
 };
 
+export type MerchantOpeningHoursPayload = {
+    monday?: { enabled?: boolean; open?: string; close?: string };
+    tuesday?: { enabled?: boolean; open?: string; close?: string };
+    wednesday?: { enabled?: boolean; open?: string; close?: string };
+    thursday?: { enabled?: boolean; open?: string; close?: string };
+    friday?: { enabled?: boolean; open?: string; close?: string };
+    saturday?: { enabled?: boolean; open?: string; close?: string };
+    sunday?: { enabled?: boolean; open?: string; close?: string };
+};
+
 export type UpdateMerchantPayload = {
     name?: string;
     slug?: string;
@@ -80,6 +90,7 @@ export type UpdateMerchantPayload = {
     social_links?: MerchantSocialLinksPayload;
     theme_colors?: MerchantThemeColorsPayload;
     menu_copy?: MerchantMenuCopyPayload;
+    opening_hours?: MerchantOpeningHoursPayload;
 };
 
 function clearAdminSession() {
