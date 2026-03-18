@@ -153,7 +153,15 @@ export async function loginMerchant(email: string, password: string) {
 
     if (!res.ok) {
         const error = await res.json().catch(() => ({ message: 'Login failed' }));
-        throw new Error(error.message || 'Credenciales inválidas');
+        const message =
+            typeof error?.message === 'string' && error.message.trim()
+                ? error.message
+                : 'Credenciales inválidas';
+        throw new Error(
+            message.toLowerCase() === 'invalid credentials'
+                ? 'Correo o contraseña incorrectos.'
+                : message,
+        );
     }
 
     const data = await res.json();
@@ -184,6 +192,28 @@ export async function resendVerificationEmail(email: string) {
 
     if (res.ok) return res.json();
     throw new Error(await parseError(res, 'No se pudo reenviar el correo'));
+}
+
+export async function requestPasswordReset(email: string) {
+    const res = await fetch(`${API_URL}/auth/request-password-reset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+    });
+
+    if (res.ok) return res.json();
+    throw new Error(await parseError(res, 'No se pudo solicitar la recuperación'));
+}
+
+export async function resetPassword(token: string, password: string) {
+    const res = await fetch(`${API_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
+    });
+
+    if (res.ok) return res.json();
+    throw new Error(await parseError(res, 'No se pudo restablecer la contraseña'));
 }
 
 export async function fetchRestaurant() {

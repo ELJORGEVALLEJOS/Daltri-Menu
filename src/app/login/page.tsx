@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import { loginMerchant, resendVerificationEmail } from "@/lib/admin-api";
+import { loginMerchant, requestPasswordReset, resendVerificationEmail } from "@/lib/admin-api";
 import { Lock, Mail } from 'lucide-react';
 import { BrandMark } from '@/components/brand-mark';
 
@@ -18,6 +18,7 @@ export default function LoginPage() {
     const [previewUrl, setPreviewUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [resending, setResending] = useState(false);
+    const [requestingReset, setRequestingReset] = useState(false);
     const router = useRouter();
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -62,6 +63,32 @@ export default function LoginPage() {
             setError(message);
         } finally {
             setResending(false);
+        }
+    };
+
+    const handleRequestPasswordReset = async () => {
+        if (!email.trim()) {
+            setError('Ingresa tu email para enviarte el enlace de recuperación.');
+            return;
+        }
+
+        setRequestingReset(true);
+        setError('');
+        setInfo('');
+        setPreviewUrl('');
+        try {
+            const response = (await requestPasswordReset(
+                email.trim().toLowerCase(),
+            )) as { preview_url?: string };
+            setInfo('Si el correo existe, enviamos un enlace para restablecer la contraseña.');
+            if (response?.preview_url) {
+                setPreviewUrl(response.preview_url);
+            }
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'No se pudo solicitar la recuperación';
+            setError(message);
+        } finally {
+            setRequestingReset(false);
         }
     };
 
@@ -139,17 +166,29 @@ export default function LoginPage() {
                         </div>
                     )}
 
-                    {shouldShowResend && (
+                    <div className="grid gap-3">
+                        {shouldShowResend && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleResendVerification}
+                                disabled={resending}
+                                className="w-full h-12 rounded-2xl border-gray-200 text-gray-800 hover:bg-gray-50"
+                            >
+                                {resending ? 'Reenviando enlace...' : 'Reenviar verificación'}
+                            </Button>
+                        )}
+
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={handleResendVerification}
-                            disabled={resending}
+                            onClick={handleRequestPasswordReset}
+                            disabled={requestingReset}
                             className="w-full h-12 rounded-2xl border-gray-200 text-gray-800 hover:bg-gray-50"
                         >
-                            {resending ? 'Reenviando enlace...' : 'Reenviar verificación'}
+                            {requestingReset ? 'Enviando enlace...' : 'Olvidé mi contraseña'}
                         </Button>
-                    )}
+                    </div>
 
                     <Button type="submit" className="w-full h-14 bg-[#C5A059] hover:bg-[#B48F4D] text-white text-lg font-bold rounded-2xl shadow-xl shadow-[#C5A059]/20 transition-all active:scale-[0.98] disabled:opacity-50" disabled={loading}>
                         {loading ? 'Iniciando sesión...' : 'Entrar al Panel'}
