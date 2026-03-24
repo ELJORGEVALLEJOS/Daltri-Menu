@@ -5,7 +5,7 @@ import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { fetchMerchant, createOrder, type PublicMerchant } from '@/lib/api';
-import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Check, Copy, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { formatMoney } from '@/lib/format';
 import { getShippingPreview } from '@/lib/shipping';
@@ -14,6 +14,8 @@ export default function CheckoutPage() {
     const { items, total, clearCart } = useCart();
     const [name, setName] = useState('');
     const [address, setAddress] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer'>('cash');
+    const [copiedField, setCopiedField] = useState<'alias' | 'cbu' | null>(null);
     const [merchant, setMerchant] = useState<PublicMerchant | null>(null);
     const router = useRouter();
     const params = useParams<{ slug?: string | string[] }>();
@@ -45,17 +47,43 @@ export default function CheckoutPage() {
     const shippingPreview = getShippingPreview(total, merchant);
     const shippingCost = shippingPreview.shippingCost;
     const finalTotal = total + shippingCost;
+    const transferAlias = merchant?.payment_methods?.transfer_alias?.trim() || '';
+    const transferCbuCvu = merchant?.payment_methods?.transfer_cbu_cvu?.trim() || '';
+    const transferEnabled = Boolean(
+        merchant?.payment_methods?.transfer_enabled &&
+        (transferAlias || transferCbuCvu),
+    );
     const formatAmount = (value: number) =>
         formatMoney(value, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+    const handleCopyTransferValue = async (
+        field: 'alias' | 'cbu',
+        value: string,
+    ) => {
+        if (!value) return;
+
+        try {
+            await navigator.clipboard.writeText(value);
+            setCopiedField(field);
+            window.setTimeout(() => setCopiedField(null), 1800);
+        } catch {
+            alert('No se pudo copiar el dato de transferencia.');
+        }
+    };
 
     const handleWhatsAppOrder = async () => {
         if (!merchant?.whatsapp_phone || !slug) return;
         const trimmedAddress = address.trim();
+        if (paymentMethod === 'transfer' && !transferEnabled) {
+            alert('Este restaurante no tiene datos de transferencia cargados.');
+            return;
+        }
 
         try {
             const orderData = {
                 customer_name: name.trim(),
                 delivery: 'delivery' as const,
+                payment_method: paymentMethod,
                 delivery_address: trimmedAddress,
                 items: items.map((item) => ({
                     product_id: item.itemId,
@@ -81,6 +109,15 @@ export default function CheckoutPage() {
                 message += `\nSubtotal: ${formatAmount(total)}\n`;
                 message += shippingCost > 0 ? `Envio: ${formatAmount(shippingCost)}\n` : 'Envio: GRATIS\n';
                 message += `Direccion: ${trimmedAddress}\n`;
+                message += `Pago: ${paymentMethod === 'transfer' ? 'Transferencia' : 'Efectivo'}\n`;
+                if (paymentMethod === 'transfer') {
+                    if (transferAlias) {
+                        message += `Alias: ${transferAlias}\n`;
+                    }
+                    if (transferCbuCvu) {
+                        message += `CBU/CVU: ${transferCbuCvu}\n`;
+                    }
+                }
                 message += `\n*Total a Pagar: ${formatAmount(finalTotal)}*`;
                 if (orderLink) {
                     message += `\nPedido exacto: ${orderLink}`;
@@ -176,12 +213,136 @@ export default function CheckoutPage() {
                                     placeholder="Ej: Calle 123, depto 4, barrio..."
                                 />
                             </div>
+
+                            <div className="space-y-3">
+                                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                                    ¿Cómo vas a pagar?
+                                </label>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentMethod('cash')}
+                                        className={`rounded-xl border px-4 py-3 text-left transition ${
+                                            paymentMethod === 'cash'
+                                                ? 'border-[#E0B649] bg-[#FFF8E1] text-gray-900 shadow-sm'
+                                                : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300'
+                                        }`}
+                                    >
+                                        <span className="block text-sm font-bold">Efectivo</span>
+                                        <span className="mt-1 block text-xs text-gray-500">
+                                            Pagarás al recibir el pedido.
+                                        </span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => transferEnabled && setPaymentMethod('transfer')}
+                                        disabled={!transferEnabled}
+                                        className={`rounded-xl border px-4 py-3 text-left transition ${
+                                            paymentMethod === 'transfer'
+                                                ? 'border-[#E0B649] bg-[#FFF8E1] text-gray-900 shadow-sm'
+                                                : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300'
+                                        } ${!transferEnabled ? 'cursor-not-allowed opacity-50' : ''}`}
+                                    >
+                                        <span className="block text-sm font-bold">Transferencia</span>
+                                        <span className="mt-1 block text-xs text-gray-500">
+                                            {transferEnabled
+                                                ? 'Te mostraremos el alias y el CBU/CVU.'
+                                                : 'No disponible en este restaurante.'}
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {paymentMethod === 'transfer' && transferEnabled && (
+                                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 space-y-3">
+                                    <div>
+                                        <p className="text-sm font-bold text-emerald-900">
+                                            Datos para transferir
+                                        </p>
+                                        <p className="mt-1 text-xs text-emerald-800">
+                                            Realiza la transferencia y envía el comprobante por WhatsApp.
+                                        </p>
+                                    </div>
+
+                                    {transferAlias && (
+                                        <div className="flex flex-col gap-2 rounded-xl bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <div className="min-w-0">
+                                                <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-500">
+                                                    Alias
+                                                </p>
+                                                <p className="truncate text-sm font-semibold text-gray-900">
+                                                    {transferAlias}
+                                                </p>
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    void handleCopyTransferValue('alias', transferAlias)
+                                                }
+                                                className="shrink-0"
+                                            >
+                                                {copiedField === 'alias' ? (
+                                                    <>
+                                                        <Check className="mr-2 h-4 w-4" />
+                                                        Copiado
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Copy className="mr-2 h-4 w-4" />
+                                                        Copiar
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    )}
+
+                                    {transferCbuCvu && (
+                                        <div className="flex flex-col gap-2 rounded-xl bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <div className="min-w-0">
+                                                <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-500">
+                                                    CBU / CVU
+                                                </p>
+                                                <p className="truncate text-sm font-semibold text-gray-900">
+                                                    {transferCbuCvu}
+                                                </p>
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    void handleCopyTransferValue('cbu', transferCbuCvu)
+                                                }
+                                                className="shrink-0"
+                                            >
+                                                {copiedField === 'cbu' ? (
+                                                    <>
+                                                        <Check className="mr-2 h-4 w-4" />
+                                                        Copiado
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Copy className="mr-2 h-4 w-4" />
+                                                        Copiar
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <Button
                             className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white h-14 sm:h-16 text-base sm:text-lg font-bold rounded-2xl shadow-xl shadow-green-900/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale cursor-pointer"
                             onClick={handleWhatsAppOrder}
-                            disabled={!name.trim() || !address.trim() || !merchant?.whatsapp_phone || !slug}
+                            disabled={
+                                !name.trim() ||
+                                !address.trim() ||
+                                !merchant?.whatsapp_phone ||
+                                !slug ||
+                                (paymentMethod === 'transfer' && !transferEnabled)
+                            }
                         >
                             <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
                             Enviar pedido por WhatsApp

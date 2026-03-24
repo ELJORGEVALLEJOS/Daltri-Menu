@@ -87,6 +87,12 @@ type Merchant = {
         facebook?: string;
         tiktok?: string;
     };
+    payment_methods?: {
+        cash_enabled?: boolean;
+        transfer_enabled?: boolean;
+        transfer_alias?: string;
+        transfer_cbu_cvu?: string;
+    };
     theme_colors?: {
         primary?: string;
         background?: string;
@@ -261,6 +267,8 @@ export default function SettingsPage() {
         instagram: '',
         facebook: '',
         tiktok: '',
+        transferAlias: '',
+        transferCbuCvu: '',
         themePrimary: DEFAULT_THEME.primary,
         themeBackground: DEFAULT_THEME.background,
         themeSurface: DEFAULT_THEME.surface,
@@ -308,6 +316,8 @@ export default function SettingsPage() {
                     instagram: data.social_links?.instagram || '',
                     facebook: data.social_links?.facebook || '',
                     tiktok: data.social_links?.tiktok || '',
+                    transferAlias: data.payment_methods?.transfer_alias || '',
+                    transferCbuCvu: data.payment_methods?.transfer_cbu_cvu || '',
                     themePrimary: data.theme_colors?.primary || DEFAULT_THEME.primary,
                     themeBackground: data.theme_colors?.background || DEFAULT_THEME.background,
                     themeSurface: data.theme_colors?.surface || DEFAULT_THEME.surface,
@@ -562,6 +572,10 @@ export default function SettingsPage() {
                     instagram: formData.instagram.trim(),
                     facebook: formData.facebook.trim(),
                     tiktok: formData.tiktok.trim(),
+                },
+                payment_methods: {
+                    transfer_alias: formData.transferAlias.trim(),
+                    transfer_cbu_cvu: formData.transferCbuCvu.replace(/\s+/g, ''),
                 },
                 theme_colors: {
                     primary: formData.themePrimary.trim().toLowerCase(),
@@ -1177,6 +1191,46 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
+                            <div>
+                                <Label className="text-base font-semibold">
+                                    Cobros por transferencia
+                                </Label>
+                                <p className="mt-1 text-sm font-medium text-gray-900">
+                                    Si completas estos datos, el cliente podrá elegir transferencia al finalizar el pedido.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="transferAlias">Alias</Label>
+                                    <Input
+                                        id="transferAlias"
+                                        name="transferAlias"
+                                        value={formData.transferAlias}
+                                        onChange={handleChange}
+                                        placeholder="mi-resto.alias"
+                                        className="mt-2"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="transferCbuCvu">CBU / CVU</Label>
+                                    <Input
+                                        id="transferCbuCvu"
+                                        name="transferCbuCvu"
+                                        value={formData.transferCbuCvu}
+                                        onChange={handleChange}
+                                        placeholder="0000003100000000000000"
+                                        className="mt-2"
+                                    />
+                                </div>
+                            </div>
+
+                            <p className="text-xs font-medium text-gray-900">
+                                El sistema seguirá ofreciendo efectivo. La opción transferencia solo aparecerá cuando el alias o el CBU/CVU estén cargados.
+                            </p>
                         </div>
                     </section>
                 </div>

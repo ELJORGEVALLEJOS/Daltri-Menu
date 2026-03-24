@@ -34,6 +34,7 @@ export default async function PublicOrderPage({
               order_number: string;
               status: string;
               created_at: string;
+              payment_method?: 'cash' | 'transfer';
               subtotal_cents: number;
               shipping_cents: number;
               total_cents: number;
@@ -63,6 +64,11 @@ export default async function PublicOrderPage({
                     <h1 className="text-2xl font-black text-gray-900">Pedido {order.order_number}</h1>
                     <p className="text-sm text-gray-500 mt-1">{order.restaurant?.name || 'Restaurante'}</p>
                     <p className="text-xs uppercase tracking-wider text-gray-400 mt-3">Estado: {order.status}</p>
+                    {order.payment_method && (
+                        <p className="text-xs uppercase tracking-wider text-gray-400 mt-2">
+                            Pago: {order.payment_method === 'transfer' ? 'Transferencia' : 'Efectivo'}
+                        </p>
+                    )}
                 </div>
 
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">

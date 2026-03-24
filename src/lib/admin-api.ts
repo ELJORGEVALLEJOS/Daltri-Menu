@@ -11,6 +11,11 @@ export type MerchantSocialLinksPayload = {
     tiktok?: string;
 };
 
+export type MerchantPaymentMethodsPayload = {
+    transfer_alias?: string;
+    transfer_cbu_cvu?: string;
+};
+
 export type AdminOrder = {
     id: string;
     order_number: string;
@@ -21,6 +26,7 @@ export type AdminOrder = {
     customer_name: string;
     customer_phone: string;
     delivery: string;
+    payment_method?: 'cash' | 'transfer';
     delivery_address?: string | null;
     notes?: string | null;
     total_cents: number;
@@ -88,6 +94,7 @@ export type UpdateMerchantPayload = {
     shipping_cost_cents?: number;
     free_shipping_over_cents?: number | null;
     social_links?: MerchantSocialLinksPayload;
+    payment_methods?: MerchantPaymentMethodsPayload;
     theme_colors?: MerchantThemeColorsPayload;
     menu_copy?: MerchantMenuCopyPayload;
     opening_hours?: MerchantOpeningHoursPayload;

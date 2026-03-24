@@ -45,6 +45,13 @@ type MerchantMenuCopy = {
     hero_badge?: string;
 };
 
+type MerchantPaymentMethods = {
+    cash_enabled?: boolean;
+    transfer_enabled?: boolean;
+    transfer_alias?: string;
+    transfer_cbu_cvu?: string;
+};
+
 export type PublicMerchant = {
     id: string;
     name: string;
@@ -57,6 +64,7 @@ export type PublicMerchant = {
     shipping_cost_cents?: number;
     free_shipping_over_cents?: number | null;
     social_links?: MerchantSocialLinks;
+    payment_methods?: MerchantPaymentMethods;
     theme_colors?: MerchantThemeColors;
     menu_copy?: MerchantMenuCopy;
     opening_hours?: MerchantOpeningHours;
@@ -164,6 +172,7 @@ export async function createOrder(
         customer_name: string;
         customer_phone?: string;
         delivery: 'pickup' | 'delivery';
+        payment_method: 'cash' | 'transfer';
         delivery_address?: string;
         notes?: string;
         items: Array<{

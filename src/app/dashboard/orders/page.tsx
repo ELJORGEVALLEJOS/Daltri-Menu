@@ -513,6 +513,16 @@ export default function OrdersPage() {
                                                         </span>{' '}
                                                         {formatMoneyFromCents(order.total_cents)}
                                                     </p>
+                                                    {order.payment_method && (
+                                                        <p>
+                                                            <span className="font-semibold text-gray-900">
+                                                                Pago:
+                                                            </span>{' '}
+                                                            {order.payment_method === 'transfer'
+                                                                ? 'Transferencia'
+                                                                : 'Efectivo'}
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <ul className="space-y-1 text-sm text-gray-500">
                                                     {order.items.map((item) => (
