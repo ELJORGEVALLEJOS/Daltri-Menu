@@ -80,13 +80,76 @@ export type MerchantMenuCopyPayload = {
 };
 
 export type MerchantOpeningHoursPayload = {
-    monday?: { enabled?: boolean; open?: string; close?: string };
-    tuesday?: { enabled?: boolean; open?: string; close?: string };
-    wednesday?: { enabled?: boolean; open?: string; close?: string };
-    thursday?: { enabled?: boolean; open?: string; close?: string };
-    friday?: { enabled?: boolean; open?: string; close?: string };
-    saturday?: { enabled?: boolean; open?: string; close?: string };
-    sunday?: { enabled?: boolean; open?: string; close?: string };
+    monday?: {
+        enabled?: boolean;
+        mode?: 'closed' | 'continuous' | 'split';
+        open?: string;
+        close?: string;
+        morning_open?: string;
+        morning_close?: string;
+        afternoon_open?: string;
+        afternoon_close?: string;
+    };
+    tuesday?: {
+        enabled?: boolean;
+        mode?: 'closed' | 'continuous' | 'split';
+        open?: string;
+        close?: string;
+        morning_open?: string;
+        morning_close?: string;
+        afternoon_open?: string;
+        afternoon_close?: string;
+    };
+    wednesday?: {
+        enabled?: boolean;
+        mode?: 'closed' | 'continuous' | 'split';
+        open?: string;
+        close?: string;
+        morning_open?: string;
+        morning_close?: string;
+        afternoon_open?: string;
+        afternoon_close?: string;
+    };
+    thursday?: {
+        enabled?: boolean;
+        mode?: 'closed' | 'continuous' | 'split';
+        open?: string;
+        close?: string;
+        morning_open?: string;
+        morning_close?: string;
+        afternoon_open?: string;
+        afternoon_close?: string;
+    };
+    friday?: {
+        enabled?: boolean;
+        mode?: 'closed' | 'continuous' | 'split';
+        open?: string;
+        close?: string;
+        morning_open?: string;
+        morning_close?: string;
+        afternoon_open?: string;
+        afternoon_close?: string;
+    };
+    saturday?: {
+        enabled?: boolean;
+        mode?: 'closed' | 'continuous' | 'split';
+        open?: string;
+        close?: string;
+        morning_open?: string;
+        morning_close?: string;
+        afternoon_open?: string;
+        afternoon_close?: string;
+    };
+    sunday?: {
+        enabled?: boolean;
+        mode?: 'closed' | 'continuous' | 'split';
+        open?: string;
+        close?: string;
+        morning_open?: string;
+        morning_close?: string;
+        afternoon_open?: string;
+        afternoon_close?: string;
+    };
 };
 
 export type UpdateMerchantPayload = {

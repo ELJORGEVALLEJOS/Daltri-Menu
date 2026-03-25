@@ -22,10 +22,13 @@ import {
 import { formatMoney } from '@/lib/format';
 import {
     OPENING_HOURS_DAYS,
+    OPENING_HOURS_MODE_OPTIONS,
     buildDefaultOpeningHours,
+    formatOpeningHoursRange,
     normalizeOpeningHours,
     type MerchantOpeningHours,
     type OpeningHoursDayKey,
+    type OpeningHoursMode,
 } from '@/lib/opening-hours';
 
 const DEFAULT_THEME = {
@@ -37,6 +40,21 @@ const DEFAULT_THEME = {
 };
 
 const DEFAULT_MENU_COPY = getDefaultMenuCopyByBusinessType('generic');
+
+function matchesKnownDefaultMenuCopyValue(
+    field: 'heroTitle' | 'heroSubtitle' | 'heroBadge',
+    value: string,
+) {
+    const normalizedValue = value.trim();
+    if (!normalizedValue) {
+        return true;
+    }
+
+    return BUSINESS_TYPE_OPTIONS.some((option) => {
+        const defaults = getDefaultMenuCopyByBusinessType(option.value);
+        return defaults[field] === normalizedValue;
+    });
+}
 
 const QR_LAYOUTS = {
     compact: {
@@ -297,12 +315,14 @@ export default function SettingsPage() {
             try {
                 const data = (await fetchRestaurant()) as Merchant;
                 if (!active) return;
+                const businessType = data.business_type || 'generic';
+                const defaultCopy = getDefaultMenuCopyByBusinessType(businessType);
 
                 setFormData({
                     name: data.name || '',
                     slug: data.slug || '',
                     whatsappPhone: data.whatsapp_phone || '',
-                    businessType: data.business_type || 'generic',
+                    businessType,
                     logoUrl: data.logo_url || '',
                     coverUrl: data.cover_url || '',
                     shippingType: data.shipping_type === 'paid' ? 'paid' : 'free',
@@ -329,10 +349,9 @@ export default function SettingsPage() {
                     themeText: data.theme_colors?.text || DEFAULT_THEME.text,
                     themeButtonText:
                         data.theme_colors?.button_text || DEFAULT_THEME.buttonText,
-                    heroTitle: data.menu_copy?.hero_title || DEFAULT_MENU_COPY.heroTitle,
-                    heroSubtitle:
-                        data.menu_copy?.hero_subtitle || DEFAULT_MENU_COPY.heroSubtitle,
-                    heroBadge: data.menu_copy?.hero_badge || DEFAULT_MENU_COPY.heroBadge,
+                    heroTitle: data.menu_copy?.hero_title || defaultCopy.heroTitle,
+                    heroSubtitle: data.menu_copy?.hero_subtitle || defaultCopy.heroSubtitle,
+                    heroBadge: data.menu_copy?.hero_badge || defaultCopy.heroBadge,
                     openingHours: normalizeOpeningHours(data.opening_hours),
                 });
 
@@ -441,15 +460,13 @@ export default function SettingsPage() {
 
     const handleBusinessTypeChange = (value: MerchantBusinessType) => {
         setFormData((prev) => {
-            const previousDefaults = getDefaultMenuCopyByBusinessType(prev.businessType);
             const nextDefaults = getDefaultMenuCopyByBusinessType(value);
             const shouldReplaceHeroTitle =
-                !prev.heroTitle.trim() || prev.heroTitle === previousDefaults.heroTitle;
+                matchesKnownDefaultMenuCopyValue('heroTitle', prev.heroTitle);
             const shouldReplaceHeroSubtitle =
-                !prev.heroSubtitle.trim() ||
-                prev.heroSubtitle === previousDefaults.heroSubtitle;
+                matchesKnownDefaultMenuCopyValue('heroSubtitle', prev.heroSubtitle);
             const shouldReplaceHeroBadge =
-                !prev.heroBadge.trim() || prev.heroBadge === previousDefaults.heroBadge;
+                matchesKnownDefaultMenuCopyValue('heroBadge', prev.heroBadge);
 
             return {
                 ...prev,
@@ -473,8 +490,14 @@ export default function SettingsPage() {
 
     const handleOpeningHoursChange = (
         dayKey: OpeningHoursDayKey,
-        field: 'enabled' | 'open' | 'close',
-        value: boolean | string,
+        field:
+            | 'open'
+            | 'close'
+            | 'morning_open'
+            | 'morning_close'
+            | 'afternoon_open'
+            | 'afternoon_close',
+        value: string,
     ) => {
         setFormData((prev) => ({
             ...prev,
@@ -483,6 +506,23 @@ export default function SettingsPage() {
                 [dayKey]: {
                     ...prev.openingHours[dayKey],
                     [field]: value,
+                },
+            },
+        }));
+    };
+
+    const handleOpeningHoursModeChange = (
+        dayKey: OpeningHoursDayKey,
+        mode: OpeningHoursMode,
+    ) => {
+        setFormData((prev) => ({
+            ...prev,
+            openingHours: {
+                ...prev.openingHours,
+                [dayKey]: {
+                    ...prev.openingHours[dayKey],
+                    enabled: mode !== 'closed',
+                    mode,
                 },
             },
         }));
@@ -947,69 +987,163 @@ export default function SettingsPage() {
                                     return (
                                         <div
                                             key={day.key}
-                                            className="grid gap-3 rounded-2xl border border-gray-100 p-3 sm:grid-cols-[minmax(0,1fr)_9rem_9rem] sm:items-center"
+                                            className="space-y-4 rounded-2xl border border-gray-100 p-4"
                                         >
-                                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                                                 <div>
                                                     <p className="font-semibold text-gray-950">
                                                         {day.label}
                                                     </p>
                                                     <p className="text-xs font-medium text-gray-500">
-                                                        {schedule.enabled
-                                                            ? `${schedule.open} - ${schedule.close}`
-                                                            : 'Cerrado'}
+                                                        {formatOpeningHoursRange(schedule)}
                                                     </p>
                                                 </div>
 
-                                                <Button
-                                                    type="button"
-                                                    variant={schedule.enabled ? 'default' : 'outline'}
-                                                    onClick={() =>
-                                                        handleOpeningHoursChange(
-                                                            day.key,
-                                                            'enabled',
-                                                            !schedule.enabled,
-                                                        )
-                                                    }
-                                                    className="h-10 w-full sm:w-auto"
-                                                >
-                                                    {schedule.enabled ? 'Abierto' : 'Cerrado'}
-                                                </Button>
+                                                <div className="w-full lg:w-56">
+                                                    <Label htmlFor={`opening-mode-${day.key}`}>
+                                                        Tipo de horario
+                                                    </Label>
+                                                    <select
+                                                        id={`opening-mode-${day.key}`}
+                                                        value={schedule.mode}
+                                                        onChange={(event) =>
+                                                            handleOpeningHoursModeChange(
+                                                                day.key,
+                                                                event.target.value as OpeningHoursMode,
+                                                            )
+                                                        }
+                                                        className="mt-2 h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm font-medium text-gray-950 outline-none transition focus:border-[#2467F7]"
+                                                    >
+                                                        {OPENING_HOURS_MODE_OPTIONS.map((option) => (
+                                                            <option
+                                                                key={option.value}
+                                                                value={option.value}
+                                                            >
+                                                                {option.label}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
                                             </div>
 
-                                            <Input
-                                                type="time"
-                                                value={schedule.open}
-                                                onChange={(event) =>
-                                                    handleOpeningHoursChange(
-                                                        day.key,
-                                                        'open',
-                                                        event.target.value,
-                                                    )
-                                                }
-                                                disabled={!schedule.enabled}
-                                                className="h-10"
-                                            />
-                                            <Input
-                                                type="time"
-                                                value={schedule.close}
-                                                onChange={(event) =>
-                                                    handleOpeningHoursChange(
-                                                        day.key,
-                                                        'close',
-                                                        event.target.value,
-                                                    )
-                                                }
-                                                disabled={!schedule.enabled}
-                                                className="h-10"
-                                            />
+                                            {schedule.mode === 'continuous' && (
+                                                <div className="grid gap-3 sm:grid-cols-2">
+                                                    <label className="space-y-2">
+                                                        <span className="text-sm font-medium text-gray-700">
+                                                            Abre
+                                                        </span>
+                                                        <Input
+                                                            type="time"
+                                                            value={schedule.open}
+                                                            onChange={(event) =>
+                                                                handleOpeningHoursChange(
+                                                                    day.key,
+                                                                    'open',
+                                                                    event.target.value,
+                                                                )
+                                                            }
+                                                            className="h-10"
+                                                        />
+                                                    </label>
+                                                    <label className="space-y-2">
+                                                        <span className="text-sm font-medium text-gray-700">
+                                                            Cierra
+                                                        </span>
+                                                        <Input
+                                                            type="time"
+                                                            value={schedule.close}
+                                                            onChange={(event) =>
+                                                                handleOpeningHoursChange(
+                                                                    day.key,
+                                                                    'close',
+                                                                    event.target.value,
+                                                                )
+                                                            }
+                                                            className="h-10"
+                                                        />
+                                                    </label>
+                                                </div>
+                                            )}
+
+                                            {schedule.mode === 'split' && (
+                                                <div className="grid gap-3 sm:grid-cols-2">
+                                                    <label className="space-y-2">
+                                                        <span className="text-sm font-medium text-gray-700">
+                                                            Mañana abre
+                                                        </span>
+                                                        <Input
+                                                            type="time"
+                                                            value={schedule.morning_open}
+                                                            onChange={(event) =>
+                                                                handleOpeningHoursChange(
+                                                                    day.key,
+                                                                    'morning_open',
+                                                                    event.target.value,
+                                                                )
+                                                            }
+                                                            className="h-10"
+                                                        />
+                                                    </label>
+                                                    <label className="space-y-2">
+                                                        <span className="text-sm font-medium text-gray-700">
+                                                            Mañana cierra
+                                                        </span>
+                                                        <Input
+                                                            type="time"
+                                                            value={schedule.morning_close}
+                                                            onChange={(event) =>
+                                                                handleOpeningHoursChange(
+                                                                    day.key,
+                                                                    'morning_close',
+                                                                    event.target.value,
+                                                                )
+                                                            }
+                                                            className="h-10"
+                                                        />
+                                                    </label>
+                                                    <label className="space-y-2">
+                                                        <span className="text-sm font-medium text-gray-700">
+                                                            Tarde abre
+                                                        </span>
+                                                        <Input
+                                                            type="time"
+                                                            value={schedule.afternoon_open}
+                                                            onChange={(event) =>
+                                                                handleOpeningHoursChange(
+                                                                    day.key,
+                                                                    'afternoon_open',
+                                                                    event.target.value,
+                                                                )
+                                                            }
+                                                            className="h-10"
+                                                        />
+                                                    </label>
+                                                    <label className="space-y-2">
+                                                        <span className="text-sm font-medium text-gray-700">
+                                                            Tarde cierra
+                                                        </span>
+                                                        <Input
+                                                            type="time"
+                                                            value={schedule.afternoon_close}
+                                                            onChange={(event) =>
+                                                                handleOpeningHoursChange(
+                                                                    day.key,
+                                                                    'afternoon_close',
+                                                                    event.target.value,
+                                                                )
+                                                            }
+                                                            className="h-10"
+                                                        />
+                                                    </label>
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}
                             </div>
 
                             <p className="text-xs font-medium text-gray-500">
-                                El horario se mostrará en el catálogo público para indicar si tu negocio está abierto o cerrado.
+                                Puedes dejar un día cerrado, configurar horario corrido o dividirlo en mañana y tarde.
                             </p>
                         </div>
 
