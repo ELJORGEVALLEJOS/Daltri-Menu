@@ -9,6 +9,7 @@ import { ArrowLeft, Check, Copy, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { formatMoney } from '@/lib/format';
 import { getShippingPreview } from '@/lib/shipping';
+import { getOpeningHoursStatus, normalizeOpeningHours } from '@/lib/opening-hours';
 
 export default function CheckoutPage() {
     const { items, total, clearCart } = useCart();
@@ -53,6 +54,8 @@ export default function CheckoutPage() {
         merchant?.payment_methods?.transfer_enabled &&
         (transferAlias || transferCbuCvu),
     );
+    const openingStatus = getOpeningHoursStatus(normalizeOpeningHours(merchant?.opening_hours));
+    const canReceiveOrders = !openingStatus.hasAnyEnabledDay || openingStatus.isOpenNow;
     const formatAmount = (value: number) =>
         formatMoney(value, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
@@ -74,6 +77,10 @@ export default function CheckoutPage() {
     const handleWhatsAppOrder = async () => {
         if (!merchant?.whatsapp_phone || !slug) return;
         const trimmedAddress = address.trim();
+        if (!canReceiveOrders) {
+            alert('Este negocio está fuera de horario y no recibe pedidos en este momento.');
+            return;
+        }
         if (paymentMethod === 'transfer' && !transferEnabled) {
             alert('Este negocio no tiene datos de transferencia cargados.');
             return;
@@ -193,6 +200,11 @@ export default function CheckoutPage() {
 
                     <div className="space-y-6">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 space-y-5">
+                            {!canReceiveOrders && (
+                                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+                                    Este negocio está fuera de horario. Los pedidos se habilitan solo dentro del horario configurado.
+                                </div>
+                            )}
                             <div>
                                 <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">Nombre completo</label>
                                 <input
@@ -337,6 +349,7 @@ export default function CheckoutPage() {
                             className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white h-14 sm:h-16 text-base sm:text-lg font-bold rounded-2xl shadow-xl shadow-green-900/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale cursor-pointer"
                             onClick={handleWhatsAppOrder}
                             disabled={
+                                !canReceiveOrders ||
                                 !name.trim() ||
                                 !address.trim() ||
                                 !merchant?.whatsapp_phone ||
@@ -345,7 +358,7 @@ export default function CheckoutPage() {
                             }
                         >
                             <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
-                            Enviar pedido por WhatsApp
+                            {canReceiveOrders ? 'Enviar pedido por WhatsApp' : 'Fuera de horario'}
                         </Button>
                     </div>
                 </div>

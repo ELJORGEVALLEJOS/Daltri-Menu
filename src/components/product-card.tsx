@@ -17,9 +17,10 @@ type ProductCardProps = {
         original_price_cents?: number;
         imageUrl?: string;
     };
+    canOrder?: boolean;
 };
 
-export function ProductCard({ item }: ProductCardProps) {
+export function ProductCard({ item, canOrder = true }: ProductCardProps) {
     const { addItem } = useCart();
     const currentPriceCents = Number(item.price_cents || 0);
     const originalPriceCents =
@@ -39,8 +40,10 @@ export function ProductCard({ item }: ProductCardProps) {
         .filter(Boolean)
         .join(' • ');
 
+    const isPurchaseBlocked = isOutOfStock || !canOrder;
+
     const handleAdd = () => {
-        if (isOutOfStock) {
+        if (isPurchaseBlocked) {
             return;
         }
 
@@ -119,6 +122,12 @@ export function ProductCard({ item }: ProductCardProps) {
                     </p>
                 )}
 
+                {!canOrder && (
+                    <p className="text-xs font-semibold text-amber-700">
+                        Este negocio está fuera de horario y no recibe pedidos ahora.
+                    </p>
+                )}
+
                 <Button
                     className="w-full rounded-xl h-10 sm:h-11 text-sm font-bold shadow-lg"
                     style={{
@@ -126,10 +135,10 @@ export function ProductCard({ item }: ProductCardProps) {
                         color: 'var(--menu-button-text, #ffffff)',
                     }}
                     onClick={handleAdd}
-                    disabled={isOutOfStock}
+                    disabled={isPurchaseBlocked}
                 >
-                    {isOutOfStock ? 'Sin stock' : 'Añadir al carrito'}
-                    {!isOutOfStock && <Plus className="ml-2 w-5 h-5" />}
+                    {isOutOfStock ? 'Sin stock' : !canOrder ? 'Fuera de horario' : 'Añadir al carrito'}
+                    {!isPurchaseBlocked && <Plus className="ml-2 w-5 h-5" />}
                 </Button>
             </div>
         </div>

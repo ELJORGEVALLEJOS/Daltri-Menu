@@ -150,6 +150,7 @@ export function MenuView({
         () => getOpeningHoursStatus(openingHours),
         [openingHours],
     );
+    const canReceiveOrders = !openingStatus.hasAnyEnabledDay || openingStatus.isOpenNow;
 
     if (selectedCategoryId && selectedCategory) {
         return (
@@ -201,7 +202,13 @@ export function MenuView({
                                 imageUrl: item.imageUrl ?? item.image_url,
                             };
 
-                            return <ProductCard key={item.id} item={normalizedItem} />;
+                            return (
+                                <ProductCard
+                                    key={item.id}
+                                    item={normalizedItem}
+                                    canOrder={canReceiveOrders}
+                                />
+                            );
                         })}
                     </div>
                 </div>
@@ -300,6 +307,11 @@ export function MenuView({
                                 <p className="mt-1 text-sm leading-relaxed" style={{ color: withAlpha(theme.text, 0.7) }}>
                                     Tus clientes pueden ver de inmediato si hoy estás atendiendo y en qué horario.
                                 </p>
+                                {!openingStatus.isOpenNow && (
+                                    <p className="mt-2 text-sm font-semibold" style={{ color: theme.primary }}>
+                                        Los pedidos se habilitan solo dentro del horario configurado.
+                                    </p>
+                                )}
                             </div>
                         </div>
 

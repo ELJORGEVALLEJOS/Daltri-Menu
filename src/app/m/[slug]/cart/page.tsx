@@ -9,6 +9,7 @@ import { useParams, usePathname } from 'next/navigation';
 import { fetchMerchant, type PublicMerchant } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 import { getShippingPreview } from '@/lib/shipping';
+import { getOpeningHoursStatus, normalizeOpeningHours } from '@/lib/opening-hours';
 
 export default function CartPage() {
     const { items, decrementItem, removeItem, total } = useCart();
@@ -34,6 +35,8 @@ export default function CartPage() {
     const shippingPreview = getShippingPreview(total, merchant);
     const shippingCost = shippingPreview.shippingCost;
     const finalTotal = total + shippingCost;
+    const openingStatus = getOpeningHoursStatus(normalizeOpeningHours(merchant?.opening_hours));
+    const canReceiveOrders = !openingStatus.hasAnyEnabledDay || openingStatus.isOpenNow;
 
     if (items.length === 0) {
         return (
@@ -127,15 +130,20 @@ export default function CartPage() {
                                 <span className="text-gray-400 font-black uppercase tracking-[0.2em] text-[10px]">Total estimado</span>
                                 <span className="text-3xl sm:text-4xl font-mono font-bold text-gray-900 tracking-tighter text-right">{formatMoney(finalTotal)}</span>
                             </div>
+                            {!canReceiveOrders && (
+                                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+                                    Este negocio está fuera de horario. Podrás continuar el pedido cuando vuelva a abrir.
+                                </div>
+                            )}
                         </div>
 
                         <Link href={checkoutHref} className={!slug ? 'pointer-events-none opacity-50' : ''}>
                             <Button
                                 className="w-full bg-[#25D366] hover:bg-[#1fa34e] text-white h-14 sm:h-20 text-base sm:text-xl font-black rounded-[1.25rem] sm:rounded-[2rem] shadow-[0_20px_50px_rgba(37,211,102,0.2)] flex items-center justify-center gap-3 sm:gap-4 transition-all active:scale-[0.98] border-b-4 sm:border-b-8 border-[#1a9447]"
-                                disabled={!slug}
+                                disabled={!slug || !canReceiveOrders}
                             >
                                 <ArrowRight className="h-6 w-6 sm:h-8 sm:w-8" />
-                                Continuar pedido
+                                {canReceiveOrders ? 'Continuar pedido' : 'Fuera de horario'}
                             </Button>
                         </Link>
 
