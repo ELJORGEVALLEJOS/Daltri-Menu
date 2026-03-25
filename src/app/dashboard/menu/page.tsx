@@ -274,8 +274,8 @@ export default function MenuPage() {
         <div className="mx-auto max-w-6xl space-y-6 sm:space-y-10 font-sans pb-16 sm:pb-20">
             <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
-                    <h1 className="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-2 leading-tight">Gestión del Menú</h1>
-                    <p className="text-gray-500 font-medium">Crea una experiencia gastronómica inolvidable</p>
+                    <h1 className="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-2 leading-tight">Gestión del Catálogo</h1>
+                    <p className="text-gray-500 font-medium">Organiza categorías, productos y precios de tu negocio</p>
                 </div>
 
                 {/* Add Category Quick Form */}
@@ -472,7 +472,7 @@ export default function MenuPage() {
                                                 <Input
                                                     value={itemData.name}
                                                     onChange={e => setItemData({ ...itemData, name: e.target.value })}
-                                                    placeholder="Nombre del plato"
+                                                    placeholder="Nombre del producto"
                                                     className="h-14 bg-white rounded-2xl border-gray-100 px-5 text-[#99A1AF] placeholder:text-[#99A1AF] focus:ring-[#C5A059]/20"
                                                 />
                                             </div>
@@ -583,8 +583,8 @@ export default function MenuPage() {
                     <div className="mx-auto h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                         <LayoutGrid className="h-10 w-10 text-gray-200" />
                     </div>
-                    <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2">Comienza tu menú</h3>
-                    <p className="text-[#99A1AF] max-w-sm mx-auto font-medium">Añade tu primera categoría arriba para empezar a cargar tus platos y bebidas.</p>
+                    <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2">Comienza tu catálogo</h3>
+                    <p className="text-[#99A1AF] max-w-sm mx-auto font-medium">Añade tu primera categoría arriba para empezar a cargar tus productos.</p>
                 </div>
             )}
         </div>

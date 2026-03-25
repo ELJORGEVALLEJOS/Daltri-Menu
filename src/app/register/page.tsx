@@ -129,7 +129,7 @@ export default function RegisterPage() {
                     </div>
                     <h1 className="text-2xl font-bold text-white">Registro exitoso</h1>
                     <p className="text-zinc-400">
-                        Tu restaurante <strong>{registeredMerchant.name}</strong> ha sido creado.
+                        Tu negocio <strong>{registeredMerchant.name}</strong> ha sido creado.
                     </p>
                     <div className="bg-black/40 p-4 rounded-xl border border-white/5 space-y-2">
                         <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">Tu link publico:</p>
@@ -200,18 +200,18 @@ export default function RegisterPage() {
                     <div className="flex items-center gap-3 mb-6">
                         <BrandMark size={48} className="h-12 w-12" />
                         <div>
-                            <h1 className="text-xl font-bold text-white">Registrar restaurante</h1>
+                                <h1 className="text-xl font-bold text-white">Registrar negocio</h1>
                             <p className="text-zinc-500 text-xs text-balance">Crea tu cuenta y empieza a vender</p>
                         </div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="name" className="text-zinc-400 text-xs ml-1">Nombre del restaurante</Label>
+                            <Label htmlFor="name" className="text-zinc-400 text-xs ml-1">Nombre del negocio</Label>
                             <Input
                                 id="name"
                                 required
-                                placeholder="El palacio de la pizza"
+                                placeholder="Mi negocio"
                                 value={formData.name}
                                 onChange={(e) => handleNameChange(e.target.value)}
                                 className="bg-black/40 border-white/10 text-white h-11 rounded-xl focus:ring-amber-500/50"
@@ -220,7 +220,7 @@ export default function RegisterPage() {
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-1.5">
-                                <Label htmlFor="slug" className="text-zinc-400 text-xs ml-1">Enlace publico de tu menu</Label>
+                                <Label htmlFor="slug" className="text-zinc-400 text-xs ml-1">Enlace publico de tu catálogo</Label>
                                 <Input
                                     id="slug"
                                     required
@@ -231,10 +231,10 @@ export default function RegisterPage() {
                                 />
                                 <div className="space-y-2 pt-1">
                                     <p className="text-[11px] text-zinc-500">
-                                        Se genera desde el nombre del restaurante. Puedes cambiarlo si quieres.
+                                        Se genera desde el nombre del negocio. Puedes cambiarlo si quieres.
                                     </p>
                                     <p className="text-[11px] text-zinc-500">
-                                        URL publica: <span className="font-mono text-zinc-300">menu.daltrishop.com/m/{formData.slug || 'tu-menu'}</span>
+                                        URL publica: <span className="font-mono text-zinc-300">menu.daltrishop.com/m/{formData.slug || 'tu-catalogo'}</span>
                                     </p>
                                     {suggestedSlug && formData.slug !== suggestedSlug && (
                                         <p className="text-[11px] text-amber-400">
@@ -260,7 +260,7 @@ export default function RegisterPage() {
                                 </div>
                             </div>
                             <div className="space-y-1.5">
-                                <Label htmlFor="whatsapp" className="text-zinc-400 text-xs ml-1">WhatsApp</Label>
+                                <Label htmlFor="whatsapp" className="text-zinc-400 text-xs ml-1">WhatsApp del negocio</Label>
                                 <Input
                                     id="whatsapp"
                                     required
@@ -273,7 +273,7 @@ export default function RegisterPage() {
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label htmlFor="owner_full_name" className="text-zinc-400 text-xs ml-1">Nombre del dueno</Label>
+                            <Label htmlFor="owner_full_name" className="text-zinc-400 text-xs ml-1">Nombre del responsable</Label>
                             <Input
                                 id="owner_full_name"
                                 required
@@ -290,7 +290,7 @@ export default function RegisterPage() {
                                 id="admin_email"
                                 type="email"
                                 required
-                                placeholder="dueno@tucomercio.com"
+                                placeholder="acceso@tunegocio.com"
                                 value={formData.admin_email}
                                 onChange={(e) => setFormData({ ...formData, admin_email: e.target.value })}
                                 className="bg-black/40 border-white/10 text-white h-11 rounded-xl focus:ring-amber-500/50"
@@ -343,7 +343,7 @@ export default function RegisterPage() {
                             disabled={loading}
                             className="w-full h-12 bg-white text-black hover:bg-zinc-200 font-bold rounded-xl mt-4 shadow-lg shadow-white/5 active:scale-[0.98] transition-all"
                         >
-                            {loading ? 'Creando cuenta...' : 'Crear mi restaurante'}
+                            {loading ? 'Creando cuenta...' : 'Crear mi negocio'}
                         </Button>
                     </form>
                 </div>

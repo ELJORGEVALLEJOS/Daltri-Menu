@@ -1,4 +1,5 @@
 import type { MerchantOpeningHours } from '@/lib/opening-hours';
+import type { BusinessType } from '@/lib/business-types';
 
 const FALLBACK_API_URL = 'https://server.daltrishop.com';
 const API_BASES = Array.from(
@@ -58,6 +59,7 @@ export type PublicMerchant = {
     slug: string;
     whatsapp_phone: string;
     currency?: string;
+    business_type?: BusinessType;
     logo_url?: string;
     cover_url?: string;
     shipping_type?: 'free' | 'paid';

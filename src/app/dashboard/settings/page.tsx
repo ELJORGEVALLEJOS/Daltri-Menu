@@ -8,9 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+    BUSINESS_TYPE_OPTIONS,
+    getDefaultMenuCopyByBusinessType,
+    type BusinessType,
+} from '@/lib/business-types';
+import {
     AUTH_REQUIRED_ERROR,
     fetchRestaurant,
     updateMerchant,
+    type MerchantBusinessType,
     type MerchantShippingType,
 } from '@/lib/admin-api';
 import { formatMoney } from '@/lib/format';
@@ -30,11 +36,7 @@ const DEFAULT_THEME = {
     buttonText: '#ffffff',
 };
 
-const DEFAULT_MENU_COPY = {
-    heroTitle: 'Todo lo seleccionado',
-    heroSubtitle: 'Autenticas comidas y bebidas francesas.',
-    heroBadge: 'Depuis 1978',
-};
+const DEFAULT_MENU_COPY = getDefaultMenuCopyByBusinessType('generic');
 
 const QR_LAYOUTS = {
     compact: {
@@ -75,6 +77,7 @@ type Merchant = {
     name?: string;
     slug?: string;
     whatsapp_phone?: string;
+    business_type?: BusinessType;
     logo_url?: string;
     cover_url?: string;
     shipping_type?: MerchantShippingType;
@@ -186,7 +189,7 @@ async function buildQrPoster(options: {
     ctx.font = `800 ${layout.titleSize}px Arial`;
     ctx.textAlign = 'center';
     ctx.fillText(
-        restaurantName || 'Mi restaurante',
+        restaurantName || 'Mi negocio',
         canvas.width / 2,
         cursorY + layout.titleSize,
     );
@@ -194,7 +197,7 @@ async function buildQrPoster(options: {
 
     ctx.fillStyle = '#475569';
     ctx.font = `500 ${layout.subtitleSize}px Arial`;
-    ctx.fillText('Escanea para ver el menú', canvas.width / 2, cursorY + layout.subtitleSize);
+    ctx.fillText('Escanea para ver el catálogo', canvas.width / 2, cursorY + layout.subtitleSize);
     cursorY += layout.subtitleSize + 18;
 
     const qrX = (canvas.width - layout.qrSize) / 2;
@@ -257,6 +260,7 @@ export default function SettingsPage() {
         name: '',
         slug: '',
         whatsappPhone: '',
+        businessType: 'generic' as MerchantBusinessType,
         logoUrl: '',
         coverUrl: '',
         shippingType: 'free' as MerchantShippingType,
@@ -298,6 +302,7 @@ export default function SettingsPage() {
                     name: data.name || '',
                     slug: data.slug || '',
                     whatsappPhone: data.whatsapp_phone || '',
+                    businessType: data.business_type || 'generic',
                     logoUrl: data.logo_url || '',
                     coverUrl: data.cover_url || '',
                     shippingType: data.shipping_type === 'paid' ? 'paid' : 'free',
@@ -340,7 +345,7 @@ export default function SettingsPage() {
                     router.replace('/login');
                     return;
                 }
-                setError('No se pudieron cargar los ajustes del restaurante.');
+                setError('No se pudieron cargar los ajustes del negocio.');
             } finally {
                 if (active) setLoading(false);
             }
@@ -367,7 +372,7 @@ export default function SettingsPage() {
             try {
                 const result = await buildQrPoster({
                     menuUrl: publicMenuUrl,
-                    restaurantName: formData.name.trim() || 'Mi restaurante',
+                    restaurantName: formData.name.trim() || 'Mi negocio',
                     logoUrl: formData.logoUrl.trim() || undefined,
                     layout: qrLayoutConfig,
                 });
@@ -434,6 +439,30 @@ export default function SettingsPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleBusinessTypeChange = (value: MerchantBusinessType) => {
+        setFormData((prev) => {
+            const previousDefaults = getDefaultMenuCopyByBusinessType(prev.businessType);
+            const nextDefaults = getDefaultMenuCopyByBusinessType(value);
+            const shouldReplaceHeroTitle =
+                !prev.heroTitle.trim() || prev.heroTitle === previousDefaults.heroTitle;
+            const shouldReplaceHeroSubtitle =
+                !prev.heroSubtitle.trim() ||
+                prev.heroSubtitle === previousDefaults.heroSubtitle;
+            const shouldReplaceHeroBadge =
+                !prev.heroBadge.trim() || prev.heroBadge === previousDefaults.heroBadge;
+
+            return {
+                ...prev,
+                businessType: value,
+                heroTitle: shouldReplaceHeroTitle ? nextDefaults.heroTitle : prev.heroTitle,
+                heroSubtitle: shouldReplaceHeroSubtitle
+                    ? nextDefaults.heroSubtitle
+                    : prev.heroSubtitle,
+                heroBadge: shouldReplaceHeroBadge ? nextDefaults.heroBadge : prev.heroBadge,
+            };
+        });
+    };
+
     const handleShippingTypeChange = (shippingType: MerchantShippingType) => {
         setFormData((prev) => ({
             ...prev,
@@ -469,7 +498,7 @@ export default function SettingsPage() {
             setCopyState('copied');
             window.setTimeout(() => setCopyState('idle'), 2200);
         } catch {
-            setError('No se pudo copiar el link del menú.');
+            setError('No se pudo copiar el link del catálogo.');
         }
     };
 
@@ -484,7 +513,7 @@ export default function SettingsPage() {
             return;
         }
 
-        const safeName = (formData.name.trim() || 'Mi restaurante').replace(/</g, '&lt;');
+        const safeName = (formData.name.trim() || 'Mi negocio').replace(/</g, '&lt;');
         const safePoster = qrPosterUrl.replace(/</g, '&lt;');
         const printWidth = qrLayoutConfig.cardWidth;
 
@@ -493,7 +522,7 @@ export default function SettingsPage() {
           <html lang="es">
             <head>
               <meta charset="utf-8" />
-              <title>QR del menú - ${safeName}</title>
+              <title>QR del catálogo - ${safeName}</title>
               <style>
                 body {
                   margin: 0;
@@ -514,7 +543,7 @@ export default function SettingsPage() {
             </head>
             <body>
               <div class="sheet">
-                <img src="${safePoster}" alt="QR del menú de ${safeName}" class="poster" />
+                <img src="${safePoster}" alt="QR del catálogo de ${safeName}" class="poster" />
               </div>
               <script>
                 window.onload = function () {
@@ -561,6 +590,7 @@ export default function SettingsPage() {
                 name: formData.name.trim(),
                 slug: normalizedSlug,
                 whatsapp_phone: normalizedPhone,
+                business_type: formData.businessType,
                 logo_url: normalizedLogoUrl || undefined,
                 cover_url: normalizedCoverUrl || undefined,
                 shipping_type: formData.shippingType,
@@ -615,7 +645,7 @@ export default function SettingsPage() {
 
     return (
         <div className="mx-auto w-full max-w-6xl text-gray-950">
-            <h1 className="mb-4 text-2xl font-bold sm:mb-6 sm:text-3xl">Configuracion del Restaurante</h1>
+            <h1 className="mb-4 text-2xl font-bold sm:mb-6 sm:text-3xl">Configuración del negocio</h1>
 
             <form
                 onSubmit={handleSubmit}
@@ -636,7 +666,34 @@ export default function SettingsPage() {
                         </div>
 
                         <div>
-                            <Label htmlFor="slug">Codigo del restaurante</Label>
+                            <Label htmlFor="businessType">Tipo de negocio</Label>
+                            <select
+                                id="businessType"
+                                value={formData.businessType}
+                                onChange={(e) =>
+                                    handleBusinessTypeChange(
+                                        e.target.value as MerchantBusinessType,
+                                    )
+                                }
+                                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                            >
+                                {BUSINESS_TYPE_OPTIONS.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="mt-1 text-xs font-medium text-gray-900">
+                                {
+                                    BUSINESS_TYPE_OPTIONS.find(
+                                        (option) => option.value === formData.businessType,
+                                    )?.description
+                                }
+                            </p>
+                        </div>
+
+                        <div>
+                            <Label htmlFor="slug">Código público del catálogo</Label>
                             <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
                                 <span className="text-sm font-medium text-gray-950">
                                     menu.daltrishop.com/m/
@@ -650,7 +707,7 @@ export default function SettingsPage() {
                                 />
                             </div>
                             <p className="mt-1 text-xs font-medium text-gray-900">
-                                Este codigo define tu URL publica.
+                                Este código define tu URL pública.
                             </p>
                         </div>
 
@@ -660,7 +717,7 @@ export default function SettingsPage() {
                                     <div className="flex items-center gap-2">
                                         <Link2 className="h-4 w-4 text-gray-700" />
                                         <Label className="text-base font-semibold">
-                                            Link del menú
+                                            Link del catálogo
                                         </Label>
                                     </div>
                                     <p className="mt-1 text-sm font-medium text-gray-900">
@@ -671,7 +728,7 @@ export default function SettingsPage() {
 
                             <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
                                 <p className="break-all text-sm font-semibold text-gray-950">
-                                    {publicMenuUrl || 'Define un código de restaurante para generar tu link.'}
+                                    {publicMenuUrl || 'Define un código público para generar tu link.'}
                                 </p>
                             </div>
 
@@ -741,7 +798,7 @@ export default function SettingsPage() {
                                 <div className="mb-4 flex items-center gap-2">
                                     <QrCode className="h-4 w-4 text-gray-700" />
                                     <p className="text-sm font-semibold text-gray-950">
-                                        Código QR del menú
+                                        Código QR del catálogo
                                     </p>
                                 </div>
 
@@ -749,7 +806,7 @@ export default function SettingsPage() {
                                     <div className="flex flex-col items-center gap-4">
                                         <img
                                             src={qrPosterUrl || qrDataUrl}
-                                            alt="QR del menú"
+                                            alt="QR del catálogo"
                                             className="w-full max-w-[22rem] rounded-2xl border border-gray-200 bg-white"
                                         />
                                         <p className="text-center text-xs font-medium text-gray-700">
@@ -758,14 +815,14 @@ export default function SettingsPage() {
                                     </div>
                                 ) : (
                                     <p className="text-sm font-medium text-gray-500">
-                                        El QR aparecerá cuando tengas definido el link público del menú.
+                                        El QR aparecerá cuando tengas definido el link público del catálogo.
                                     </p>
                                 )}
                             </div>
                         </div>
 
                         <div>
-                            <Label htmlFor="whatsappPhone">WhatsApp del restaurante</Label>
+                            <Label htmlFor="whatsappPhone">WhatsApp del negocio</Label>
                             <Input
                                 id="whatsappPhone"
                                 name="whatsappPhone"
@@ -780,7 +837,7 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
-                            <Label>Logo del restaurante</Label>
+                            <Label>Logo del negocio</Label>
                             <Input
                                 id="logoUrl"
                                 name="logoUrl"
@@ -807,7 +864,7 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
-                            <Label>Portada del menú</Label>
+                            <Label>Portada del catálogo</Label>
                             <Input
                                 id="coverUrl"
                                 name="coverUrl"
@@ -836,7 +893,7 @@ export default function SettingsPage() {
 
                     <section className="space-y-6">
                         <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
-                            <Label>Textos principales del menu</Label>
+                            <Label>Textos principales del catálogo</Label>
                             <div>
                                 <Label htmlFor="heroTitle">Titulo principal</Label>
                                 <Input
@@ -844,7 +901,7 @@ export default function SettingsPage() {
                                     name="heroTitle"
                                     value={formData.heroTitle}
                                     onChange={handleChange}
-                                    placeholder="Todo lo seleccionado"
+                                    placeholder={getDefaultMenuCopyByBusinessType(formData.businessType).heroTitle}
                                     className="mt-2"
                                     maxLength={80}
                                 />
@@ -856,7 +913,7 @@ export default function SettingsPage() {
                                     name="heroSubtitle"
                                     value={formData.heroSubtitle}
                                     onChange={handleChange}
-                                    placeholder="Autenticas comidas y bebidas francesas."
+                                    placeholder={getDefaultMenuCopyByBusinessType(formData.businessType).heroSubtitle}
                                     className="mt-2"
                                     maxLength={140}
                                 />
@@ -868,7 +925,7 @@ export default function SettingsPage() {
                                     name="heroBadge"
                                     value={formData.heroBadge}
                                     onChange={handleChange}
-                                    placeholder="Depuis 1978"
+                                    placeholder={getDefaultMenuCopyByBusinessType(formData.businessType).heroBadge}
                                     className="mt-2"
                                     maxLength={140}
                                 />
@@ -879,7 +936,7 @@ export default function SettingsPage() {
                             <div>
                                 <Label>Horarios de atención</Label>
                                 <p className="mt-1 text-sm font-medium text-gray-700">
-                                    Define los días y horarios en los que aparece abierto tu restaurante.
+                                    Define los días y horarios en los que aparece abierto tu negocio.
                                 </p>
                             </div>
 
@@ -952,12 +1009,12 @@ export default function SettingsPage() {
                             </div>
 
                             <p className="text-xs font-medium text-gray-500">
-                                El horario se mostrará en el menú público para indicar si el restaurante está abierto o cerrado.
+                                El horario se mostrará en el catálogo público para indicar si tu negocio está abierto o cerrado.
                             </p>
                         </div>
 
                         <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
-                            <Label>Colores del menú</Label>
+                            <Label>Colores del catálogo</Label>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
                                     <Label htmlFor="themePrimary">Color primario</Label>

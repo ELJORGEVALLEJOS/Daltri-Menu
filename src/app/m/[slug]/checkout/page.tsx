@@ -75,7 +75,7 @@ export default function CheckoutPage() {
         if (!merchant?.whatsapp_phone || !slug) return;
         const trimmedAddress = address.trim();
         if (paymentMethod === 'transfer' && !transferEnabled) {
-            alert('Este restaurante no tiene datos de transferencia cargados.');
+            alert('Este negocio no tiene datos de transferencia cargados.');
             return;
         }
 
@@ -247,7 +247,7 @@ export default function CheckoutPage() {
                                         <span className="mt-1 block text-xs text-gray-500">
                                             {transferEnabled
                                                 ? 'Te mostraremos el alias y el CBU/CVU.'
-                                                : 'No disponible en este restaurante.'}
+                                                : 'No disponible en este negocio.'}
                                         </span>
                                     </button>
                                 </div>

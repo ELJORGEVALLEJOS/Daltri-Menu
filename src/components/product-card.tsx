@@ -104,7 +104,7 @@ export function ProductCard({ item }: ProductCardProps) {
                     }}
                     onClick={handleAdd}
                 >
-                    Añadir al pedido <Plus className="ml-2 w-5 h-5" />
+                    Añadir al carrito <Plus className="ml-2 w-5 h-5" />
                 </Button>
             </div>
         </div>

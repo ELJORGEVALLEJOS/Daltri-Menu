@@ -2,6 +2,13 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://server.daltrishop.co
 export const AUTH_REQUIRED_ERROR = 'AUTH_REQUIRED';
 
 export type MerchantShippingType = 'free' | 'paid';
+export type MerchantBusinessType =
+    | 'generic'
+    | 'restaurant'
+    | 'retail'
+    | 'hardware'
+    | 'fashion'
+    | 'beauty';
 
 export type MerchantSocialLinksPayload = {
     uber_eats?: string;
@@ -88,6 +95,7 @@ export type UpdateMerchantPayload = {
     whatsapp_phone?: string;
     currency?: string;
     address?: string;
+    business_type?: MerchantBusinessType;
     logo_url?: string;
     cover_url?: string;
     shipping_type?: MerchantShippingType;

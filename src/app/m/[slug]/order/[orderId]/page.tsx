@@ -62,7 +62,7 @@ export default async function PublicOrderPage({
             <div className="mx-auto max-w-md space-y-6">
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
                     <h1 className="text-2xl font-black text-gray-900">Pedido {order.order_number}</h1>
-                    <p className="text-sm text-gray-500 mt-1">{order.restaurant?.name || 'Restaurante'}</p>
+                    <p className="text-sm text-gray-500 mt-1">{order.restaurant?.name || 'Negocio'}</p>
                     <p className="text-xs uppercase tracking-wider text-gray-400 mt-3">Estado: {order.status}</p>
                     {order.payment_method && (
                         <p className="text-xs uppercase tracking-wider text-gray-400 mt-2">
@@ -115,7 +115,7 @@ export default async function PublicOrderPage({
                     href={menuHref}
                     className="block text-center bg-zinc-900 hover:bg-black text-white py-3 rounded-2xl font-bold"
                 >
-                    Volver al menú
+                    Volver al catálogo
                 </Link>
             </div>
         </div>

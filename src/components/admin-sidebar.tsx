@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { BrandMark } from '@/components/brand-mark';
 
 const sidebarItems = [
-    { icon: Menu, label: 'Gestión del Menú', href: '/dashboard/menu' },
+    { icon: Menu, label: 'Catálogo', href: '/dashboard/menu' },
     { icon: BarChart3, label: 'Pedidos y Analíticas', href: '/dashboard/orders' },
     { icon: Settings, label: 'Configuración', href: '/dashboard/settings' },
 ];

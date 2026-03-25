@@ -5,6 +5,10 @@ import { ProductCard } from '@/components/product-card';
 import { SocialLinks, type MerchantSocialLinks } from '@/components/social-contact';
 import { ChevronLeft } from 'lucide-react';
 import {
+    getDefaultMenuCopyByBusinessType,
+    type BusinessType,
+} from '@/lib/business-types';
+import {
     OPENING_HOURS_DAYS,
     formatOpeningHoursRange,
     getOpeningHoursStatus,
@@ -43,6 +47,7 @@ type Merchant = {
     logoUrl?: string;
     logo_url?: string;
     cover_url?: string;
+    business_type?: BusinessType;
     social_links?: MerchantSocialLinks;
     theme_colors?: MerchantThemeColors;
     menu_copy?: {
@@ -129,10 +134,11 @@ export function MenuView({
             }) as CSSProperties,
         [theme],
     );
-    const heroTitle = merchant.menu_copy?.hero_title?.trim() || 'Todo lo seleccionado';
+    const defaultCopy = getDefaultMenuCopyByBusinessType(merchant.business_type || 'generic');
+    const heroTitle = merchant.menu_copy?.hero_title?.trim() || defaultCopy.heroTitle;
     const heroSubtitle =
-        merchant.menu_copy?.hero_subtitle?.trim() || 'Autenticas comidas y bebidas francesas.';
-    const heroBadge = merchant.menu_copy?.hero_badge?.trim() || 'Depuis 1978';
+        merchant.menu_copy?.hero_subtitle?.trim() || defaultCopy.heroSubtitle;
+    const heroBadge = merchant.menu_copy?.hero_badge?.trim() || defaultCopy.heroBadge;
     const openingHours = useMemo(
         () => normalizeOpeningHours(merchant.opening_hours),
         [merchant.opening_hours],
@@ -286,7 +292,7 @@ export function MenuView({
                             </div>
                             <div>
                                 <h2 className="text-lg sm:text-xl font-sans font-black tracking-tight" style={{ color: theme.text }}>
-                                    Horarios del restaurante
+                                    Horarios del negocio
                                 </h2>
                                 <p className="mt-1 text-sm leading-relaxed" style={{ color: withAlpha(theme.text, 0.7) }}>
                                     Tus clientes pueden ver de inmediato si hoy estás atendiendo y en qué horario.

@@ -32,14 +32,14 @@ export default function Home() {
             Daltri Menu
           </h1>
           <p className="text-zinc-400 mb-8 text-sm">
-            Ingresa el código de un restaurante para ver su menú.
+            Ingresa el código de un negocio para ver su catálogo.
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <div className="relative">
               <Input
                 type="text"
-                placeholder="Código del Restaurante (ej. 'demo')"
+                placeholder="Código del negocio (ej. 'demo')"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 className="bg-black/40 border-white/10 text-white placeholder:text-zinc-600 h-12 rounded-xl focus:ring-amber-500 focus:border-amber-500 pl-4 pr-12 transition-all"
@@ -52,7 +52,7 @@ export default function Home() {
               disabled={loading || !slug}
               className="h-12 w-full rounded-xl bg-white text-black font-semibold hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2 group"
             >
-              {loading ? 'Cargando...' : 'Ver Menú'}
+              {loading ? 'Cargando...' : 'Ver catálogo'}
               {!loading && <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />}
             </Button>
           </form>
@@ -65,7 +65,7 @@ export default function Home() {
           <div className="flex flex-col gap-2 w-full max-w-xs">
             <Link href="/login" className="w-full">
               <Button variant="outline" className="w-full bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors text-xs h-10 rounded-xl">
-                Entrar a mi restaurante
+                Entrar a mi panel
               </Button>
             </Link>
             <Link href="/register" className="block text-center text-amber-500/80 hover:text-amber-500 text-xs font-medium hover:underline transition-all py-2">

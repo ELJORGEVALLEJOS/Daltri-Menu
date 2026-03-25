@@ -20,11 +20,11 @@ export default function NotFound() {
                 </div>
 
                 <h1 className="font-serif text-3xl font-bold text-gray-900 mb-4 leading-tight">
-                    Restaurante no encontrado
+                    Negocio no encontrado
                 </h1>
 
                 <p className="text-gray-600 mb-8 max-w-[280px] mx-auto text-sm leading-relaxed">
-                    Lo sentimos, <span className="font-bold text-gray-800 italic">no existen menús disponibles con ese código</span> en nuestra plataforma.
+                    Lo sentimos, <span className="font-bold text-gray-800 italic">no existe un catálogo disponible con ese código</span> en nuestra plataforma.
                 </p>
 
                 <div className="space-y-4">
@@ -36,7 +36,7 @@ export default function NotFound() {
 
                     <Link href="/register" className="block">
                         <Button variant="ghost" className="w-full text-gray-500 hover:text-gray-900 font-medium py-4">
-                            ¿Eres dueño? Registra tu restaurante
+                            ¿Tienes un negocio? Regístralo
                         </Button>
                     </Link>
                 </div>

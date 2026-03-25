@@ -102,13 +102,13 @@ export default function LoginPage() {
                     <h2 className="text-3xl font-serif font-bold tracking-tight text-gray-900 leading-tight">
                         Bienvenido de nuevo
                     </h2>
-                    <p className="mt-2 text-gray-500 text-sm">Administra tu menú con estilo</p>
+                    <p className="mt-2 text-gray-500 text-sm">Administra tu catálogo con estilo</p>
                 </div>
 
                 <form className="space-y-6" onSubmit={handleLogin}>
                     <div className="space-y-4">
                         <div className="relative">
-                            <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Email del Dueño</Label>
+                            <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Email de acceso</Label>
                             <div className="mt-1 relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-[#C5A059] text-gray-400">
                                     <Mail className="h-5 w-5" />
@@ -119,7 +119,7 @@ export default function LoginPage() {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="dueno@tucomercio.com"
+                                    placeholder="acceso@tunegocio.com"
                                     className="pl-12 h-14 rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#C5A059]/20 transition-all font-medium text-gray-900 placeholder:text-gray-300"
                                 />
                             </div>

@@ -269,7 +269,7 @@ export default function OrdersPage() {
                         Pedidos y Analíticas
                     </h1>
                     <p className="text-sm font-medium text-gray-500">
-                        Las métricas cuentan solo pedidos confirmados por el restaurante.
+                        Las métricas cuentan solo pedidos confirmados por tu negocio.
                     </p>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-3">
@@ -400,7 +400,7 @@ export default function OrdersPage() {
                 </article>
                 <article className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">
-                        Menús vendidos
+                        Unidades vendidas
                     </p>
                     <p className="mt-3 text-3xl font-black text-gray-900">
                         {analytics?.totals.items_sold || 0}
@@ -503,7 +503,7 @@ export default function OrdersPage() {
                                                     </p>
                                                     <p>
                                                         <span className="font-semibold text-gray-900">
-                                                            Menús:
+                                                            Unidades:
                                                         </span>{' '}
                                                         {totalItems}
                                                     </p>
@@ -577,7 +577,7 @@ export default function OrdersPage() {
                                 Rendimiento por producto
                             </h2>
                             <p className="text-sm text-gray-500">
-                                Cuántos menús vendió cada producto, cuántos pedidos lo incluyeron y cuánto facturó.
+                                Cuántas unidades vendió cada producto, cuántos pedidos lo incluyeron y cuánto facturó.
                             </p>
                         </div>
                         <span className="rounded-full bg-[#F8F1E3] px-3 py-1 text-center text-xs font-bold uppercase tracking-[0.15em] text-[#A67C2E]">
@@ -605,7 +605,7 @@ export default function OrdersPage() {
                                                 {product.product_name}
                                             </h3>
                                             <p className="mt-1 text-sm text-gray-500">
-                                                Se vendieron {product.total_qty} menús de este producto.
+                                                Se vendieron {product.total_qty} unidades de este producto.
                                             </p>
                                         </div>
                                         <span className="text-sm font-bold text-gray-900 sm:text-right">
@@ -615,7 +615,7 @@ export default function OrdersPage() {
                                     <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-gray-600">
                                         <div>
                                             <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400">
-                                                Menús vendidos
+                                                Unidades vendidas
                                             </p>
                                             <p className="mt-1 font-semibold text-gray-900">
                                                 {product.total_qty}
