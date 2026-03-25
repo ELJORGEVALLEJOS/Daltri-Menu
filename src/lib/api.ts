@@ -10,6 +10,9 @@ type PublicProduct = {
     id: string;
     name: string;
     description?: string;
+    sku?: string;
+    brand?: string;
+    stock_quantity?: number;
     price_cents: number;
     original_price_cents?: number;
     image_url?: string;

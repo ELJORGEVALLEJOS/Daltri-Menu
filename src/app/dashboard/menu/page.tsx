@@ -20,6 +20,9 @@ import { cn } from '@/lib/utils';
 
 const EMPTY_ITEM_DATA = {
     name: '',
+    sku: '',
+    brand: '',
+    stock: '',
     price: '',
     originalPrice: '',
     description: '',
@@ -173,6 +176,8 @@ export default function MenuPage() {
         setFormError('');
 
         const name = itemData.name.trim();
+        const sku = itemData.sku.trim();
+        const brand = itemData.brand.trim();
         const description = itemData.description.trim();
         const imageUrl = itemData.imageUrl.trim();
 
@@ -184,6 +189,18 @@ export default function MenuPage() {
         if (!Number.isFinite(priceNumber) || priceNumber < 0) {
             setFormError('Ingresa un precio valido.');
             return;
+        }
+
+        let stockQuantity: number | null | undefined = undefined;
+        if (itemData.stock.trim().length > 0) {
+            const stockNumber = Number(itemData.stock);
+            if (!Number.isInteger(stockNumber) || stockNumber < 0) {
+                setFormError('El stock debe ser un numero entero mayor o igual a cero.');
+                return;
+            }
+            stockQuantity = stockNumber;
+        } else if (editingItem) {
+            stockQuantity = null;
         }
 
         const originalRaw = itemData.originalPrice.trim();
@@ -207,6 +224,9 @@ export default function MenuPage() {
         const payload = {
             category_id: categoryId,
             name,
+            sku: sku || null,
+            brand: brand || null,
+            stock_quantity: stockQuantity,
             price_cents: Math.round(priceNumber * 100),
             original_price_cents: originalPriceCents,
             description: description || undefined,
@@ -241,6 +261,10 @@ export default function MenuPage() {
         setAddingItemTo(categoryId);
         setItemData({
             name: item.name,
+            sku: item.sku || '',
+            brand: item.brand || '',
+            stock:
+                typeof item.stockQuantity === 'number' ? String(item.stockQuantity) : '',
             price: (item.priceCents / 100).toString(),
             originalPrice: item.originalPriceCents ? (item.originalPriceCents / 100).toString() : '',
             description: item.description || '',
@@ -410,6 +434,13 @@ export default function MenuPage() {
                                             </div>
 
                                             <h4 className="font-bold text-gray-900 group-hover:text-[#C5A059] transition-colors line-clamp-1 mb-1">{item.name}</h4>
+                                            {(item.brand || item.sku) && (
+                                                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#99A1AF]">
+                                                    {[item.brand, item.sku ? `SKU ${item.sku}` : null]
+                                                        .filter(Boolean)
+                                                        .join(' • ')}
+                                                </p>
+                                            )}
                                             <p className="text-sm text-[#99A1AF] line-clamp-2 min-h-[2.5rem] mb-4 font-medium leading-relaxed">{item.description || 'Sin descripción'}</p>
 
                                             <div className="flex items-center justify-between mt-auto">
@@ -431,6 +462,14 @@ export default function MenuPage() {
                                                     {item.isActive ? 'Activo' : 'Oculto'}
                                                 </div>
                                             </div>
+
+                                            {typeof item.stockQuantity === 'number' && (
+                                                <p className="mt-3 text-xs font-semibold text-[#99A1AF]">
+                                                    {item.stockQuantity > 0
+                                                        ? `Stock: ${item.stockQuantity}`
+                                                        : 'Sin stock'}
+                                                </p>
+                                            )}
 
                                             {item.originalPriceCents && item.originalPriceCents > item.priceCents && (
                                                 <div className="absolute top-0 right-0 p-1">
@@ -478,6 +517,29 @@ export default function MenuPage() {
                                             </div>
                                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                 <div className="space-y-2">
+                                                    <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">SKU</Label>
+                                                    <Input
+                                                        value={itemData.sku}
+                                                        onChange={e => setItemData({ ...itemData, sku: e.target.value })}
+                                                        placeholder="Opcional"
+                                                        className="h-14 bg-white rounded-2xl border-gray-100 px-5 text-[#99A1AF] placeholder:text-[#99A1AF] focus:ring-[#C5A059]/20"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Marca</Label>
+                                                    <Input
+                                                        value={itemData.brand}
+                                                        onChange={e => setItemData({ ...itemData, brand: e.target.value })}
+                                                        placeholder="Opcional"
+                                                        className="h-14 bg-white rounded-2xl border-gray-100 px-5 text-[#99A1AF] placeholder:text-[#99A1AF] focus:ring-[#C5A059]/20"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                            <div className="space-y-2">
+                                                <div className="space-y-2">
                                                     <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Precio</Label>
                                                     <div className="relative">
                                                         <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#C5A059]" />
@@ -490,7 +552,20 @@ export default function MenuPage() {
                                                         />
                                                     </div>
                                                 </div>
-                                                <div className="space-y-2">
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Stock</Label>
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    step="1"
+                                                    value={itemData.stock}
+                                                    onChange={e => setItemData({ ...itemData, stock: e.target.value })}
+                                                    placeholder="Sin control"
+                                                    className="h-14 bg-white rounded-2xl border-gray-100 px-5 text-[#99A1AF] placeholder:text-[#99A1AF] focus:ring-[#C5A059]/20 font-bold"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
                                                     <Label className="text-xs font-bold uppercase tracking-wider text-[#99A1AF] ml-1">Anterior (Oferta)</Label>
                                                     <div className="relative">
                                                         <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#99A1AF]" />
@@ -503,7 +578,6 @@ export default function MenuPage() {
                                                         />
                                                     </div>
                                                     <p className="text-[11px] text-[#99A1AF] ml-1">Debe ser mayor al precio actual.</p>
-                                                </div>
                                             </div>
                                         </div>
 

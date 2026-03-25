@@ -377,7 +377,17 @@ export async function deleteCategory(id: string) {
     throw new Error('Failed to delete category');
 }
 
-export async function createProduct(data: { category_id: string; name: string; price_cents: number; original_price_cents?: number; description?: string; image_url?: string }) {
+export async function createProduct(data: {
+    category_id: string;
+    name: string;
+    sku?: string | null;
+    brand?: string | null;
+    stock_quantity?: number | null;
+    price_cents: number;
+    original_price_cents?: number;
+    description?: string;
+    image_url?: string;
+}) {
     const res = await fetch(`${API_URL}/admin/products`, {
         method: 'POST',
         headers: getRequiredAuthHeaders(),
@@ -388,7 +398,18 @@ export async function createProduct(data: { category_id: string; name: string; p
     throw new Error(await parseError(res, 'Failed to create product'));
 }
 
-export async function updateProduct(id: string, data: { category_id?: string; name?: string; price_cents?: number; original_price_cents?: number; description?: string; image_url?: string; active?: boolean }) {
+export async function updateProduct(id: string, data: {
+    category_id?: string;
+    name?: string;
+    sku?: string | null;
+    brand?: string | null;
+    stock_quantity?: number | null;
+    price_cents?: number;
+    original_price_cents?: number;
+    description?: string;
+    image_url?: string;
+    active?: boolean;
+}) {
     const res = await fetch(`${API_URL}/admin/products/${id}`, {
         method: 'PUT',
         headers: getRequiredAuthHeaders(),

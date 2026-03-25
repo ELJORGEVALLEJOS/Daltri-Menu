@@ -10,6 +10,9 @@ type ProductCardProps = {
         id: string;
         name: string;
         description?: string;
+        sku?: string;
+        brand?: string;
+        stock_quantity?: number;
         price_cents: number;
         original_price_cents?: number;
         imageUrl?: string;
@@ -27,8 +30,20 @@ export function ProductCard({ item }: ProductCardProps) {
         originalPriceCents !== null &&
         Number.isFinite(originalPriceCents) &&
         originalPriceCents > currentPriceCents;
+    const stockQuantity =
+        typeof item.stock_quantity === 'number' && Number.isFinite(item.stock_quantity)
+            ? item.stock_quantity
+            : null;
+    const isOutOfStock = stockQuantity !== null && stockQuantity <= 0;
+    const metadataLine = [item.brand, item.sku ? `SKU ${item.sku}` : null]
+        .filter(Boolean)
+        .join(' • ');
 
     const handleAdd = () => {
+        if (isOutOfStock) {
+            return;
+        }
+
         addItem({
             itemId: item.id,
             name: item.name,
@@ -61,7 +76,9 @@ export function ProductCard({ item }: ProductCardProps) {
                         <h3 className="text-base sm:text-lg font-sans font-black text-gray-900 tracking-tight leading-tight">
                             {item.name}
                         </h3>
-                        <p className="text-xs font-medium text-gray-400 italic">Producto</p>
+                        <p className="text-xs font-medium text-gray-400 italic">
+                            {metadataLine || 'Producto'}
+                        </p>
                     </div>
                 </div>
 
@@ -96,6 +113,12 @@ export function ProductCard({ item }: ProductCardProps) {
                     )}
                 </div>
 
+                {stockQuantity !== null && (
+                    <p className="text-xs font-semibold text-gray-500">
+                        {isOutOfStock ? 'Sin stock disponible' : `Stock disponible: ${stockQuantity}`}
+                    </p>
+                )}
+
                 <Button
                     className="w-full rounded-xl h-10 sm:h-11 text-sm font-bold shadow-lg"
                     style={{
@@ -103,8 +126,10 @@ export function ProductCard({ item }: ProductCardProps) {
                         color: 'var(--menu-button-text, #ffffff)',
                     }}
                     onClick={handleAdd}
+                    disabled={isOutOfStock}
                 >
-                    Añadir al carrito <Plus className="ml-2 w-5 h-5" />
+                    {isOutOfStock ? 'Sin stock' : 'Añadir al carrito'}
+                    {!isOutOfStock && <Plus className="ml-2 w-5 h-5" />}
                 </Button>
             </div>
         </div>
