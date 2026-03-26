@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
-import { Check, Copy, Download, Link2, Printer, QrCode } from 'lucide-react';
+import { Check, Copy, Download, Eye, Link2, Printer, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -149,6 +149,7 @@ type Merchant = {
             }>;
         };
     };
+    preview_url?: string;
 };
 
 function loadImageElement(src: string) {
@@ -293,6 +294,7 @@ export default function SettingsPage() {
     const [error, setError] = useState('');
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
     const [publication, setPublication] = useState<Merchant['publication'] | null>(null);
+    const [previewUrl, setPreviewUrl] = useState('');
     const [qrDataUrl, setQrDataUrl] = useState('');
     const [qrPosterUrl, setQrPosterUrl] = useState('');
     const [qrLayout, setQrLayout] = useState<QrLayoutKey>('medium');
@@ -384,6 +386,7 @@ export default function SettingsPage() {
                     openingHours: normalizeOpeningHours(data.opening_hours),
                 });
                 setPublication(data.publication || null);
+                setPreviewUrl(data.preview_url || '');
 
                 if (data.slug) {
                     localStorage.setItem('merchant_slug', data.slug);
@@ -638,6 +641,23 @@ export default function SettingsPage() {
         link.click();
     };
 
+    const scrollToSection = (sectionId: string) => {
+        const target = document.getElementById(sectionId);
+        if (!target) {
+            return;
+        }
+
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    const handleOpenPreview = () => {
+        if (!previewUrl) {
+            return;
+        }
+
+        window.open(previewUrl, '_blank', 'noopener,noreferrer');
+    };
+
     const persistSettings = async (nextCatalogPublished = formData.catalogPublished) => {
         setSaving(true);
         setError('');
@@ -703,6 +723,7 @@ export default function SettingsPage() {
                 catalogPublished: Boolean(response.publication?.is_published),
             }));
             setPublication(response.publication || null);
+            setPreviewUrl(response.preview_url || '');
             alert(
                 nextCatalogPublished
                     ? 'Configuracion guardada y catálogo publicado.'
@@ -732,6 +753,63 @@ export default function SettingsPage() {
         return <div className="font-medium text-gray-950">Cargando configuración...</div>;
     }
 
+    const criticalChecklist = publication?.checklist.critical || [];
+    const advisoryChecklist = publication?.checklist.advisory || [];
+    const businessStepComplete = criticalChecklist
+        .filter((item) => ['name', 'slug', 'whatsapp'].includes(item.key))
+        .every((item) => item.complete);
+    const brandingStepComplete = advisoryChecklist
+        .filter((item) => ['visual_identity', 'custom_copy'].includes(item.key))
+        .every((item) => item.complete);
+    const hoursStepComplete = advisoryChecklist.find((item) => item.key === 'opening_hours')
+        ?.complete ?? false;
+    const catalogStepComplete = criticalChecklist
+        .filter((item) => ['categories', 'products', 'prices'].includes(item.key))
+        .every((item) => item.complete);
+    const onboardingSteps = [
+        {
+            key: 'business',
+            title: 'Paso 1 · Datos base',
+            description: 'Nombre, enlace público y WhatsApp para recibir pedidos.',
+            complete: businessStepComplete,
+            actionLabel: 'Ir a datos base',
+            sectionId: 'business-basics-section',
+        },
+        {
+            key: 'branding',
+            title: 'Paso 2 · Identidad y copy',
+            description: 'Logo, portada y textos para que el catálogo no se vea de demo.',
+            complete: brandingStepComplete,
+            actionLabel: 'Ir a identidad visual',
+            sectionId: 'visual-identity-section',
+        },
+        {
+            key: 'hours',
+            title: 'Paso 3 · Horarios',
+            description: 'Configura cuándo estás abierto para habilitar pedidos correctamente.',
+            complete: hoursStepComplete,
+            actionLabel: 'Ir a horarios',
+            sectionId: 'hours-section',
+        },
+        {
+            key: 'operations',
+            title: 'Paso 4 · Envío y cobro',
+            description: 'Deja listos envío, transferencia y límite de pedidos pendientes.',
+            complete: true,
+            actionLabel: 'Ir a operación',
+            sectionId: 'operations-section',
+        },
+        {
+            key: 'publish',
+            title: 'Paso 5 · Revisar y publicar',
+            description: 'Abre la vista previa y publica cuando el checklist crítico esté completo.',
+            complete: Boolean(publication?.can_publish && publication?.is_published),
+            actionLabel: 'Ir a publicación',
+            sectionId: 'publication-section',
+        },
+    ];
+    const completedOnboardingSteps = onboardingSteps.filter((step) => step.complete).length;
+
     return (
         <div className="mx-auto w-full max-w-6xl text-gray-950">
             <h1 className="mb-4 text-2xl font-bold sm:mb-6 sm:text-3xl">Configuración del negocio</h1>
@@ -741,6 +819,54 @@ export default function SettingsPage() {
                 className="space-y-6 rounded-3xl border bg-white p-4 text-gray-950 shadow sm:p-6 [&_input]:text-gray-950 [&_input]:placeholder:text-gray-500 [&_label]:text-gray-950"
             >
                 <section className="space-y-4 rounded-2xl border p-4 sm:p-5">
+                    <div className="space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <h2 className="text-lg font-bold">Asistente de publicación</h2>
+                                <p className="text-sm font-medium text-gray-900">
+                                    Sigue estos pasos para dejar tu catálogo listo y publicarlo con buena presentación.
+                                </p>
+                            </div>
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-700">
+                                {completedOnboardingSteps}/{onboardingSteps.length} pasos listos
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+                        {onboardingSteps.map((step) => (
+                            <div key={step.key} className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-950">{step.title}</p>
+                                        <p className="mt-1 text-xs font-medium leading-relaxed text-gray-600">
+                                            {step.description}
+                                        </p>
+                                    </div>
+                                    <span
+                                        className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.15em] ${
+                                            step.complete
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : 'bg-amber-100 text-amber-700'
+                                        }`}
+                                    >
+                                        {step.complete ? 'Listo' : 'Pendiente'}
+                                    </span>
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => scrollToSection(step.sectionId)}
+                                    className="mt-4 h-9 w-full"
+                                >
+                                    {step.actionLabel}
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                <section id="publication-section" className="space-y-4 rounded-2xl border p-4 sm:p-5">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div className="space-y-2">
                             <div className="flex flex-wrap items-center gap-3">
@@ -765,6 +891,16 @@ export default function SettingsPage() {
                             <Button
                                 type="button"
                                 variant="outline"
+                                onClick={handleOpenPreview}
+                                disabled={!previewUrl}
+                                className="h-10"
+                            >
+                                <Eye className="mr-2 h-4 w-4" />
+                                Abrir vista previa
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
                                 onClick={() => void persistSettings(false)}
                                 disabled={saving || !publication?.is_published}
                                 className="h-10"
@@ -781,6 +917,17 @@ export default function SettingsPage() {
                             </Button>
                         </div>
                     </div>
+
+                    {previewUrl && (
+                        <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                            <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                                URL de vista previa
+                            </p>
+                            <p className="mt-1 break-all text-sm font-semibold text-gray-950">
+                                {previewUrl}
+                            </p>
+                        </div>
+                    )}
 
                     <div className="grid gap-4 lg:grid-cols-2">
                         <div className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50 p-4">
@@ -850,7 +997,7 @@ export default function SettingsPage() {
                 </section>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <section className="space-y-6">
+                    <section id="business-basics-section" className="space-y-6">
                         <div>
                             <Label htmlFor="name">Nombre del negocio</Label>
                             <Input
@@ -1034,7 +1181,7 @@ export default function SettingsPage() {
                             </p>
                         </div>
 
-                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
+                        <div id="visual-identity-section" className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <Label>Logo del negocio</Label>
                             <Input
                                 id="logoUrl"
@@ -1130,7 +1277,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
+                        <div id="hours-section" className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <div>
                                 <Label>Horarios de atención</Label>
                                 <p className="mt-1 text-sm font-medium text-gray-700">
@@ -1406,7 +1553,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
+                        <div id="operations-section" className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <div>
                                 <Label>Envio</Label>
                                 <div className="mt-2 grid grid-cols-2 gap-3">

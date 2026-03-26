@@ -119,9 +119,11 @@ function buildTheme(themeColors?: MerchantThemeColors): ThemePalette {
 export function MenuView({
     merchant,
     menu,
+    previewMode = false,
 }: {
     merchant: Merchant;
     menu: MenuCategory[];
+    previewMode?: boolean;
 }) {
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
     const selectedCategory = menu.find((c) => c.id === selectedCategoryId);
@@ -207,6 +209,7 @@ export function MenuView({
                                     key={item.id}
                                     item={normalizedItem}
                                     canOrder={canReceiveOrders}
+                                    previewMode={previewMode}
                                 />
                             );
                         })}
@@ -281,6 +284,31 @@ export function MenuView({
             </div>
 
             <div className="container mx-auto max-w-6xl px-4 sm:px-6 -mt-6 sm:-mt-10 pb-28 sm:pb-36 relative z-20">
+                {previewMode && (
+                    <div
+                        className="mb-8 rounded-[2rem] border px-5 py-4 shadow-premium"
+                        style={{
+                            backgroundColor: withAlpha(theme.surface, 0.96),
+                            borderColor: withAlpha(theme.primary, 0.24),
+                        }}
+                    >
+                        <p
+                            className="text-sm font-black uppercase tracking-[0.18em]"
+                            style={{ color: theme.primary }}
+                        >
+                            Vista previa del catálogo
+                        </p>
+                        <p
+                            className="mt-2 text-sm font-medium leading-relaxed"
+                            style={{ color: withAlpha(theme.text, 0.75) }}
+                        >
+                            Este negocio está en borrador. Aquí puedes revisar diseño, textos y
+                            estructura antes de publicarlo. Los pedidos están deshabilitados en esta
+                            vista.
+                        </p>
+                    </div>
+                )}
+
                 <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3 mb-10 sm:mb-12">
                     {menu.map((category) => (
                         <button
@@ -334,7 +362,9 @@ export function MenuView({
                                 </p>
                                 {!openingStatus.isOpenNow && (
                                     <p className="mt-2 text-sm font-semibold" style={{ color: theme.primary }}>
-                                        Los pedidos se habilitan solo dentro del horario configurado.
+                                        {previewMode
+                                            ? 'En vista previa no se reciben pedidos.'
+                                            : 'Los pedidos se habilitan solo dentro del horario configurado.'}
                                     </p>
                                 )}
                             </div>

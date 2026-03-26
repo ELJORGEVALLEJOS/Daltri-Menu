@@ -73,14 +73,28 @@ export type PublicMerchant = {
     theme_colors?: MerchantThemeColors;
     menu_copy?: MerchantMenuCopy;
     opening_hours?: MerchantOpeningHours;
+    preview_mode?: boolean;
 };
 
-export async function fetchMerchant(slug: string) {
+function appendPreviewKey(url: string, previewKey?: string) {
+    if (!previewKey) {
+        return url;
+    }
+
+    const nextUrl = new URL(url);
+    nextUrl.searchParams.set('preview_key', previewKey);
+    return nextUrl.toString();
+}
+
+export async function fetchMerchant(slug: string, previewKey?: string) {
     for (const baseUrl of API_BASES) {
         try {
-            const res = await fetch(`${baseUrl}/public/restaurants/${slug}/menu`, {
-                cache: 'no-store',
-            });
+            const res = await fetch(
+                appendPreviewKey(`${baseUrl}/public/restaurants/${slug}/menu`, previewKey),
+                {
+                    cache: 'no-store',
+                },
+            );
 
             if (!res.ok) {
                 continue;
@@ -101,12 +115,15 @@ export async function fetchMerchant(slug: string) {
     return null;
 }
 
-export async function fetchRestaurantMenu(slug: string) {
+export async function fetchRestaurantMenu(slug: string, previewKey?: string) {
     for (const baseUrl of API_BASES) {
         try {
-            const res = await fetch(`${baseUrl}/public/restaurants/${slug}/menu`, {
-                cache: 'no-store',
-            });
+            const res = await fetch(
+                appendPreviewKey(`${baseUrl}/public/restaurants/${slug}/menu`, previewKey),
+                {
+                    cache: 'no-store',
+                },
+            );
 
             if (!res.ok) {
                 continue;

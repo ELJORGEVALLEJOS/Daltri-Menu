@@ -18,9 +18,14 @@ type ProductCardProps = {
         imageUrl?: string;
     };
     canOrder?: boolean;
+    previewMode?: boolean;
 };
 
-export function ProductCard({ item, canOrder = true }: ProductCardProps) {
+export function ProductCard({
+    item,
+    canOrder = true,
+    previewMode = false,
+}: ProductCardProps) {
     const { addItem } = useCart();
     const currentPriceCents = Number(item.price_cents || 0);
     const originalPriceCents =
@@ -40,7 +45,7 @@ export function ProductCard({ item, canOrder = true }: ProductCardProps) {
         .filter(Boolean)
         .join(' • ');
 
-    const isPurchaseBlocked = isOutOfStock || !canOrder;
+    const isPurchaseBlocked = isOutOfStock || !canOrder || previewMode;
 
     const handleAdd = () => {
         if (isPurchaseBlocked) {
@@ -122,7 +127,13 @@ export function ProductCard({ item, canOrder = true }: ProductCardProps) {
                     </p>
                 )}
 
-                {!canOrder && (
+                {previewMode && (
+                    <p className="text-xs font-semibold text-sky-700">
+                        Vista previa activa. El catálogo aún no recibe pedidos.
+                    </p>
+                )}
+
+                {!previewMode && !canOrder && (
                     <p className="text-xs font-semibold text-amber-700">
                         Este negocio está fuera de horario y no recibe pedidos ahora.
                     </p>
@@ -137,7 +148,13 @@ export function ProductCard({ item, canOrder = true }: ProductCardProps) {
                     onClick={handleAdd}
                     disabled={isPurchaseBlocked}
                 >
-                    {isOutOfStock ? 'Sin stock' : !canOrder ? 'Fuera de horario' : 'Añadir al carrito'}
+                    {isOutOfStock
+                        ? 'Sin stock'
+                        : previewMode
+                            ? 'Vista previa'
+                            : !canOrder
+                                ? 'Fuera de horario'
+                                : 'Añadir al carrito'}
                     {!isPurchaseBlocked && <Plus className="ml-2 w-5 h-5" />}
                 </Button>
             </div>

@@ -7,22 +7,26 @@ export const dynamic = 'force-dynamic';
 
 export default async function MerchantPage({
     params,
+    searchParams,
 }: {
     params: Promise<{ slug: string }>;
+    searchParams: Promise<{ preview_key?: string }>;
 }) {
     const { slug } = await params;
-    const merchant = await fetchMerchant(slug);
+    const { preview_key: previewKey } = await searchParams;
+    const merchant = await fetchMerchant(slug, previewKey);
 
     if (!merchant) {
         notFound();
     }
 
-    const menu = await fetchRestaurantMenu(slug);
+    const menu = await fetchRestaurantMenu(slug, previewKey);
+    const previewMode = Boolean(merchant.preview_mode);
 
     return (
         <>
-            <MenuView merchant={merchant} menu={menu || []} />
-            <FloatingCart slug={slug} themeColors={merchant.theme_colors} />
+            <MenuView merchant={merchant} menu={menu || []} previewMode={previewMode} />
+            {!previewMode && <FloatingCart slug={slug} themeColors={merchant.theme_colors} />}
         </>
     );
 }
