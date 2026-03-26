@@ -128,6 +128,27 @@ type Merchant = {
         hero_badge?: string;
     };
     opening_hours?: MerchantOpeningHours;
+    publication?: {
+        is_published: boolean;
+        can_publish: boolean;
+        missing_required_count: number;
+        checklist: {
+            critical: Array<{
+                key: string;
+                label: string;
+                complete: boolean;
+                required: boolean;
+                message: string;
+            }>;
+            advisory: Array<{
+                key: string;
+                label: string;
+                complete: boolean;
+                required: boolean;
+                message: string;
+            }>;
+        };
+    };
 };
 
 function loadImageElement(src: string) {
@@ -271,6 +292,7 @@ export default function SettingsPage() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
+    const [publication, setPublication] = useState<Merchant['publication'] | null>(null);
     const [qrDataUrl, setQrDataUrl] = useState('');
     const [qrPosterUrl, setQrPosterUrl] = useState('');
     const [qrLayout, setQrLayout] = useState<QrLayoutKey>('medium');
@@ -286,6 +308,7 @@ export default function SettingsPage() {
         shippingCost: '',
         freeShippingOver: '',
         maxPendingOrdersPerCustomer: '1',
+        catalogPublished: false,
         uberEats: '',
         google: '',
         instagram: '',
@@ -341,6 +364,7 @@ export default function SettingsPage() {
                     maxPendingOrdersPerCustomer: String(
                         Math.max(1, data.max_pending_orders_per_customer || 1),
                     ),
+                    catalogPublished: Boolean(data.publication?.is_published),
                     uberEats: data.social_links?.uber_eats || '',
                     google: data.social_links?.google || '',
                     instagram: data.social_links?.instagram || '',
@@ -359,6 +383,7 @@ export default function SettingsPage() {
                     heroBadge: data.menu_copy?.hero_badge || defaultCopy.heroBadge,
                     openingHours: normalizeOpeningHours(data.opening_hours),
                 });
+                setPublication(data.publication || null);
 
                 if (data.slug) {
                     localStorage.setItem('merchant_slug', data.slug);
@@ -613,8 +638,7 @@ export default function SettingsPage() {
         link.click();
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const persistSettings = async (nextCatalogPublished = formData.catalogPublished) => {
         setSaving(true);
         setError('');
 
@@ -635,7 +659,7 @@ export default function SettingsPage() {
         );
 
         try {
-            await updateMerchant({
+            const response = (await updateMerchant({
                 name: formData.name.trim(),
                 slug: normalizedSlug,
                 whatsapp_phone: normalizedPhone,
@@ -646,6 +670,7 @@ export default function SettingsPage() {
                 shipping_cost_cents: shippingCostValue,
                 free_shipping_over_cents: freeShippingOverValue,
                 max_pending_orders_per_customer: maxPendingOrdersPerCustomer,
+                catalog_published: nextCatalogPublished,
                 social_links: {
                     uber_eats: formData.uberEats.trim(),
                     google: formData.google.trim(),
@@ -670,10 +695,19 @@ export default function SettingsPage() {
                     hero_badge: formData.heroBadge.trim(),
                 },
                 opening_hours: formData.openingHours,
-            });
+            })) as Merchant;
 
             localStorage.setItem('merchant_slug', normalizedSlug);
-            alert('Configuracion guardada correctamente');
+            setFormData((prev) => ({
+                ...prev,
+                catalogPublished: Boolean(response.publication?.is_published),
+            }));
+            setPublication(response.publication || null);
+            alert(
+                nextCatalogPublished
+                    ? 'Configuracion guardada y catálogo publicado.'
+                    : 'Configuracion guardada correctamente.',
+            );
         } catch (error) {
             if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
                 router.replace('/login');
@@ -689,6 +723,11 @@ export default function SettingsPage() {
         }
     };
 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        await persistSettings();
+    };
+
     if (loading) {
         return <div className="font-medium text-gray-950">Cargando configuración...</div>;
     }
@@ -701,6 +740,115 @@ export default function SettingsPage() {
                 onSubmit={handleSubmit}
                 className="space-y-6 rounded-3xl border bg-white p-4 text-gray-950 shadow sm:p-6 [&_input]:text-gray-950 [&_input]:placeholder:text-gray-500 [&_label]:text-gray-950"
             >
+                <section className="space-y-4 rounded-2xl border p-4 sm:p-5">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-3">
+                                <h2 className="text-lg font-bold">Estado de publicación</h2>
+                                <span
+                                    className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] ${
+                                        publication?.is_published
+                                            ? 'bg-emerald-100 text-emerald-700'
+                                            : 'bg-amber-100 text-amber-700'
+                                    }`}
+                                >
+                                    {publication?.is_published ? 'Publicado' : 'Borrador'}
+                                </span>
+                            </div>
+                            <p className="text-sm font-medium text-gray-900">
+                                El catálogo solo se publica si cumple el checklist crítico. Los
+                                elementos informativos mejoran la presentación, pero no bloquean.
+                            </p>
+                        </div>
+
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => void persistSettings(false)}
+                                disabled={saving || !publication?.is_published}
+                                className="h-10"
+                            >
+                                Despublicar
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={() => void persistSettings(true)}
+                                disabled={saving}
+                                className="h-10"
+                            >
+                                Guardar y publicar
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-4 lg:grid-cols-2">
+                        <div className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                            <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-700">
+                                Checklist crítico
+                            </h3>
+                            <div className="space-y-2">
+                                {publication?.checklist.critical.map((item) => (
+                                    <div
+                                        key={item.key}
+                                        className="rounded-xl border bg-white px-4 py-3"
+                                    >
+                                        <div className="flex items-center justify-between gap-3">
+                                            <p className="text-sm font-semibold text-gray-950">
+                                                {item.label}
+                                            </p>
+                                            <span
+                                                className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.15em] ${
+                                                    item.complete
+                                                        ? 'bg-emerald-100 text-emerald-700'
+                                                        : 'bg-red-100 text-red-700'
+                                                }`}
+                                            >
+                                                {item.complete ? 'Listo' : 'Falta'}
+                                            </span>
+                                        </div>
+                                        <p className="mt-1 text-xs font-medium text-gray-600">
+                                            {item.message}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                            <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-700">
+                                Mejora de presentación
+                            </h3>
+                            <div className="space-y-2">
+                                {publication?.checklist.advisory.map((item) => (
+                                    <div
+                                        key={item.key}
+                                        className="rounded-xl border bg-white px-4 py-3"
+                                    >
+                                        <div className="flex items-center justify-between gap-3">
+                                            <p className="text-sm font-semibold text-gray-950">
+                                                {item.label}
+                                            </p>
+                                            <span
+                                                className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.15em] ${
+                                                    item.complete
+                                                        ? 'bg-emerald-100 text-emerald-700'
+                                                        : 'bg-amber-100 text-amber-700'
+                                                }`}
+                                            >
+                                                {item.complete ? 'Listo' : 'Pendiente'}
+                                            </span>
+                                        </div>
+                                        <p className="mt-1 text-xs font-medium text-gray-600">
+                                            {item.message}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <section className="space-y-6">
                         <div>
