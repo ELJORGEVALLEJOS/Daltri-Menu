@@ -101,6 +101,7 @@ type Merchant = {
     shipping_type?: MerchantShippingType;
     shipping_cost_cents?: number;
     free_shipping_over_cents?: number | null;
+    max_pending_orders_per_customer?: number;
     social_links?: {
         uber_eats?: string;
         google?: string;
@@ -284,6 +285,7 @@ export default function SettingsPage() {
         shippingType: 'free' as MerchantShippingType,
         shippingCost: '',
         freeShippingOver: '',
+        maxPendingOrdersPerCustomer: '1',
         uberEats: '',
         google: '',
         instagram: '',
@@ -336,6 +338,9 @@ export default function SettingsPage() {
                         data.free_shipping_over_cents > 0
                             ? String(data.free_shipping_over_cents / 100)
                             : '',
+                    maxPendingOrdersPerCustomer: String(
+                        Math.max(1, data.max_pending_orders_per_customer || 1),
+                    ),
                     uberEats: data.social_links?.uber_eats || '',
                     google: data.social_links?.google || '',
                     instagram: data.social_links?.instagram || '',
@@ -624,6 +629,10 @@ export default function SettingsPage() {
             formData.shippingType === 'paid' && Number(formData.freeShippingOver || 0) > 0
                 ? Math.max(0, Math.round(Number(formData.freeShippingOver) * 100))
                 : null;
+        const maxPendingOrdersPerCustomer = Math.max(
+            1,
+            Math.round(Number(formData.maxPendingOrdersPerCustomer || 1)),
+        );
 
         try {
             await updateMerchant({
@@ -636,6 +645,7 @@ export default function SettingsPage() {
                 shipping_type: formData.shippingType,
                 shipping_cost_cents: shippingCostValue,
                 free_shipping_over_cents: freeShippingOverValue,
+                max_pending_orders_per_customer: maxPendingOrdersPerCustomer,
                 social_links: {
                     uber_eats: formData.uberEats.trim(),
                     google: formData.google.trim(),
@@ -1320,6 +1330,27 @@ export default function SettingsPage() {
                                             tendran envio gratis.
                                         </p>
                                     )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="maxPendingOrdersPerCustomer">
+                                    Máximo de pedidos pendientes por cliente
+                                </Label>
+                                <Input
+                                    id="maxPendingOrdersPerCustomer"
+                                    name="maxPendingOrdersPerCustomer"
+                                    type="number"
+                                    value={formData.maxPendingOrdersPerCustomer}
+                                    onChange={handleChange}
+                                    placeholder="1"
+                                    min={1}
+                                    step="1"
+                                    className="mt-2"
+                                />
+                                <p className="mt-1 text-xs font-medium text-gray-900">
+                                    Cuando un cliente alcance este límite, no podrá enviar otro pedido
+                                    hasta que confirmes o canceles los pendientes.
+                                </p>
                             </div>
                         </div>
 

@@ -175,6 +175,7 @@ export async function createOrder(
     slug: string,
     orderData: {
         customer_name: string;
+        customer_session_id?: string;
         customer_phone?: string;
         delivery: 'pickup' | 'delivery';
         payment_method: 'cash' | 'transfer';

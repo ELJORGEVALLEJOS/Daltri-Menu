@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { formatMoney } from '@/lib/format';
 import { getShippingPreview } from '@/lib/shipping';
 import { getOpeningHoursStatus, normalizeOpeningHours } from '@/lib/opening-hours';
+import { getOrCreateCustomerSessionId } from '@/lib/customer-session';
 
 export default function CheckoutPage() {
     const { items, total, clearCart } = useCart();
@@ -87,8 +88,10 @@ export default function CheckoutPage() {
         }
 
         try {
+            const customerSessionId = getOrCreateCustomerSessionId();
             const orderData = {
                 customer_name: name.trim(),
+                customer_session_id: customerSessionId,
                 delivery: 'delivery' as const,
                 payment_method: paymentMethod,
                 delivery_address: trimmedAddress,
