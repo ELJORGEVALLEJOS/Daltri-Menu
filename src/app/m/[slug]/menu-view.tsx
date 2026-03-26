@@ -281,8 +281,33 @@ export function MenuView({
             </div>
 
             <div className="container mx-auto max-w-6xl px-4 sm:px-6 -mt-6 sm:-mt-10 pb-28 sm:pb-36 relative z-20">
+                <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3 mb-10 sm:mb-12">
+                    {menu.map((category) => (
+                        <button
+                            key={category.id}
+                            onClick={() => setSelectedCategoryId(category.id)}
+                            className="w-full text-left group block rounded-2xl p-4 sm:p-6 shadow-premium border hover:scale-[1.01] transition-all active:scale-[0.99]"
+                            style={{ backgroundColor: theme.surface, borderColor: withAlpha(theme.text, 0.08) }}
+                        >
+                            <div className="flex items-center justify-between">
+                                <span className="text-lg sm:text-2xl font-sans font-black tracking-tight leading-none" style={{ color: theme.text }}>
+                                    {category.name}
+                                </span>
+                                <div
+                                    className="p-2 rounded-full transition-colors"
+                                    style={{ backgroundColor: withAlpha(theme.text, 0.06) }}
+                                >
+                                    <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 rotate-180" style={{ color: withAlpha(theme.text, 0.4) }} />
+                                </div>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+
+                <SocialLinks links={merchant.social_links} />
+
                 {openingStatus.hasAnyEnabledDay && (
-                    <div className="mb-8 grid gap-4 rounded-[2rem] border p-5 shadow-premium sm:p-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]" style={{ backgroundColor: theme.surface, borderColor: withAlpha(theme.text, 0.08) }}>
+                    <div className="mt-10 grid gap-4 rounded-[2rem] border p-5 shadow-premium sm:mt-12 sm:p-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]" style={{ backgroundColor: theme.surface, borderColor: withAlpha(theme.text, 0.08) }}>
                         <div className="space-y-3">
                             <div className="flex flex-wrap items-center gap-3">
                                 <span
@@ -336,31 +361,6 @@ export function MenuView({
                         </div>
                     </div>
                 )}
-
-                <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3 mb-10 sm:mb-12">
-                    {menu.map((category) => (
-                        <button
-                            key={category.id}
-                            onClick={() => setSelectedCategoryId(category.id)}
-                            className="w-full text-left group block rounded-2xl p-4 sm:p-6 shadow-premium border hover:scale-[1.01] transition-all active:scale-[0.99]"
-                            style={{ backgroundColor: theme.surface, borderColor: withAlpha(theme.text, 0.08) }}
-                        >
-                            <div className="flex items-center justify-between">
-                                <span className="text-lg sm:text-2xl font-sans font-black tracking-tight leading-none" style={{ color: theme.text }}>
-                                    {category.name}
-                                </span>
-                                <div
-                                    className="p-2 rounded-full transition-colors"
-                                    style={{ backgroundColor: withAlpha(theme.text, 0.06) }}
-                                >
-                                    <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 rotate-180" style={{ color: withAlpha(theme.text, 0.4) }} />
-                                </div>
-                            </div>
-                        </button>
-                    ))}
-                </div>
-
-                <SocialLinks links={merchant.social_links} />
             </div>
         </div>
     );
