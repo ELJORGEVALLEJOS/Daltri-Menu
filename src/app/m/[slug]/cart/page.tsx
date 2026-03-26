@@ -35,6 +35,9 @@ export default function CartPage() {
     const shippingPreview = getShippingPreview(total, merchant);
     const shippingCost = shippingPreview.shippingCost;
     const finalTotal = total + shippingCost;
+    const totalUnits = items.reduce((acc, item) => acc + item.quantity, 0);
+    const maxUnitsPerOrder = Math.max(1, merchant?.max_units_per_order || 3);
+    const exceedsOrderUnitsLimit = totalUnits > maxUnitsPerOrder;
     const openingStatus = getOpeningHoursStatus(normalizeOpeningHours(merchant?.opening_hours));
     const canReceiveOrders = !openingStatus.hasAnyEnabledDay || openingStatus.isOpenNow;
 
@@ -118,6 +121,10 @@ export default function CartPage() {
                                 <span>Envio</span>
                                 <span className="text-gray-900">{shippingCost > 0 ? formatMoney(shippingCost) : 'Gratis'}</span>
                             </div>
+                            <div className="flex items-center justify-between gap-3 text-sm text-gray-500 font-bold uppercase tracking-[0.15em]">
+                                <span>Unidades</span>
+                                <span className="text-gray-900">{totalUnits}</span>
+                            </div>
                             {shippingPreview.hasFreeShippingThreshold && (
                                 <p className="text-xs leading-relaxed text-gray-500">
                                     {shippingPreview.qualifiesForFreeShipping
@@ -135,15 +142,24 @@ export default function CartPage() {
                                     Este negocio está fuera de horario. Podrás continuar el pedido cuando vuelva a abrir.
                                 </div>
                             )}
+                            {exceedsOrderUnitsLimit && (
+                                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                                    Este negocio permite hasta {maxUnitsPerOrder} unidades por pedido. Ahora tienes {totalUnits}.
+                                </div>
+                            )}
                         </div>
 
                         <Link href={checkoutHref} className={!slug ? 'pointer-events-none opacity-50' : ''}>
                             <Button
                                 className="w-full bg-[#25D366] hover:bg-[#1fa34e] text-white h-14 sm:h-20 text-base sm:text-xl font-black rounded-[1.25rem] sm:rounded-[2rem] shadow-[0_20px_50px_rgba(37,211,102,0.2)] flex items-center justify-center gap-3 sm:gap-4 transition-all active:scale-[0.98] border-b-4 sm:border-b-8 border-[#1a9447]"
-                                disabled={!slug || !canReceiveOrders}
+                                disabled={!slug || !canReceiveOrders || exceedsOrderUnitsLimit}
                             >
                                 <ArrowRight className="h-6 w-6 sm:h-8 sm:w-8" />
-                                {canReceiveOrders ? 'Continuar pedido' : 'Fuera de horario'}
+                                {exceedsOrderUnitsLimit
+                                    ? 'Límite superado'
+                                    : canReceiveOrders
+                                        ? 'Continuar pedido'
+                                        : 'Fuera de horario'}
                             </Button>
                         </Link>
 

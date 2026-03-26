@@ -49,6 +49,9 @@ export default function CheckoutPage() {
     const shippingPreview = getShippingPreview(total, merchant);
     const shippingCost = shippingPreview.shippingCost;
     const finalTotal = total + shippingCost;
+    const totalUnits = items.reduce((acc, item) => acc + item.quantity, 0);
+    const maxUnitsPerOrder = Math.max(1, merchant?.max_units_per_order || 3);
+    const exceedsOrderUnitsLimit = totalUnits > maxUnitsPerOrder;
     const transferAlias = merchant?.payment_methods?.transfer_alias?.trim() || '';
     const transferCbuCvu = merchant?.payment_methods?.transfer_cbu_cvu?.trim() || '';
     const transferEnabled = Boolean(
@@ -80,6 +83,12 @@ export default function CheckoutPage() {
         const trimmedAddress = address.trim();
         if (!canReceiveOrders) {
             alert('Este negocio está fuera de horario y no recibe pedidos en este momento.');
+            return;
+        }
+        if (exceedsOrderUnitsLimit) {
+            alert(
+                `Este negocio permite hasta ${maxUnitsPerOrder} unidades por pedido. Ajusta tu carrito antes de continuar.`,
+            );
             return;
         }
         if (paymentMethod === 'transfer' && !transferEnabled) {
@@ -186,6 +195,10 @@ export default function CheckoutPage() {
                                     <span>{formatAmount(shippingCost)}</span>
                                 )}
                             </div>
+                            <div className="flex justify-between text-gray-600">
+                                <span>Unidades</span>
+                                <span>{totalUnits}</span>
+                            </div>
                             {shippingPreview.hasFreeShippingThreshold && (
                                 <p className="text-xs leading-relaxed text-gray-500">
                                     {shippingPreview.qualifiesForFreeShipping
@@ -206,6 +219,11 @@ export default function CheckoutPage() {
                             {!canReceiveOrders && (
                                 <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
                                     Este negocio está fuera de horario. Los pedidos se habilitan solo dentro del horario configurado.
+                                </div>
+                            )}
+                            {exceedsOrderUnitsLimit && (
+                                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                                    Este negocio permite hasta {maxUnitsPerOrder} unidades por pedido. Tu carrito tiene {totalUnits}.
                                 </div>
                             )}
                             <div>
@@ -353,6 +371,7 @@ export default function CheckoutPage() {
                             onClick={handleWhatsAppOrder}
                             disabled={
                                 !canReceiveOrders ||
+                                exceedsOrderUnitsLimit ||
                                 !name.trim() ||
                                 !address.trim() ||
                                 !merchant?.whatsapp_phone ||
@@ -361,7 +380,11 @@ export default function CheckoutPage() {
                             }
                         >
                             <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
-                            {canReceiveOrders ? 'Enviar pedido por WhatsApp' : 'Fuera de horario'}
+                            {exceedsOrderUnitsLimit
+                                ? 'Límite superado'
+                                : canReceiveOrders
+                                    ? 'Enviar pedido por WhatsApp'
+                                    : 'Fuera de horario'}
                         </Button>
                     </div>
                 </div>

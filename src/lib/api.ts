@@ -70,6 +70,7 @@ export type PublicMerchant = {
     free_shipping_over_cents?: number | null;
     social_links?: MerchantSocialLinks;
     payment_methods?: MerchantPaymentMethods;
+    max_units_per_order?: number;
     theme_colors?: MerchantThemeColors;
     menu_copy?: MerchantMenuCopy;
     opening_hours?: MerchantOpeningHours;

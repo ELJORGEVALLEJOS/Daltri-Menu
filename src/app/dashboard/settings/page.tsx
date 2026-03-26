@@ -102,6 +102,7 @@ type Merchant = {
     shipping_cost_cents?: number;
     free_shipping_over_cents?: number | null;
     max_pending_orders_per_customer?: number;
+    max_units_per_order?: number;
     social_links?: {
         uber_eats?: string;
         google?: string;
@@ -310,6 +311,7 @@ export default function SettingsPage() {
         shippingCost: '',
         freeShippingOver: '',
         maxPendingOrdersPerCustomer: '1',
+        maxUnitsPerOrder: '3',
         catalogPublished: false,
         uberEats: '',
         google: '',
@@ -365,6 +367,9 @@ export default function SettingsPage() {
                             : '',
                     maxPendingOrdersPerCustomer: String(
                         Math.max(1, data.max_pending_orders_per_customer || 1),
+                    ),
+                    maxUnitsPerOrder: String(
+                        Math.max(1, data.max_units_per_order || 3),
                     ),
                     catalogPublished: Boolean(data.publication?.is_published),
                     uberEats: data.social_links?.uber_eats || '',
@@ -677,6 +682,10 @@ export default function SettingsPage() {
             1,
             Math.round(Number(formData.maxPendingOrdersPerCustomer || 1)),
         );
+        const maxUnitsPerOrder = Math.max(
+            1,
+            Math.round(Number(formData.maxUnitsPerOrder || 3)),
+        );
 
         try {
             const response = (await updateMerchant({
@@ -690,6 +699,7 @@ export default function SettingsPage() {
                 shipping_cost_cents: shippingCostValue,
                 free_shipping_over_cents: freeShippingOverValue,
                 max_pending_orders_per_customer: maxPendingOrdersPerCustomer,
+                max_units_per_order: maxUnitsPerOrder,
                 catalog_published: nextCatalogPublished,
                 social_links: {
                     uber_eats: formData.uberEats.trim(),
@@ -1645,6 +1655,27 @@ export default function SettingsPage() {
                                 <p className="mt-1 text-xs font-medium text-gray-900">
                                     Cuando un cliente alcance este límite, no podrá enviar otro pedido
                                     hasta que confirmes o canceles los pendientes.
+                                </p>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="maxUnitsPerOrder">
+                                    Máximo de unidades por pedido
+                                </Label>
+                                <Input
+                                    id="maxUnitsPerOrder"
+                                    name="maxUnitsPerOrder"
+                                    type="number"
+                                    value={formData.maxUnitsPerOrder}
+                                    onChange={handleChange}
+                                    placeholder="3"
+                                    min={1}
+                                    step="1"
+                                    className="mt-2"
+                                />
+                                <p className="mt-1 text-xs font-medium text-gray-900">
+                                    El cliente no podrá enviar un pedido que supere esta cantidad total
+                                    de unidades.
                                 </p>
                             </div>
                         </div>
