@@ -47,15 +47,15 @@ export function getDefaultMenuCopyByBusinessType(businessType: BusinessType) {
     switch (businessType) {
         case 'restaurant':
             return {
-                heroTitle: 'Todo lo seleccionado',
-                heroSubtitle: 'Descubre platos, bebidas y promociones listas para pedir.',
-                heroBadge: 'Pedidos directos',
+                heroTitle: 'Sabores listos para pedir',
+                heroSubtitle: 'Descubre platos, bebidas y combos para retiro o envío desde un solo catálogo.',
+                heroBadge: 'Pedidos por WhatsApp',
             };
         case 'retail':
             return {
-                heroTitle: 'Catálogo destacado',
-                heroSubtitle: 'Explora productos, novedades y ofertas para comprar por WhatsApp.',
-                heroBadge: 'Compra fácil',
+                heroTitle: 'Productos listos para llevar',
+                heroSubtitle: 'Explora novedades, favoritos y lanzamientos para comprar por WhatsApp.',
+                heroBadge: 'Compra simple',
             };
         case 'hardware':
             return {
@@ -78,8 +78,8 @@ export function getDefaultMenuCopyByBusinessType(businessType: BusinessType) {
         case 'generic':
         default:
             return {
-                heroTitle: 'Catálogo disponible',
-                heroSubtitle: 'Explora productos, categorías y ofertas de este negocio.',
+                heroTitle: 'Lo mejor de este negocio',
+                heroSubtitle: 'Explora productos, categorías y opciones de compra en un catálogo fácil de compartir.',
                 heroBadge: 'Compra directa',
             };
     }

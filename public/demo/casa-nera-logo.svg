@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="148" fill="#201510"/>
+  <circle cx="256" cy="256" r="188" fill="#FAF2E6"/>
+  <circle cx="256" cy="256" r="168" fill="#6F3B25"/>
+  <circle cx="256" cy="256" r="152" stroke="#EFC27B" stroke-width="2" stroke-dasharray="10 12"/>
+  <path d="M179 179H292C327.346 179 356 207.654 356 243V247C356 282.346 327.346 311 292 311H194C185.716 311 179 304.284 179 296V179Z" fill="#FAF2E6"/>
+  <path d="M332 214H353C376.196 214 395 232.804 395 256C395 279.196 376.196 298 353 298H332" stroke="#FAF2E6" stroke-width="20" stroke-linecap="round"/>
+  <path d="M168 343H341" stroke="#EFC27B" stroke-width="20" stroke-linecap="round"/>
+  <path d="M211 129C211 129 197 163 213 181" stroke="#EFC27B" stroke-width="18" stroke-linecap="round"/>
+  <path d="M255 113C255 113 239 159 259 183" stroke="#EFC27B" stroke-width="18" stroke-linecap="round"/>
+  <path d="M300 129C300 129 286 163 302 181" stroke="#EFC27B" stroke-width="18" stroke-linecap="round"/>
+  <path d="M150 389C181.419 352.658 216.493 336 256 336C295.507 336 330.581 352.658 362 389" stroke="#EFC27B" stroke-width="16" stroke-linecap="round"/>
+  <text x="256" y="404" text-anchor="middle" font-size="44" font-family="Georgia, 'Times New Roman', serif" font-weight="700" fill="#FAF2E6">
+    Casa Nera
+  </text>
+  <text x="256" y="438" text-anchor="middle" font-size="26" font-family="Arial, Helvetica, sans-serif" letter-spacing="6" fill="#EFC27B">
+    CAFE
+  </text>
+</svg>

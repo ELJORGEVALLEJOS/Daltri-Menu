@@ -39,7 +39,7 @@ export default function Home() {
             <div className="relative">
               <Input
                 type="text"
-                placeholder="Código del negocio (ej. 'demo')"
+                placeholder="Código del negocio (ej. 'casa-nera-cafe')"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 className="bg-black/40 border-white/10 text-white placeholder:text-zinc-600 h-12 rounded-xl focus:ring-amber-500 focus:border-amber-500 pl-4 pr-12 transition-all"

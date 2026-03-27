@@ -24,7 +24,7 @@ export default function NotFound() {
                 </h1>
 
                 <p className="text-gray-600 mb-8 max-w-[280px] mx-auto text-sm leading-relaxed">
-                    Lo sentimos, <span className="font-bold text-gray-800 italic">no existe un catálogo disponible con ese código</span> en nuestra plataforma.
+                    Lo sentimos, <span className="font-bold text-gray-800 italic">no encontramos un catálogo disponible con ese enlace</span>.
                 </p>
 
                 <div className="space-y-4">

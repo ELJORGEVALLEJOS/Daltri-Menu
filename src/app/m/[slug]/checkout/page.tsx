@@ -218,7 +218,7 @@ export default function CheckoutPage() {
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 space-y-5">
                             {!canReceiveOrders && (
                                 <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
-                                    Este negocio está fuera de horario. Los pedidos se habilitan solo dentro del horario configurado.
+                                    Este negocio está fuera de horario. Podrás pedir nuevamente en el próximo horario de atención.
                                 </div>
                             )}
                             {exceedsOrderUnitsLimit && (

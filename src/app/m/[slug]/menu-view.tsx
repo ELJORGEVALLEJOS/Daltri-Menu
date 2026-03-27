@@ -358,13 +358,13 @@ export function MenuView({
                                     Horarios del negocio
                                 </h2>
                                 <p className="mt-1 text-sm leading-relaxed" style={{ color: withAlpha(theme.text, 0.7) }}>
-                                    Tus clientes pueden ver de inmediato si hoy estás atendiendo y en qué horario.
+                                    Consulta aquí los horarios disponibles para pedir, retirar o coordinar tu entrega.
                                 </p>
                                 {!openingStatus.isOpenNow && (
                                     <p className="mt-2 text-sm font-semibold" style={{ color: theme.primary }}>
                                         {previewMode
                                             ? 'En vista previa no se reciben pedidos.'
-                                            : 'Los pedidos se habilitan solo dentro del horario configurado.'}
+                                            : 'Los pedidos vuelven a habilitarse en el próximo horario de atención.'}
                                     </p>
                                 )}
                             </div>
