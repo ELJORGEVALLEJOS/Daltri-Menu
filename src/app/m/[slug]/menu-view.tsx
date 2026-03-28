@@ -170,40 +170,62 @@ export function MenuView({
             return;
         }
 
-        const observedSections = menu
-            .map((category) => sectionRefs.current[category.id])
-            .filter(Boolean) as HTMLDivElement[];
-
-        if (observedSections.length === 0) {
+        const container = mobileSectionsRef.current;
+        if (!container) {
             return;
         }
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const nextVisibleSection = entries
-                    .filter((entry) => entry.isIntersecting)
-                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        let frame = 0;
 
-                if (!nextVisibleSection) {
+        const syncActiveCategory = () => {
+            frame = 0;
+
+            const sections = menu
+                .map((category) => sectionRefs.current[category.id])
+                .filter(Boolean) as HTMLDivElement[];
+
+            if (sections.length === 0) {
+                return;
+            }
+
+            const currentScrollTop = container.scrollTop;
+            let nextCategoryId = selectedCategoryId;
+            let smallestDistance = Number.POSITIVE_INFINITY;
+
+            sections.forEach((section) => {
+                const categoryId = section.getAttribute('data-category-id');
+                if (!categoryId) {
                     return;
                 }
 
-                const nextCategoryId = nextVisibleSection.target.getAttribute('data-category-id');
-                if (nextCategoryId && nextCategoryId !== selectedCategoryId) {
-                    setSelectedCategoryId(nextCategoryId);
+                const distance = Math.abs(section.offsetTop - currentScrollTop);
+                if (distance < smallestDistance) {
+                    smallestDistance = distance;
+                    nextCategoryId = categoryId;
                 }
-            },
-            {
-                threshold: [0.45, 0.65],
-                root: mobileSectionsRef.current,
-                rootMargin: '-96px 0px -20% 0px',
-            },
-        );
+            });
 
-        observedSections.forEach((section) => observer.observe(section));
+            if (nextCategoryId && nextCategoryId !== selectedCategoryId) {
+                setSelectedCategoryId(nextCategoryId);
+            }
+        };
+
+        const handleScroll = () => {
+            if (frame) {
+                return;
+            }
+
+            frame = window.requestAnimationFrame(syncActiveCategory);
+        };
+
+        container.addEventListener('scroll', handleScroll, { passive: true });
+        syncActiveCategory();
 
         return () => {
-            observer.disconnect();
+            container.removeEventListener('scroll', handleScroll);
+            if (frame) {
+                window.cancelAnimationFrame(frame);
+            }
         };
     }, [menu, selectedCategoryId]);
 
@@ -218,9 +240,13 @@ export function MenuView({
         }
 
         const section = sectionRefs.current[selectedCategoryId];
-        if (section) {
+        const container = mobileSectionsRef.current;
+        if (section && container) {
             window.requestAnimationFrame(() => {
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                container.scrollTo({
+                    top: section.offsetTop,
+                    behavior: 'smooth',
+                });
                 pendingScrollCategoryId.current = null;
             });
         }
