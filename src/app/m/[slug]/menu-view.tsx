@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { ProductCard } from '@/components/product-card';
 import { SocialLinks, type MerchantSocialLinks } from '@/components/social-contact';
 import { ChevronLeft } from 'lucide-react';
@@ -126,6 +126,9 @@ export function MenuView({
     previewMode?: boolean;
 }) {
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+    const mobileSectionsRef = useRef<HTMLDivElement | null>(null);
+    const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+    const pendingScrollCategoryId = useRef<string | null>(null);
     const selectedCategory = menu.find((c) => c.id === selectedCategoryId);
     const theme = useMemo(() => buildTheme(merchant.theme_colors), [merchant.theme_colors]);
     const themeVars = useMemo(
@@ -153,6 +156,75 @@ export function MenuView({
         [openingHours],
     );
     const canReceiveOrders = !openingStatus.hasAnyEnabledDay || openingStatus.isOpenNow;
+    const handleCategorySelect = (categoryId: string) => {
+        pendingScrollCategoryId.current = categoryId;
+        setSelectedCategoryId(categoryId);
+    };
+
+    useEffect(() => {
+        if (!selectedCategoryId) {
+            return;
+        }
+
+        if (typeof window !== 'undefined' && !window.matchMedia('(max-width: 767px)').matches) {
+            return;
+        }
+
+        const observedSections = menu
+            .map((category) => sectionRefs.current[category.id])
+            .filter(Boolean) as HTMLDivElement[];
+
+        if (observedSections.length === 0) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const nextVisibleSection = entries
+                    .filter((entry) => entry.isIntersecting)
+                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+                if (!nextVisibleSection) {
+                    return;
+                }
+
+                const nextCategoryId = nextVisibleSection.target.getAttribute('data-category-id');
+                if (nextCategoryId && nextCategoryId !== selectedCategoryId) {
+                    setSelectedCategoryId(nextCategoryId);
+                }
+            },
+            {
+                threshold: [0.45, 0.65],
+                root: mobileSectionsRef.current,
+                rootMargin: '-96px 0px -20% 0px',
+            },
+        );
+
+        observedSections.forEach((section) => observer.observe(section));
+
+        return () => {
+            observer.disconnect();
+        };
+    }, [menu, selectedCategoryId]);
+
+    useEffect(() => {
+        if (!selectedCategoryId || pendingScrollCategoryId.current !== selectedCategoryId) {
+            return;
+        }
+
+        if (typeof window !== 'undefined' && !window.matchMedia('(max-width: 767px)').matches) {
+            pendingScrollCategoryId.current = null;
+            return;
+        }
+
+        const section = sectionRefs.current[selectedCategoryId];
+        if (section) {
+            window.requestAnimationFrame(() => {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                pendingScrollCategoryId.current = null;
+            });
+        }
+    }, [selectedCategoryId]);
 
     if (selectedCategoryId && selectedCategory) {
         return (
@@ -175,7 +247,7 @@ export function MenuView({
                                 return (
                                     <button
                                         key={cat.id}
-                                        onClick={() => setSelectedCategoryId(cat.id)}
+                                        onClick={() => handleCategorySelect(cat.id)}
                                         className="whitespace-nowrap pb-2 border-b-4 transition-all font-sans font-bold text-base sm:text-lg"
                                         style={{
                                             borderColor: isSelected ? theme.text : 'transparent',
@@ -191,28 +263,93 @@ export function MenuView({
                 </header>
 
                 <div className="container mx-auto max-w-7xl px-4 sm:px-6 pt-6 sm:pt-10 pb-24 sm:pb-32 uppercase tracking-tighter">
-                    <h2 className="text-2xl sm:text-4xl font-sans font-black mb-6 sm:mb-10" style={{ color: theme.text }}>
-                        {selectedCategory.name}
-                    </h2>
-                    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-                        {selectedCategory.items.map((item) => {
-                            const normalizedItem = {
-                                ...item,
-                                price_cents: item.price_cents ?? item.priceCents ?? 0,
-                                original_price_cents:
-                                    item.original_price_cents ?? item.originalPriceCents,
-                                imageUrl: item.imageUrl ?? item.image_url,
-                            };
+                    <div className="hidden md:block">
+                        <h2 className="mb-6 font-sans text-2xl font-black sm:mb-10 sm:text-4xl" style={{ color: theme.text }}>
+                            {selectedCategory.name}
+                        </h2>
+                        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                            {selectedCategory.items.map((item) => {
+                                const normalizedItem = {
+                                    ...item,
+                                    price_cents: item.price_cents ?? item.priceCents ?? 0,
+                                    original_price_cents:
+                                        item.original_price_cents ?? item.originalPriceCents,
+                                    imageUrl: item.imageUrl ?? item.image_url,
+                                };
 
-                            return (
-                                <ProductCard
-                                    key={item.id}
-                                    item={normalizedItem}
-                                    canOrder={canReceiveOrders}
-                                    previewMode={previewMode}
-                                />
-                            );
-                        })}
+                                return (
+                                    <ProductCard
+                                        key={item.id}
+                                        item={normalizedItem}
+                                        canOrder={canReceiveOrders}
+                                        previewMode={previewMode}
+                                    />
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div
+                        ref={mobileSectionsRef}
+                        className="space-y-6 md:hidden h-[calc(100dvh-6.75rem)] overflow-y-auto pr-1 snap-y snap-mandatory"
+                    >
+                        {menu.map((category) => (
+                            <div
+                                key={category.id}
+                                ref={(node) => {
+                                    sectionRefs.current[category.id] = node;
+                                }}
+                                data-category-id={category.id}
+                                className="snap-start rounded-[2rem] border p-4 shadow-premium"
+                                style={{
+                                    minHeight: 'calc(100dvh - 7.5rem)',
+                                    backgroundColor: theme.surface,
+                                    borderColor: withAlpha(theme.text, 0.08),
+                                    scrollMarginTop: '5.75rem',
+                                }}
+                            >
+                                <div className="mb-5 flex items-start justify-between gap-4">
+                                    <div>
+                                        <h2 className="font-sans text-2xl font-black leading-none" style={{ color: theme.text }}>
+                                            {category.name}
+                                        </h2>
+                                        <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: withAlpha(theme.text, 0.45) }}>
+                                            {category.items.length} productos
+                                        </p>
+                                    </div>
+                                    <span
+                                        className="rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em]"
+                                        style={{
+                                            backgroundColor: withAlpha(theme.primary, 0.12),
+                                            color: theme.primary,
+                                        }}
+                                    >
+                                        {selectedCategoryId === category.id ? 'Activa' : 'Siguiente'}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    {category.items.map((item) => {
+                                        const normalizedItem = {
+                                            ...item,
+                                            price_cents: item.price_cents ?? item.priceCents ?? 0,
+                                            original_price_cents:
+                                                item.original_price_cents ?? item.originalPriceCents,
+                                            imageUrl: item.imageUrl ?? item.image_url,
+                                        };
+
+                                        return (
+                                            <ProductCard
+                                                key={item.id}
+                                                item={normalizedItem}
+                                                canOrder={canReceiveOrders}
+                                                previewMode={previewMode}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -313,7 +450,7 @@ export function MenuView({
                     {menu.map((category) => (
                         <button
                             key={category.id}
-                            onClick={() => setSelectedCategoryId(category.id)}
+                            onClick={() => handleCategorySelect(category.id)}
                             className="w-full text-left group block rounded-2xl p-4 sm:p-6 shadow-premium border hover:scale-[1.01] transition-all active:scale-[0.99]"
                             style={{ backgroundColor: theme.surface, borderColor: withAlpha(theme.text, 0.08) }}
                         >
