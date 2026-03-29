@@ -128,6 +128,7 @@ export function MenuView({
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
     const mobileSectionsRef = useRef<HTMLDivElement | null>(null);
     const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+    const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
     const pendingScrollCategoryId = useRef<string | null>(null);
     const selectedCategory = menu.find((c) => c.id === selectedCategoryId);
     const theme = useMemo(() => buildTheme(merchant.theme_colors), [merchant.theme_colors]);
@@ -252,6 +253,23 @@ export function MenuView({
         }
     }, [selectedCategoryId]);
 
+    useEffect(() => {
+        if (!selectedCategoryId) {
+            return;
+        }
+
+        const activeTab = tabButtonRefs.current[selectedCategoryId];
+        if (!activeTab) {
+            return;
+        }
+
+        activeTab.scrollIntoView({
+            behavior: 'smooth',
+            inline: 'center',
+            block: 'nearest',
+        });
+    }, [selectedCategoryId]);
+
     if (selectedCategoryId && selectedCategory) {
         return (
             <div className="min-h-screen" style={{ ...themeVars, backgroundColor: theme.background, color: theme.text }}>
@@ -273,6 +291,9 @@ export function MenuView({
                                 return (
                                     <button
                                         key={cat.id}
+                                        ref={(node) => {
+                                            tabButtonRefs.current[cat.id] = node;
+                                        }}
                                         onClick={() => handleCategorySelect(cat.id)}
                                         className="whitespace-nowrap pb-2 border-b-4 transition-all font-sans font-bold text-base sm:text-lg"
                                         style={{
