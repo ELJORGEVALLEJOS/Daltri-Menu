@@ -55,7 +55,7 @@ export default function DemoPage() {
                             href="/register"
                             className="inline-flex items-center justify-center rounded-2xl border border-[#7a3413]/20 bg-white/70 px-5 py-3 text-sm font-bold text-[#7a3413] transition hover:border-[#7a3413]/40 hover:bg-white"
                         >
-                            Crear catalogo como este
+                            Crear catalogo
                         </a>
                     </div>
                 </section>
