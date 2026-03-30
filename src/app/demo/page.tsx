@@ -13,20 +13,25 @@ export default function DemoPage() {
                     </span>
                     <div className="space-y-4">
                         <h1 className="max-w-2xl font-sans text-4xl font-black leading-tight tracking-tight sm:text-5xl">
-                            Mira el catálogo funcionando en un display móvil real.
+                            Casa Nera Cafe
                         </h1>
                         <p className="max-w-2xl text-base leading-relaxed text-[#5f4b3f] sm:text-lg">
-                            Esta vista usa el mismo catálogo público que verá tu cliente. Puedes
-                            desplazarte, cambiar de categoría, abrir el carrito y validar cómo se
-                            comporta la experiencia móvil sin depender de screenshots.
+                            Cafe de especialidad, pasteleria artesanal y opciones para llevar.
+                        </p>
+                        <p className="max-w-2xl text-sm font-semibold uppercase tracking-[0.18em] text-[#7a3413]/80">
+                            Pedidos por WhatsApp · Retiro y envio · Abierto hoy
+                        </p>
+                        <p className="max-w-2xl text-base leading-relaxed text-[#5f4b3f] sm:text-lg">
+                            Explora un catalogo real, agrega productos al carrito y revisa como
+                            queda listo el pedido antes de enviarlo por WhatsApp.
                         </p>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-3">
                         {[
-                            'Catálogo real en vivo',
-                            'Comportamiento móvil real',
-                            'Pedido y carrito listos para probar',
+                            'Catalogo real en vivo',
+                            'Carrito y checkout prolijos',
+                            'Pedido claro para WhatsApp',
                         ].map((item) => (
                             <div
                                 key={item}
@@ -44,13 +49,13 @@ export default function DemoPage() {
                             rel="noreferrer"
                             className="inline-flex items-center justify-center rounded-2xl bg-[#7a3413] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#61270d]"
                         >
-                            Abrir demo completa
+                            Ver catalogo real
                         </a>
                         <a
                             href="/register"
                             className="inline-flex items-center justify-center rounded-2xl border border-[#7a3413]/20 bg-white/70 px-5 py-3 text-sm font-bold text-[#7a3413] transition hover:border-[#7a3413]/40 hover:bg-white"
                         >
-                            Crear mi negocio
+                            Crear catalogo como este
                         </a>
                     </div>
                 </section>
