@@ -174,6 +174,44 @@ export type UpdateMerchantPayload = {
     opening_hours?: MerchantOpeningHoursPayload;
 };
 
+export type MerchantSubscription = {
+    id: string;
+    status:
+        | 'PENDING_SETUP'
+        | 'TRIALING'
+        | 'ACTIVE'
+        | 'PAST_DUE'
+        | 'PAUSED'
+        | 'CANCELLED'
+        | 'INCOMPLETE';
+    provider_status?: string | null;
+    payer_email: string;
+    payment_method_id?: string | null;
+    payment_type_id?: string | null;
+    card_last_four?: string | null;
+    cardholder_name?: string | null;
+    trial_started_at?: string | null;
+    trial_ends_at?: string | null;
+    first_payment_at?: string | null;
+    next_billing_at?: string | null;
+    cancel_requested_at?: string | null;
+    cancelled_at?: string | null;
+    cancel_allowed: boolean;
+    plan: {
+        id: string;
+        code: string;
+        name: string;
+        description?: string | null;
+        amount_cents: number;
+        currency: string;
+        trial_days: number;
+        interval: {
+            count: number;
+            unit: string;
+        };
+    };
+};
+
 function clearAdminSession() {
     if (typeof window === 'undefined') return;
     localStorage.removeItem('access_token');
@@ -304,6 +342,54 @@ export async function fetchRestaurant() {
     handleUnauthorized(res);
     if (!res.ok) throw new Error('Failed to fetch restaurant');
     return res.json();
+}
+
+export async function fetchSubscription() {
+    const res = await fetch(`${API_URL}/admin/subscription`, {
+        headers: getRequiredAuthHeaders(),
+    });
+
+    handleUnauthorized(res);
+    if (!res.ok) {
+        throw new Error(await parseError(res, 'No se pudo cargar la suscripción'));
+    }
+
+    return (await res.json()) as MerchantSubscription | null;
+}
+
+export async function cancelSubscription() {
+    const res = await fetch(`${API_URL}/admin/subscription/cancel`, {
+        method: 'POST',
+        headers: getRequiredAuthHeaders(),
+    });
+
+    handleUnauthorized(res);
+    if (!res.ok) {
+        throw new Error(await parseError(res, 'No se pudo cancelar la suscripción'));
+    }
+
+    return (await res.json()) as MerchantSubscription;
+}
+
+export async function updateSubscriptionPaymentMethod(payload: {
+    mp_card_token: string;
+    mp_payment_method_id?: string;
+    mp_payment_type_id?: string;
+    mp_card_last_four?: string;
+    mp_cardholder_name?: string;
+}) {
+    const res = await fetch(`${API_URL}/admin/subscription/payment-method`, {
+        method: 'POST',
+        headers: getRequiredAuthHeaders(),
+        body: JSON.stringify(payload),
+    });
+
+    handleUnauthorized(res);
+    if (!res.ok) {
+        throw new Error(await parseError(res, 'No se pudo actualizar la tarjeta'));
+    }
+
+    return (await res.json()) as MerchantSubscription;
 }
 
 export async function updateMerchant(data: UpdateMerchantPayload) {

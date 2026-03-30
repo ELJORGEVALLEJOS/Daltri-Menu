@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
 import { Check, Copy, Download, Eye, Link2, Printer, QrCode } from 'lucide-react';
+import { CardPayment, initMercadoPago } from '@mercadopago/sdk-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,9 +15,13 @@ import {
 } from '@/lib/business-types';
 import {
     AUTH_REQUIRED_ERROR,
+    cancelSubscription,
     fetchRestaurant,
+    fetchSubscription,
+    updateSubscriptionPaymentMethod,
     updateMerchant,
     type MerchantBusinessType,
+    type MerchantSubscription,
     type MerchantShippingType,
 } from '@/lib/admin-api';
 import { formatMoney } from '@/lib/format';
@@ -40,6 +45,10 @@ const DEFAULT_THEME = {
 };
 
 const DEFAULT_MENU_COPY = getDefaultMenuCopyByBusinessType('generic');
+const mpPublicKey = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY?.trim();
+if (mpPublicKey) {
+    initMercadoPago(mpPublicKey);
+}
 
 function matchesKnownDefaultMenuCopyValue(
     field: 'heroTitle' | 'heroSubtitle' | 'heroBadge',
@@ -152,6 +161,55 @@ type Merchant = {
     };
     preview_url?: string;
 };
+
+function formatSubscriptionDate(value?: string | null) {
+    if (!value) return 'Sin fecha';
+    return new Intl.DateTimeFormat('es-AR', {
+        dateStyle: 'medium',
+    }).format(new Date(value));
+}
+
+function getSubscriptionStatusMeta(
+    status?: MerchantSubscription['status'] | null,
+) {
+    switch (status) {
+        case 'TRIALING':
+            return {
+                label: 'Prueba gratuita',
+                tone: 'bg-blue-100 text-blue-700',
+            };
+        case 'ACTIVE':
+            return {
+                label: 'Activa',
+                tone: 'bg-emerald-100 text-emerald-700',
+            };
+        case 'PAST_DUE':
+            return {
+                label: 'Pendiente de cobro',
+                tone: 'bg-amber-100 text-amber-700',
+            };
+        case 'PAUSED':
+            return {
+                label: 'Pausada',
+                tone: 'bg-amber-100 text-amber-700',
+            };
+        case 'CANCELLED':
+            return {
+                label: 'Cancelada',
+                tone: 'bg-slate-200 text-slate-700',
+            };
+        case 'INCOMPLETE':
+            return {
+                label: 'Incompleta',
+                tone: 'bg-red-100 text-red-700',
+            };
+        default:
+            return {
+                label: 'Pendiente',
+                tone: 'bg-slate-200 text-slate-700',
+            };
+    }
+}
 
 function loadImageElement(src: string) {
     return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -295,6 +353,9 @@ export default function SettingsPage() {
     const [error, setError] = useState('');
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
     const [publication, setPublication] = useState<Merchant['publication'] | null>(null);
+    const [subscription, setSubscription] = useState<MerchantSubscription | null>(null);
+    const [cancellingSubscription, setCancellingSubscription] = useState(false);
+    const [updatingPaymentMethod, setUpdatingPaymentMethod] = useState(false);
     const [previewUrl, setPreviewUrl] = useState('');
     const [qrDataUrl, setQrDataUrl] = useState('');
     const [qrPosterUrl, setQrPosterUrl] = useState('');
@@ -342,7 +403,10 @@ export default function SettingsPage() {
 
         async function loadData() {
             try {
-                const data = (await fetchRestaurant()) as Merchant;
+                const [data, subscriptionData] = await Promise.all([
+                    fetchRestaurant() as Promise<Merchant>,
+                    fetchSubscription().catch(() => null),
+                ]);
                 if (!active) return;
                 const businessType = data.business_type || 'generic';
                 const defaultCopy = getDefaultMenuCopyByBusinessType(businessType);
@@ -391,6 +455,7 @@ export default function SettingsPage() {
                     openingHours: normalizeOpeningHours(data.opening_hours),
                 });
                 setPublication(data.publication || null);
+                setSubscription(subscriptionData);
                 setPreviewUrl(data.preview_url || '');
 
                 if (data.slug) {
@@ -759,6 +824,64 @@ export default function SettingsPage() {
         await persistSettings();
     };
 
+    const handleCancelSubscription = async () => {
+        if (!subscription || cancellingSubscription) {
+            return;
+        }
+
+        setCancellingSubscription(true);
+        setError('');
+
+        try {
+            const result = await cancelSubscription();
+            setSubscription(result);
+            alert('La suscripción quedó cancelada.');
+        } catch (error) {
+            if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
+                router.replace('/login');
+                return;
+            }
+
+            const message =
+                error instanceof Error && error.message.trim()
+                    ? error.message
+                    : 'No se pudo cancelar la suscripción.';
+            setError(message);
+        } finally {
+            setCancellingSubscription(false);
+        }
+    };
+
+    const handleUpdateSubscriptionPaymentMethod = async (payload: {
+        mp_card_token: string;
+        mp_payment_method_id?: string;
+        mp_payment_type_id?: string;
+        mp_card_last_four?: string;
+        mp_cardholder_name?: string;
+    }) => {
+        setUpdatingPaymentMethod(true);
+        setError('');
+
+        try {
+            const result = await updateSubscriptionPaymentMethod(payload);
+            setSubscription(result);
+            alert('La tarjeta quedó actualizada.');
+        } catch (error) {
+            if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
+                router.replace('/login');
+                return;
+            }
+
+            const message =
+                error instanceof Error && error.message.trim()
+                    ? error.message
+                    : 'No se pudo actualizar la tarjeta.';
+            setError(message);
+        } finally {
+            setUpdatingPaymentMethod(false);
+        }
+    };
+
     if (loading) {
         return <div className="font-medium text-gray-950">Cargando configuración...</div>;
     }
@@ -1005,6 +1128,176 @@ export default function SettingsPage() {
                         </div>
                     </div>
                 </section>
+
+                {subscription && (
+                    <section className="space-y-4 rounded-2xl border p-4 sm:p-5">
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="space-y-2">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <h2 className="text-lg font-bold">Suscripción</h2>
+                                    <span
+                                        className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] ${
+                                            getSubscriptionStatusMeta(subscription.status).tone
+                                        }`}
+                                    >
+                                        {getSubscriptionStatusMeta(subscription.status).label}
+                                    </span>
+                                </div>
+                                <p className="text-sm font-medium text-gray-900">
+                                    Tu negocio está asociado al plan {subscription.plan.name}. La
+                                    cancelación recién se habilita después del primer cobro
+                                    exitoso.
+                                </p>
+                            </div>
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => void handleCancelSubscription()}
+                                disabled={
+                                    cancellingSubscription ||
+                                    !subscription.cancel_allowed ||
+                                    subscription.status === 'CANCELLED'
+                                }
+                                className="h-10"
+                            >
+                                {cancellingSubscription
+                                    ? 'Cancelando...'
+                                    : subscription.status === 'CANCELLED'
+                                      ? 'Plan cancelado'
+                                      : 'Cancelar plan'}
+                            </Button>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                                    Plan
+                                </p>
+                                <p className="mt-2 text-base font-bold text-gray-950">
+                                    {subscription.plan.name}
+                                </p>
+                                <p className="mt-1 text-sm font-medium text-gray-700">
+                                    {formatMoney(subscription.plan.amount_cents / 100)} / mes
+                                </p>
+                            </div>
+                            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                                    Fin de prueba
+                                </p>
+                                <p className="mt-2 text-base font-bold text-gray-950">
+                                    {formatSubscriptionDate(subscription.trial_ends_at)}
+                                </p>
+                                <p className="mt-1 text-sm font-medium text-gray-700">
+                                    {subscription.plan.trial_days} días gratis
+                                </p>
+                            </div>
+                            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                                    Próximo cobro
+                                </p>
+                                <p className="mt-2 text-base font-bold text-gray-950">
+                                    {formatSubscriptionDate(subscription.next_billing_at)}
+                                </p>
+                                <p className="mt-1 text-sm font-medium text-gray-700">
+                                    Mercado Pago realizará el débito automático.
+                                </p>
+                            </div>
+                            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                                    Tarjeta
+                                </p>
+                                <p className="mt-2 text-base font-bold text-gray-950">
+                                    {subscription.card_last_four
+                                        ? `Terminada en ${subscription.card_last_four}`
+                                        : 'Registrada en Mercado Pago'}
+                                </p>
+                                <p className="mt-1 text-sm font-medium text-gray-700">
+                                    {subscription.first_payment_at
+                                        ? `Primer cobro: ${formatSubscriptionDate(subscription.first_payment_at)}`
+                                        : 'Aún no se registró el primer cobro.'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {!subscription.cancel_allowed && subscription.status !== 'CANCELLED' && (
+                            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+                                No puedes cancelar durante la prueba gratuita. Primero debe
+                                concretarse el primer pago de la suscripción.
+                            </div>
+                        )}
+
+                        {subscription.status !== 'CANCELLED' && (
+                            <div className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                <div>
+                                    <p className="text-sm font-bold text-gray-950">
+                                        Actualizar tarjeta
+                                    </p>
+                                    <p className="mt-1 text-sm font-medium text-gray-700">
+                                        Si quieres cambiar la tarjeta para próximos débitos, carga
+                                        una nueva desde Mercado Pago.
+                                    </p>
+                                </div>
+
+                                {mpPublicKey ? (
+                                    <CardPayment
+                                        initialization={{
+                                            amount: Math.max(
+                                                1,
+                                                subscription.plan.amount_cents / 100,
+                                            ),
+                                            payer: {
+                                                email: subscription.payer_email,
+                                            },
+                                        }}
+                                        customization={{
+                                            paymentMethods: {
+                                                minInstallments: 1,
+                                                maxInstallments: 1,
+                                            },
+                                        }}
+                                        locale="es-AR"
+                                        onSubmit={async (paymentFormData, additionalData) => {
+                                            await handleUpdateSubscriptionPaymentMethod({
+                                                mp_card_token: paymentFormData.token,
+                                                mp_payment_method_id:
+                                                    paymentFormData.payment_method_id,
+                                                mp_payment_type_id:
+                                                    additionalData?.paymentTypeId ||
+                                                    undefined,
+                                                mp_card_last_four:
+                                                    additionalData?.lastFourDigits ||
+                                                    undefined,
+                                                mp_cardholder_name:
+                                                    additionalData?.cardholderName ||
+                                                    undefined,
+                                            });
+                                        }}
+                                        onError={(brickError) => {
+                                            const message =
+                                                typeof brickError?.message === 'string' &&
+                                                brickError.message.trim()
+                                                    ? brickError.message
+                                                    : 'No se pudo cargar el formulario de tarjeta.';
+                                            setError(message);
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                                        Falta configurar NEXT_PUBLIC_MP_PUBLIC_KEY para actualizar
+                                        la tarjeta.
+                                    </div>
+                                )}
+
+                                {updatingPaymentMethod && (
+                                    <p className="text-xs font-medium text-gray-500">
+                                        Actualizando tarjeta en Mercado Pago...
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                    </section>
+                )}
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <section id="business-basics-section" className="space-y-6">

@@ -245,6 +245,11 @@ export async function registerMerchant(data: {
     admin_email: string;
     admin_password: string;
     admin_full_name: string;
+    mp_card_token?: string;
+    mp_payment_method_id?: string;
+    mp_payment_type_id?: string;
+    mp_card_last_four?: string;
+    mp_cardholder_name?: string;
 }) {
     let lastError = 'Failed to register merchant';
 
@@ -275,4 +280,46 @@ export async function registerMerchant(data: {
     }
 
     throw new Error(lastError);
+}
+
+export type PublicSubscriptionOffer = {
+    enabled: boolean;
+    requires_card: boolean;
+    provider?: 'mercadopago';
+    plan?: {
+        id: string;
+        code: string;
+        name: string;
+        description?: string | null;
+        amount_cents: number;
+        currency: string;
+        trial_days: number;
+        interval: {
+            count: number;
+            unit: string;
+        };
+    };
+};
+
+export async function fetchSubscriptionOffer() {
+    for (const baseUrl of API_BASES) {
+        try {
+            const res = await fetch(`${baseUrl}/public/subscriptions/offer`, {
+                cache: 'no-store',
+            });
+
+            if (!res.ok) {
+                continue;
+            }
+
+            return (await res.json()) as PublicSubscriptionOffer;
+        } catch {
+            continue;
+        }
+    }
+
+    return {
+        enabled: false,
+        requires_card: false,
+    } satisfies PublicSubscriptionOffer;
 }
