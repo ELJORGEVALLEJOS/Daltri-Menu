@@ -23,6 +23,11 @@ export type MerchantPaymentMethodsPayload = {
     transfer_cbu_cvu?: string;
 };
 
+export type MerchantLocationPayload = {
+    latitude?: number | null;
+    longitude?: number | null;
+};
+
 export type AdminOrder = {
     id: string;
     order_number: string;
@@ -169,6 +174,7 @@ export type UpdateMerchantPayload = {
     catalog_published?: boolean;
     social_links?: MerchantSocialLinksPayload;
     payment_methods?: MerchantPaymentMethodsPayload;
+    location?: MerchantLocationPayload;
     theme_colors?: MerchantThemeColorsPayload;
     menu_copy?: MerchantMenuCopyPayload;
     opening_hours?: MerchantOpeningHoursPayload;

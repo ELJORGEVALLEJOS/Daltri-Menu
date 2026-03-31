@@ -78,6 +78,18 @@ export type PublicMerchant = {
     billing_blocked?: boolean;
 };
 
+export type NearbyMerchant = {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url?: string | null;
+    cover_url?: string | null;
+    address?: string | null;
+    business_type?: BusinessType;
+    is_open_now: boolean;
+    distance_km: number;
+};
+
 function appendPreviewKey(url: string, previewKey?: string) {
     if (!previewKey) {
         return url;
@@ -337,4 +349,44 @@ export async function fetchSubscriptionOffer() {
         enabled: false,
         requires_card: false,
     } satisfies PublicSubscriptionOffer;
+}
+
+export async function fetchNearbyMerchants(input: {
+    latitude: number;
+    longitude: number;
+    radiusKm?: number;
+    limit?: number;
+}) {
+    const params = new URLSearchParams({
+        lat: String(input.latitude),
+        lng: String(input.longitude),
+        radius_km: String(input.radiusKm ?? 8),
+        limit: String(input.limit ?? 12),
+    });
+
+    for (const baseUrl of API_BASES) {
+        try {
+            const res = await fetch(`${baseUrl}/public/merchants/nearby?${params.toString()}`, {
+                cache: 'no-store',
+            });
+
+            if (!res.ok) {
+                continue;
+            }
+
+            const data = (await res.json()) as {
+                radius_km: number;
+                items: NearbyMerchant[];
+            };
+
+            return {
+                radius_km: data.radius_km,
+                items: data.items || [],
+            };
+        } catch {
+            continue;
+        }
+    }
+
+    throw new Error('No se pudieron cargar los locales cercanos.');
 }

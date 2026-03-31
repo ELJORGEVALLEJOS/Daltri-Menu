@@ -4,7 +4,17 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
-import { Check, Copy, Download, Eye, Link2, Printer, QrCode } from 'lucide-react';
+import {
+    Check,
+    Copy,
+    Download,
+    Eye,
+    Link2,
+    LocateFixed,
+    MapPin,
+    Printer,
+    QrCode,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -98,6 +108,11 @@ type Merchant = {
     name?: string;
     slug?: string;
     whatsapp_phone?: string;
+    address?: string;
+    location?: {
+        latitude?: number;
+        longitude?: number;
+    };
     business_type?: BusinessType;
     logo_url?: string;
     cover_url?: string;
@@ -351,6 +366,7 @@ export default function SettingsPage() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
+    const [locating, setLocating] = useState(false);
     const [publication, setPublication] = useState<Merchant['publication'] | null>(null);
     const [subscription, setSubscription] = useState<MerchantSubscription | null>(null);
     const [previewUrl, setPreviewUrl] = useState('');
@@ -362,6 +378,9 @@ export default function SettingsPage() {
         name: '',
         slug: '',
         whatsappPhone: '',
+        address: '',
+        locationLatitude: '',
+        locationLongitude: '',
         businessType: 'generic' as MerchantBusinessType,
         logoUrl: '',
         coverUrl: '',
@@ -412,6 +431,15 @@ export default function SettingsPage() {
                     name: data.name || '',
                     slug: data.slug || '',
                     whatsappPhone: data.whatsapp_phone || '',
+                    address: data.address || '',
+                    locationLatitude:
+                        typeof data.location?.latitude === 'number'
+                            ? String(data.location.latitude)
+                            : '',
+                    locationLongitude:
+                        typeof data.location?.longitude === 'number'
+                            ? String(data.location.longitude)
+                            : '',
                     businessType,
                     logoUrl: data.logo_url || '',
                     coverUrl: data.cover_url || '',
@@ -556,6 +584,36 @@ export default function SettingsPage() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleUseCurrentLocation = async () => {
+        if (typeof navigator === 'undefined' || !navigator.geolocation) {
+            setError('Tu navegador no permite obtener la ubicación actual.');
+            return;
+        }
+
+        setLocating(true);
+        setError('');
+
+        try {
+            const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0,
+                });
+            });
+
+            setFormData((prev) => ({
+                ...prev,
+                locationLatitude: position.coords.latitude.toFixed(6),
+                locationLongitude: position.coords.longitude.toFixed(6),
+            }));
+        } catch {
+            setError('No se pudo obtener tu ubicación. Revisa el permiso del navegador.');
+        } finally {
+            setLocating(false);
+        }
     };
 
     const handleBusinessTypeChange = (value: MerchantBusinessType) => {
@@ -730,8 +788,25 @@ export default function SettingsPage() {
         setError('');
 
         const normalizedPhone = formData.whatsappPhone.trim();
+        const normalizedAddress = formData.address.trim();
         const normalizedLogoUrl = formData.logoUrl.trim();
         const normalizedCoverUrl = formData.coverUrl.trim();
+        const latitudeValue = formData.locationLatitude.trim();
+        const longitudeValue = formData.locationLongitude.trim();
+
+        if ((latitudeValue && !longitudeValue) || (!latitudeValue && longitudeValue)) {
+            setSaving(false);
+            setError('Completa latitud y longitud juntas, o deja ambas vacías.');
+            return;
+        }
+
+        const normalizedLocation =
+            latitudeValue && longitudeValue
+                ? {
+                      latitude: Number(latitudeValue),
+                      longitude: Number(longitudeValue),
+                  }
+                : { latitude: null, longitude: null };
         const shippingCostValue =
             formData.shippingType === 'paid'
                 ? Math.max(0, Math.round(Number(formData.shippingCost || 0) * 100))
@@ -754,6 +829,8 @@ export default function SettingsPage() {
                 name: formData.name.trim(),
                 slug: normalizedSlug,
                 whatsapp_phone: normalizedPhone,
+                address: normalizedAddress || undefined,
+                location: normalizedLocation,
                 business_type: formData.businessType,
                 logo_url: normalizedLogoUrl || undefined,
                 cover_url: normalizedCoverUrl || undefined,
@@ -792,6 +869,15 @@ export default function SettingsPage() {
             localStorage.setItem('merchant_slug', normalizedSlug);
             setFormData((prev) => ({
                 ...prev,
+                address: response.address || prev.address,
+                locationLatitude:
+                    typeof response.location?.latitude === 'number'
+                        ? String(response.location.latitude)
+                        : '',
+                locationLongitude:
+                    typeof response.location?.longitude === 'number'
+                        ? String(response.location.longitude)
+                        : '',
                 catalogPublished: Boolean(response.publication?.is_published),
             }));
             setPublication(response.publication || null);
@@ -1334,6 +1420,82 @@ export default function SettingsPage() {
                             />
                             <p className="mt-1 text-xs font-medium text-gray-900">
                                 Incluye codigo de pais sin espacios.
+                            </p>
+                        </div>
+
+                        <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="h-4 w-4 text-gray-700" />
+                                        <Label className="text-base font-semibold">
+                                            Ubicación para explorar locales
+                                        </Label>
+                                    </div>
+                                    <p className="mt-1 text-sm font-medium text-gray-900">
+                                        Solo mostraremos tu catálogo a personas que estén dentro de tu zona.
+                                    </p>
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => void handleUseCurrentLocation()}
+                                    disabled={locating}
+                                    className="h-10"
+                                >
+                                    <LocateFixed className="mr-2 h-4 w-4" />
+                                    {locating ? 'Ubicando...' : 'Usar mi ubicación'}
+                                </Button>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="address">Dirección visible</Label>
+                                <Input
+                                    id="address"
+                                    name="address"
+                                    value={formData.address}
+                                    onChange={handleChange}
+                                    placeholder="Av. Corrientes 1234, Buenos Aires"
+                                    className="mt-2"
+                                />
+                                <p className="mt-1 text-xs font-medium text-gray-900">
+                                    Esta dirección se muestra en el catálogo y ayuda a ubicar el negocio.
+                                </p>
+                            </div>
+
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="locationLatitude">Latitud</Label>
+                                    <Input
+                                        id="locationLatitude"
+                                        name="locationLatitude"
+                                        type="number"
+                                        inputMode="decimal"
+                                        step="0.000001"
+                                        value={formData.locationLatitude}
+                                        onChange={handleChange}
+                                        placeholder="-34.603722"
+                                        className="mt-2"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="locationLongitude">Longitud</Label>
+                                    <Input
+                                        id="locationLongitude"
+                                        name="locationLongitude"
+                                        type="number"
+                                        inputMode="decimal"
+                                        step="0.000001"
+                                        value={formData.locationLongitude}
+                                        onChange={handleChange}
+                                        placeholder="-58.381592"
+                                        className="mt-2"
+                                    />
+                                </div>
+                            </div>
+
+                            <p className="text-xs font-medium text-gray-900">
+                                Si dejas estos dos campos vacíos, tu negocio no aparecerá en “Explorar locales”.
                             </p>
                         </div>
 
