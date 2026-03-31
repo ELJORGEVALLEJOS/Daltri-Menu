@@ -75,6 +75,7 @@ export type PublicMerchant = {
     menu_copy?: MerchantMenuCopy;
     opening_hours?: MerchantOpeningHours;
     preview_mode?: boolean;
+    billing_blocked?: boolean;
 };
 
 function appendPreviewKey(url: string, previewKey?: string) {
@@ -98,6 +99,16 @@ export async function fetchMerchant(slug: string, previewKey?: string) {
             );
 
             if (!res.ok) {
+                const errorData = await res.json().catch(() => ({} as Record<string, unknown>));
+                if (errorData?.code === 'SUBSCRIPTION_BLOCKED') {
+                    return {
+                        id: `blocked-${slug}`,
+                        name: '',
+                        slug,
+                        whatsapp_phone: '',
+                        billing_blocked: true,
+                    } satisfies PublicMerchant;
+                }
                 continue;
             }
 
@@ -127,6 +138,10 @@ export async function fetchRestaurantMenu(slug: string, previewKey?: string) {
             );
 
             if (!res.ok) {
+                const errorData = await res.json().catch(() => ({} as Record<string, unknown>));
+                if (errorData?.code === 'SUBSCRIPTION_BLOCKED') {
+                    return [];
+                }
                 continue;
             }
 

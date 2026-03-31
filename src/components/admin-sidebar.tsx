@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings, LogOut, Menu, BarChart3 } from 'lucide-react';
+import { Settings, LogOut, Menu, BarChart3, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -9,6 +9,7 @@ import { BrandMark } from '@/components/brand-mark';
 const sidebarItems = [
     { icon: Menu, label: 'Catálogo', href: '/dashboard/menu' },
     { icon: BarChart3, label: 'Pedidos y Analíticas', href: '/dashboard/orders' },
+    { icon: CreditCard, label: 'Facturación', href: '/dashboard/billing' },
     { icon: Settings, label: 'Configuración', href: '/dashboard/settings' },
 ];
 

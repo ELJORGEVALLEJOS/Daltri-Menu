@@ -182,6 +182,7 @@ export type MerchantSubscription = {
         | 'ACTIVE'
         | 'PAST_DUE'
         | 'PAUSED'
+        | 'CANCEL_SCHEDULED'
         | 'CANCELLED'
         | 'INCOMPLETE';
     provider_status?: string | null;
@@ -194,9 +195,13 @@ export type MerchantSubscription = {
     trial_ends_at?: string | null;
     first_payment_at?: string | null;
     next_billing_at?: string | null;
+    access_until_at?: string | null;
     cancel_requested_at?: string | null;
     cancelled_at?: string | null;
     cancel_allowed: boolean;
+    billing_blocked: boolean;
+    retry_allowed: boolean;
+    cancellation_effective_at?: string | null;
     plan: {
         id: string;
         code: string;
@@ -210,6 +215,61 @@ export type MerchantSubscription = {
             unit: string;
         };
     };
+};
+
+export type MerchantSubscriptionCharge = {
+    id: string;
+    mercadopago_authorized_payment_id?: string | null;
+    status: string;
+    status_detail?: string | null;
+    amount_cents?: number | null;
+    currency?: string | null;
+    due_at?: string | null;
+    paid_at?: string | null;
+    created_at: string;
+    updated_at: string;
+};
+
+export type MerchantSubscriptionEvent = {
+    id: string;
+    type: string;
+    detail?: string | null;
+    payload?: Record<string, unknown> | null;
+    created_at: string;
+};
+
+export type SubscriptionPlanSummary = MerchantSubscription['plan'];
+
+export type MerchantBillingOverview = {
+    blocked: boolean;
+    block_reason:
+        | 'NO_SETUP'
+        | 'PAST_DUE'
+        | 'INCOMPLETE'
+        | 'PAUSED'
+        | 'CANCELLED'
+        | null;
+    subscription: MerchantSubscription | null;
+    offer: SubscriptionPlanSummary | null;
+    actions: {
+        can_start_trial: boolean;
+        can_retry_payment: boolean;
+        can_update_card: boolean;
+        can_cancel: boolean;
+        can_access_dashboard: boolean;
+    };
+    history_preview: {
+        charges: MerchantSubscriptionCharge[];
+        events: MerchantSubscriptionEvent[];
+    };
+    support_message?: string | null;
+    processing?: boolean;
+};
+
+export type MerchantBillingHistoryResponse = {
+    subscription: MerchantSubscription | null;
+    charges: MerchantSubscriptionCharge[];
+    events: MerchantSubscriptionEvent[];
 };
 
 function clearAdminSession() {
@@ -355,6 +415,74 @@ export async function fetchSubscription() {
     }
 
     return (await res.json()) as MerchantSubscription | null;
+}
+
+export async function fetchBillingOverview() {
+    const res = await fetch(`${API_URL}/admin/billing`, {
+        headers: getRequiredAuthHeaders(),
+    });
+
+    handleUnauthorized(res);
+    if (!res.ok) {
+        throw new Error(await parseError(res, 'No se pudo cargar la facturación'));
+    }
+
+    return (await res.json()) as MerchantBillingOverview;
+}
+
+export async function fetchBillingHistory() {
+    const res = await fetch(`${API_URL}/admin/billing/history`, {
+        headers: getRequiredAuthHeaders(),
+    });
+
+    handleUnauthorized(res);
+    if (!res.ok) {
+        throw new Error(await parseError(res, 'No se pudo cargar el historial de cobros'));
+    }
+
+    return (await res.json()) as MerchantBillingHistoryResponse;
+}
+
+export async function startBillingTrial(payload: {
+    mp_card_token: string;
+    mp_payment_method_id?: string;
+    mp_payment_type_id?: string;
+    mp_card_last_four?: string;
+    mp_cardholder_name?: string;
+}) {
+    const res = await fetch(`${API_URL}/admin/billing/start-trial`, {
+        method: 'POST',
+        headers: getRequiredAuthHeaders(),
+        body: JSON.stringify(payload),
+    });
+
+    handleUnauthorized(res);
+    if (!res.ok) {
+        throw new Error(await parseError(res, 'No se pudo iniciar la prueba gratuita'));
+    }
+
+    return (await res.json()) as MerchantBillingOverview;
+}
+
+export async function retryBillingPayment(payload: {
+    mp_card_token: string;
+    mp_payment_method_id?: string;
+    mp_payment_type_id?: string;
+    mp_card_last_four?: string;
+    mp_cardholder_name?: string;
+}) {
+    const res = await fetch(`${API_URL}/admin/billing/retry-payment`, {
+        method: 'POST',
+        headers: getRequiredAuthHeaders(),
+        body: JSON.stringify(payload),
+    });
+
+    handleUnauthorized(res);
+    if (!res.ok) {
+        throw new Error(await parseError(res, 'No se pudo regularizar el pago'));
+    }
+
+    return (await res.json()) as MerchantBillingOverview;
 }
 
 export async function cancelSubscription() {
