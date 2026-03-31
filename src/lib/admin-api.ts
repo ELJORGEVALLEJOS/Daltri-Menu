@@ -254,7 +254,9 @@ export type MerchantBillingOverview = {
         | 'INCOMPLETE'
         | 'PAUSED'
         | 'CANCELLED'
+        | 'MANUAL_BLOCK'
         | null;
+    billing_access_override?: 'auto' | 'force_allow' | 'force_block';
     subscription: MerchantSubscription | null;
     offer: SubscriptionPlanSummary | null;
     actions: {
