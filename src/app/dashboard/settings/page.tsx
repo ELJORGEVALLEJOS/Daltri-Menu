@@ -168,6 +168,11 @@ type Merchant = {
             }>;
         };
     };
+    nearby_discovery?: {
+        ready: boolean;
+        reasons: string[];
+        requires_customer_location: boolean;
+    };
     preview_url?: string;
 };
 
@@ -368,6 +373,7 @@ export default function SettingsPage() {
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
     const [locating, setLocating] = useState(false);
     const [publication, setPublication] = useState<Merchant['publication'] | null>(null);
+    const [nearbyDiscovery, setNearbyDiscovery] = useState<Merchant['nearby_discovery'] | null>(null);
     const [subscription, setSubscription] = useState<MerchantSubscription | null>(null);
     const [previewUrl, setPreviewUrl] = useState('');
     const [qrDataUrl, setQrDataUrl] = useState('');
@@ -480,6 +486,7 @@ export default function SettingsPage() {
                     openingHours: normalizeOpeningHours(data.opening_hours),
                 });
                 setPublication(data.publication || null);
+                setNearbyDiscovery(data.nearby_discovery || null);
                 setSubscription(subscriptionData);
                 setPreviewUrl(data.preview_url || '');
 
@@ -881,6 +888,7 @@ export default function SettingsPage() {
                 catalogPublished: Boolean(response.publication?.is_published),
             }));
             setPublication(response.publication || null);
+            setNearbyDiscovery(response.nearby_discovery || null);
             setPreviewUrl(response.preview_url || '');
             alert(
                 nextCatalogPublished
@@ -1497,6 +1505,45 @@ export default function SettingsPage() {
                             <p className="text-xs font-medium text-gray-900">
                                 Si dejas estos dos campos vacíos, tu negocio no aparecerá en “Explorar locales”.
                             </p>
+
+                            <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                                            Explorar locales
+                                        </p>
+                                        <p className="mt-1 text-sm font-semibold text-gray-950">
+                                            {nearbyDiscovery?.ready
+                                                ? 'Tu negocio está listo para aparecer cerca del cliente.'
+                                                : 'Tu negocio todavía no entra en explorar locales.'}
+                                        </p>
+                                    </div>
+                                    <span
+                                        className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] ${
+                                            nearbyDiscovery?.ready
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : 'bg-amber-100 text-amber-700'
+                                        }`}
+                                    >
+                                        {nearbyDiscovery?.ready ? 'Visible' : 'Pendiente'}
+                                    </span>
+                                </div>
+
+                                {nearbyDiscovery?.ready ? (
+                                    <p className="mt-3 text-xs font-medium text-gray-700">
+                                        El cliente igualmente debe estar dentro del radio permitido y aceptar compartir su ubicación.
+                                    </p>
+                                ) : (
+                                    <ul className="mt-3 space-y-2 text-xs font-medium text-gray-700">
+                                        {(nearbyDiscovery?.reasons || []).map((reason) => (
+                                            <li key={reason} className="flex items-start gap-2">
+                                                <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                                <span>{reason}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
                         </div>
 
                         <div id="visual-identity-section" className="space-y-4 rounded-2xl border p-4 sm:p-5">

@@ -227,6 +227,12 @@ export default function Home() {
               </div>
             )}
 
+            {(nearbyError || nearbyMerchants.length === 0) && (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-medium leading-6 text-zinc-400">
+                Para aparecer aquí, un negocio debe estar activo, publicado, con ubicación cargada y con facturación habilitada.
+              </div>
+            )}
+
             {!nearbyMerchants.length && !nearbyError && !discovering && (
               <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-black/20 px-5 py-10 text-center text-sm text-zinc-500">
                 Activa la ubicación para cargar los locales disponibles alrededor tuyo.
