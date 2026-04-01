@@ -126,8 +126,8 @@ export default function CheckoutPage() {
                 });
 
                 message += `\nSubtotal: ${formatAmount(total)}\n`;
-                message += shippingCost > 0 ? `Envio: ${formatAmount(shippingCost)}\n` : 'Envio: GRATIS\n';
-                message += `Direccion: ${trimmedAddress}\n`;
+                message += shippingCost > 0 ? `Envío: ${formatAmount(shippingCost)}\n` : 'Envío: GRATIS\n';
+                message += `Dirección: ${trimmedAddress}\n`;
                 message += `Pago: ${paymentMethod === 'transfer' ? 'Transferencia' : 'Efectivo'}\n`;
                 if (paymentMethod === 'transfer') {
                     if (transferAlias) {
@@ -142,7 +142,7 @@ export default function CheckoutPage() {
                     message += `\nPedido exacto: ${orderLink}`;
                 }
                 if (restaurantLink) {
-                    message += `\n\nMenu: ${restaurantLink}`;
+                    message += `\n\nMenú: ${restaurantLink}`;
                 }
 
                 const encodedMessage = encodeURIComponent(message);
@@ -188,7 +188,7 @@ export default function CheckoutPage() {
                                 <span>{formatAmount(total)}</span>
                             </div>
                             <div className="flex justify-between text-gray-600">
-                                <span>Envio</span>
+                                <span>Envío</span>
                                 {shippingCost === 0 ? (
                                     <span className="text-green-600 font-bold">GRATIS</span>
                                 ) : (
@@ -202,8 +202,8 @@ export default function CheckoutPage() {
                             {shippingPreview.hasFreeShippingThreshold && (
                                 <p className="text-xs leading-relaxed text-gray-500">
                                     {shippingPreview.qualifiesForFreeShipping
-                                        ? `Envio gratis aplicado por compras desde ${formatAmount(shippingPreview.freeShippingOverAmount || 0)}.`
-                                        : `Te faltan ${formatAmount(shippingPreview.remainingForFreeShippingAmount)} para obtener envio gratis.`}
+                                        ? `Envío gratis aplicado por compras desde ${formatAmount(shippingPreview.freeShippingOverAmount || 0)}.`
+                                        : `Te faltan ${formatAmount(shippingPreview.remainingForFreeShippingAmount)} para obtener envío gratis.`}
                                 </p>
                             )}
                         </div>

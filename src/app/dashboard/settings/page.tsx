@@ -1011,9 +1011,6 @@ export default function SettingsPage() {
         .every((item) => item.complete);
     const hoursStepComplete = advisoryChecklist.find((item) => item.key === 'opening_hours')
         ?.complete ?? false;
-    const catalogStepComplete = criticalChecklist
-        .filter((item) => ['categories', 'products', 'prices'].includes(item.key))
-        .every((item) => item.complete);
     const onboardingSteps = [
         {
             key: 'business',
@@ -1753,7 +1750,7 @@ export default function SettingsPage() {
                         <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <Label>Textos principales del catálogo</Label>
                             <div>
-                                <Label htmlFor="heroTitle">Titulo principal</Label>
+                                <Label htmlFor="heroTitle">Título principal</Label>
                                 <Input
                                     id="heroTitle"
                                     name="heroTitle"
@@ -1765,7 +1762,7 @@ export default function SettingsPage() {
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="heroSubtitle">Subtitulo</Label>
+                                <Label htmlFor="heroSubtitle">Subtítulo</Label>
                                 <Input
                                     id="heroSubtitle"
                                     name="heroSubtitle"
@@ -2054,7 +2051,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <Label htmlFor="themeButtonText">Texto del boton</Label>
+                                    <Label htmlFor="themeButtonText">Texto del botón</Label>
                                     <div className="mt-2 flex gap-2">
                                         <Input
                                             id="themeButtonText"
@@ -2104,7 +2101,7 @@ export default function SettingsPage() {
                             </div>
 
                             <div>
-                                <Label htmlFor="shippingCost">Costo de envio (moneda local)</Label>
+                                <Label htmlFor="shippingCost">Costo de envío (moneda local)</Label>
                                 <Input
                                     id="shippingCost"
                                     name="shippingCost"
@@ -2118,13 +2115,13 @@ export default function SettingsPage() {
                                     className="mt-2"
                                 />
                                 <p className="mt-1 text-xs font-medium text-gray-900">
-                                    Si eliges envio gratis, este valor no se usa.
+                                    Si eliges envío gratis, este valor no se usa.
                                 </p>
                             </div>
 
                             <div>
                                 <Label htmlFor="freeShippingOver">
-                                    Envio gratis desde (opcional)
+                                    Envío gratis desde (opcional)
                                 </Label>
                                 <Input
                                     id="freeShippingOver"
@@ -2139,7 +2136,7 @@ export default function SettingsPage() {
                                     className="mt-2"
                                 />
                                 <p className="mt-1 text-xs font-medium text-gray-900">
-                                    Si el subtotal del pedido supera este monto, el envio pasa a ser gratis.
+                                    Si el subtotal del pedido supera este monto, el envío pasa a ser gratis.
                                 </p>
                                 {formData.shippingType === 'paid' &&
                                     Number(formData.freeShippingOver || 0) > 0 && (
@@ -2149,7 +2146,7 @@ export default function SettingsPage() {
                                                 minimumFractionDigits: 0,
                                                 maximumFractionDigits: 2,
                                             })}{' '}
-                                            tendran envio gratis.
+                                            tendrán envío gratis.
                                         </p>
                                     )}
                             </div>

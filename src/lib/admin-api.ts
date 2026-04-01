@@ -561,13 +561,36 @@ export async function updateMerchant(data: UpdateMerchantPayload) {
     throw new Error(firstError);
 }
 
+export type AdminMenuItem = {
+    id: string;
+    name: string;
+    description?: string | null;
+    sku?: string | null;
+    brand?: string | null;
+    stockQuantity?: number | null;
+    priceCents: number;
+    originalPriceCents?: number | null;
+    imageUrl?: string | null;
+    image_url?: string | null;
+    isActive?: boolean;
+    active?: boolean;
+};
+
+export type AdminMenuCategory = {
+    id: string;
+    name: string;
+    items: AdminMenuItem[];
+    isActive?: boolean;
+    active?: boolean;
+};
+
 export async function fetchMenu() {
     const res = await fetch(`${API_URL}/admin/categories`, {
         headers: getRequiredAuthHeaders(),
     });
     handleUnauthorized(res);
-    if (res.ok) return res.json();
-    return [];
+    if (res.ok) return (await res.json()) as AdminMenuCategory[];
+    return [] as AdminMenuCategory[];
 }
 
 export async function createCategory(name: string) {

@@ -45,11 +45,11 @@ export default function CartPage() {
         return (
             <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
                 <div className="bg-white p-8 rounded-[2rem] shadow-premium text-center max-w-sm w-full border border-gray-100">
-                    <h2 className="text-2xl font-sans font-black mb-2 text-gray-900">Tu carrito esta vacio</h2>
-                    <p className="text-gray-500 mb-8 font-medium">Parece que aun no has anadido nada delicioso.</p>
+                    <h2 className="text-2xl font-sans font-black mb-2 text-gray-900">Tu carrito está vacío</h2>
+                    <p className="text-gray-500 mb-8 font-medium">Parece que aún no has añadido nada delicioso.</p>
                     <Link href={menuHref}>
                         <Button className="w-full h-14 bg-zinc-900 hover:bg-black text-white font-bold rounded-2xl shadow-xl transition-all">
-                            Volver al Menu
+                            Volver al menú
                         </Button>
                     </Link>
                 </div>
@@ -118,7 +118,7 @@ export default function CartPage() {
                                 <span className="text-gray-900">{formatMoney(total)}</span>
                             </div>
                             <div className="flex items-center justify-between gap-3 text-sm text-gray-500 font-bold uppercase tracking-[0.15em]">
-                                <span>Envio</span>
+                                <span>Envío</span>
                                 <span className="text-gray-900">{shippingCost > 0 ? formatMoney(shippingCost) : 'Gratis'}</span>
                             </div>
                             <div className="flex items-center justify-between gap-3 text-sm text-gray-500 font-bold uppercase tracking-[0.15em]">
@@ -128,8 +128,8 @@ export default function CartPage() {
                             {shippingPreview.hasFreeShippingThreshold && (
                                 <p className="text-xs leading-relaxed text-gray-500">
                                     {shippingPreview.qualifiesForFreeShipping
-                                        ? `Envio gratis aplicado por compras desde ${formatMoney(shippingPreview.freeShippingOverAmount || 0)}.`
-                                        : `Te faltan ${formatMoney(shippingPreview.remainingForFreeShippingAmount)} para obtener envio gratis.`}
+                                        ? `Envío gratis aplicado por compras desde ${formatMoney(shippingPreview.freeShippingOverAmount || 0)}.`
+                                        : `Te faltan ${formatMoney(shippingPreview.remainingForFreeShippingAmount)} para obtener envío gratis.`}
                                 </p>
                             )}
                             <div className="h-px bg-gray-100" />

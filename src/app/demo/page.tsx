@@ -16,20 +16,20 @@ export default function DemoPage() {
                             Casa Nera Cafe
                         </h1>
                         <p className="max-w-2xl text-base leading-relaxed text-[#5f4b3f] sm:text-lg">
-                            Cafe de especialidad, pasteleria artesanal y opciones para llevar.
+                            Café de especialidad, pastelería artesanal y opciones para llevar.
                         </p>
                         <p className="max-w-2xl text-sm font-semibold uppercase tracking-[0.18em] text-[#7a3413]/80">
-                            Pedidos por WhatsApp · Retiro y envio · Abierto hoy
+                            Pedidos por WhatsApp · Retiro y envío · Abierto hoy
                         </p>
                         <p className="max-w-2xl text-base leading-relaxed text-[#5f4b3f] sm:text-lg">
-                            Explora un catalogo real, agrega productos al carrito y revisa como
+                            Explora un catálogo real, agrega productos al carrito y revisa cómo
                             queda listo el pedido antes de enviarlo por WhatsApp.
                         </p>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-3">
                         {[
-                            'Catalogo real en vivo',
+                            'Catálogo real en vivo',
                             'Carrito y checkout prolijos',
                             'Pedido claro para WhatsApp',
                         ].map((item) => (
@@ -49,13 +49,13 @@ export default function DemoPage() {
                             rel="noreferrer"
                             className="inline-flex items-center justify-center rounded-2xl bg-[#7a3413] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#61270d]"
                         >
-                            Ver catalogo real
+                            Ver catálogo real
                         </a>
                         <a
                             href="/register"
                             className="inline-flex items-center justify-center rounded-2xl border border-[#7a3413]/20 bg-white/70 px-5 py-3 text-sm font-bold text-[#7a3413] transition hover:border-[#7a3413]/40 hover:bg-white"
                         >
-                            Crear catalogo
+                            Crear catálogo
                         </a>
                     </div>
                 </section>

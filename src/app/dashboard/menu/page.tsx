@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useState, type ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,8 @@ import {
     createProduct,
     updateProduct,
     deleteProduct,
+    type AdminMenuCategory,
+    type AdminMenuItem,
 } from '@/lib/admin-api';
 import { Trash2, Plus, ChevronDown, LayoutGrid, Package, DollarSign, Image as ImageIcon, Edit2, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -30,7 +32,7 @@ const EMPTY_ITEM_DATA = {
 };
 
 export default function MenuPage() {
-    const [menu, setMenu] = useState<any[]>([]);
+    const [menu, setMenu] = useState<AdminMenuCategory[]>([]);
     const [loading, setLoading] = useState(true);
     const [newCategoryName, setNewCategoryName] = useState('');
     const [formError, setFormError] = useState('');
@@ -40,7 +42,7 @@ export default function MenuPage() {
 
     // Edit/Add States
     const [addingItemTo, setAddingItemTo] = useState<string | null>(null);
-    const [editingItem, setEditingItem] = useState<any | null>(null);
+    const [editingItem, setEditingItem] = useState<AdminMenuItem | null>(null);
     const [editingCategory, setEditingCategory] = useState<string | null>(null);
     const [categoryEditName, setCategoryEditName] = useState('');
 
@@ -48,16 +50,20 @@ export default function MenuPage() {
         ...EMPTY_ITEM_DATA,
     });
 
-    const loadMenu = async () => {
+    const loadMenu = useCallback(async () => {
         try {
             const data = await fetchMenu();
             const activeCategories = data.filter(
-                (category: any) => category.isActive !== false && category.active !== false,
+                (category) => category.isActive !== false && category.active !== false,
             );
             setMenu(activeCategories);
-            if (activeCategories.length > 0 && expandedCategories.length === 0) {
-                setExpandedCategories([activeCategories[0].id]);
-            }
+            setExpandedCategories((current) =>
+                activeCategories.length > 0 && current.length === 0
+                    ? [activeCategories[0].id]
+                    : current.filter((categoryId) =>
+                          activeCategories.some((category) => category.id === categoryId),
+                      ),
+            );
         } catch (error) {
             if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
                 router.replace('/login');
@@ -67,11 +73,11 @@ export default function MenuPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [router]);
 
     useEffect(() => {
-        loadMenu();
-    }, [router]);
+        void loadMenu();
+    }, [loadMenu]);
 
     useEffect(() => {
         if (!formSuccess) {
@@ -279,7 +285,7 @@ export default function MenuPage() {
         loadMenu();
     };
 
-    const startEditingItem = (item: any, categoryId: string) => {
+    const startEditingItem = (item: AdminMenuItem, categoryId: string) => {
         setEditingItem(item);
         setAddingItemTo(categoryId);
         setItemData({
@@ -433,12 +439,15 @@ export default function MenuPage() {
                         {expandedCategories.includes(category.id) && (
                             <div className="p-4 sm:p-8 bg-white border-t border-gray-50">
                                 <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 sm:gap-6">
-                                    {category.items.map((item: any) => (
+                                    {category.items.map((item) => {
+                                        const itemImageSrc = item.imageUrl || item.image_url || undefined;
+
+                                        return (
                                         <div key={item.id} className="group relative bg-[#FDFCFB] p-5 rounded-3xl border border-gray-100 hover:border-[#C5A059]/30 transition-all hover:shadow-2xl hover:shadow-gray-200/60 overflow-hidden flex flex-col">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div className="h-14 w-14 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
-                                                    {item.imageUrl || item.image_url ? (
-                                                        <img src={item.imageUrl || item.image_url} alt={item.name} className="h-full w-full object-cover" />
+                                                    {itemImageSrc ? (
+                                                        <img src={itemImageSrc} alt={item.name} className="h-full w-full object-cover" />
                                                     ) : (
                                                         <ImageIcon className="h-6 w-6 text-gray-200" />
                                                     )}
@@ -509,7 +518,8 @@ export default function MenuPage() {
                                                 </div>
                                             )}
                                         </div>
-                                    ))}
+                                        );
+                                    })}
 
                                     {/* Quick Add Product Card toggle */}
                                     {addingItemTo !== category.id && (

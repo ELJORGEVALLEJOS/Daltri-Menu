@@ -1,7 +1,14 @@
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import type { AdminMenuCategory } from '@/lib/admin-api';
 
-export function CategoryList({ categories, slug }: { categories: any[], slug: string }) {
+export function CategoryList({
+    categories,
+    slug,
+}: {
+    categories: AdminMenuCategory[];
+    slug: string;
+}) {
     return (
         <div className="space-y-4 mb-12">
             {categories.map((category) => (

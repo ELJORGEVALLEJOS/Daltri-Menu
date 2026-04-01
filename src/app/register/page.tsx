@@ -343,11 +343,11 @@ export default function RegisterPage() {
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-1.5">
-                                <Label htmlFor="slug" className="text-zinc-400 text-xs ml-1">Enlace publico de tu catálogo</Label>
+                                <Label htmlFor="slug" className="text-zinc-400 text-xs ml-1">Enlace público de tu catálogo</Label>
                                 <Input
                                     id="slug"
                                     required
-                                    placeholder="se genera automaticamente"
+                                    placeholder="se genera automáticamente"
                                     value={formData.slug}
                                     onChange={(e) => handleSlugChange(e.target.value)}
                                     className="bg-black/40 border-white/10 text-white h-11 rounded-xl focus:ring-amber-500/50"
@@ -357,7 +357,7 @@ export default function RegisterPage() {
                                         Se genera desde el nombre del negocio. Puedes cambiarlo si quieres.
                                     </p>
                                     <p className="text-[11px] text-zinc-500">
-                                        URL publica: <span className="font-mono text-zinc-300">menu.daltrishop.com/m/{formData.slug || 'tu-catalogo'}</span>
+                                        URL pública: <span className="font-mono text-zinc-300">menu.daltrishop.com/m/{formData.slug || 'tu-catalogo'}</span>
                                     </p>
                                     {suggestedSlug && formData.slug !== suggestedSlug && (
                                         <p className="text-[11px] text-amber-400">
@@ -421,7 +421,7 @@ export default function RegisterPage() {
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label htmlFor="admin_password" className="text-zinc-400 text-xs ml-1">Contrasena (min. 6)</Label>
+                            <Label htmlFor="admin_password" className="text-zinc-400 text-xs ml-1">Contraseña (min. 6)</Label>
                             <Input
                                 id="admin_password"
                                 type="password"
@@ -435,7 +435,7 @@ export default function RegisterPage() {
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label htmlFor="address" className="text-zinc-400 text-xs ml-1">Direccion (opcional)</Label>
+                            <Label htmlFor="address" className="text-zinc-400 text-xs ml-1">Dirección (opcional)</Label>
                             <Input
                                 id="address"
                                 placeholder="Calle 123, Ciudad"
@@ -513,7 +513,7 @@ export default function RegisterPage() {
                             <div className="space-y-3 rounded-2xl border border-white/10 bg-black/30 p-4">
                                 <div className="space-y-1">
                                     <p className="text-sm font-semibold text-white">
-                                        Metodo de pago con Mercado Pago
+                                        Método de pago con Mercado Pago
                                     </p>
                                     <p className="text-xs text-zinc-400">
                                         Completa tu tarjeta para iniciar la prueba gratuita y dejar
@@ -577,7 +577,7 @@ export default function RegisterPage() {
                                 disabled={loading}
                                 className="w-full h-12 bg-white text-black hover:bg-zinc-200 font-bold rounded-xl mt-4 shadow-lg shadow-white/5 active:scale-[0.98] transition-all"
                             >
-                                {loading ? 'Creando cuenta...' : 'Crear mi catalogo'}
+                                {loading ? 'Creando cuenta...' : 'Crear mi catálogo'}
                             </Button>
                         )}
                     </form>
