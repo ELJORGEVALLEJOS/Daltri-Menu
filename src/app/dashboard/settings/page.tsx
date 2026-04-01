@@ -1441,7 +1441,8 @@ export default function SettingsPage() {
                                         </Label>
                                     </div>
                                     <p className="mt-1 text-sm font-medium text-gray-900">
-                                        Solo mostraremos tu catálogo a personas que estén dentro de tu zona.
+                                        Tu catálogo solo aparecerá en “Explorar locales” si presionas
+                                        “Usar mi ubicación” y guardas los cambios.
                                     </p>
                                 </div>
                                 <Button
@@ -1503,7 +1504,8 @@ export default function SettingsPage() {
                             </div>
 
                             <p className="text-xs font-medium text-gray-900">
-                                Si dejas estos dos campos vacíos, tu negocio no aparecerá en “Explorar locales”.
+                                Para figurar aquí debes usar el botón “Usar mi ubicación” y guardar la
+                                ubicación del negocio.
                             </p>
 
                             <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
