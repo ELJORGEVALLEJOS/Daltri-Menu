@@ -54,6 +54,51 @@ const DEFAULT_THEME = {
 
 const DEFAULT_MENU_COPY = getDefaultMenuCopyByBusinessType('generic');
 
+type SettingsSectionKey =
+    | 'overview'
+    | 'business'
+    | 'branding'
+    | 'operations'
+    | 'payments';
+
+const SETTINGS_SECTIONS: Array<{
+    key: SettingsSectionKey;
+    label: string;
+    title: string;
+    description: string;
+}> = [
+    {
+        key: 'overview',
+        label: 'Publicación',
+        title: 'Publicación y estado comercial',
+        description: 'Publica el catálogo, revisa checklist y controla el estado general del negocio.',
+    },
+    {
+        key: 'business',
+        label: 'Negocio',
+        title: 'Datos básicos del negocio',
+        description: 'Nombre, código público, WhatsApp, link, QR y ubicación para explorar locales.',
+    },
+    {
+        key: 'branding',
+        label: 'Imagen',
+        title: 'Imagen y presentación del catálogo',
+        description: 'Logo, portada, textos principales y colores de la experiencia pública.',
+    },
+    {
+        key: 'operations',
+        label: 'Operación',
+        title: 'Horarios y operación diaria',
+        description: 'Horarios de atención, envío y límites operativos del catálogo.',
+    },
+    {
+        key: 'payments',
+        label: 'Cobros y enlaces',
+        title: 'Cobros y canales externos',
+        description: 'Transferencias y redes sociales visibles para el cliente.',
+    },
+];
+
 function matchesKnownDefaultMenuCopyValue(
     field: 'heroTitle' | 'heroSubtitle' | 'heroBadge',
     value: string,
@@ -380,6 +425,8 @@ export default function SettingsPage() {
     const [qrPosterUrl, setQrPosterUrl] = useState('');
     const [qrLayout, setQrLayout] = useState<QrLayoutKey>('medium');
     const router = useRouter();
+    const [activeSettingsSection, setActiveSettingsSection] =
+        useState<SettingsSectionKey>('overview');
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
@@ -773,13 +820,33 @@ export default function SettingsPage() {
         link.click();
     };
 
-    const scrollToSection = (sectionId: string) => {
-        const target = document.getElementById(sectionId);
-        if (!target) {
-            return;
+    const getSectionKeyFromAnchor = (sectionId: string): SettingsSectionKey => {
+        switch (sectionId) {
+            case 'publication-section':
+                return 'overview';
+            case 'business-basics-section':
+                return 'business';
+            case 'visual-identity-section':
+                return 'branding';
+            case 'hours-section':
+            case 'operations-section':
+                return 'operations';
+            default:
+                return 'business';
         }
+    };
 
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const scrollToSection = (sectionId: string) => {
+        const nextSection = getSectionKeyFromAnchor(sectionId);
+        setActiveSettingsSection(nextSection);
+        window.requestAnimationFrame(() => {
+            const target = document.getElementById(sectionId);
+            if (!target) {
+                return;
+            }
+
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
     };
 
     const handleOpenPreview = () => {
@@ -975,6 +1042,10 @@ export default function SettingsPage() {
         },
     ];
     const completedOnboardingSteps = onboardingSteps.filter((step) => step.complete).length;
+    const activeSettingsSectionMeta =
+        SETTINGS_SECTIONS.find((section) => section.key === activeSettingsSection) ||
+        SETTINGS_SECTIONS[0];
+    const usesTwoColumns = activeSettingsSection === 'branding';
 
     return (
         <div className="mx-auto w-full max-w-6xl text-gray-950">
@@ -1032,6 +1103,42 @@ export default function SettingsPage() {
                     </div>
                 </section>
 
+                <section className="space-y-4 rounded-2xl border p-4 sm:p-5">
+                    <div className="space-y-2">
+                        <h2 className="text-lg font-bold">Secciones de configuración</h2>
+                        <p className="text-sm font-medium text-gray-900">
+                            Trabaja una parte a la vez para no mezclar publicación, datos del negocio y operación.
+                        </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                        {SETTINGS_SECTIONS.map((section) => (
+                            <Button
+                                key={section.key}
+                                type="button"
+                                variant={activeSettingsSection === section.key ? 'default' : 'outline'}
+                                onClick={() => setActiveSettingsSection(section.key)}
+                                className="h-10"
+                            >
+                                {section.label}
+                            </Button>
+                        ))}
+                    </div>
+
+                    <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                            Sección activa
+                        </p>
+                        <p className="mt-1 text-base font-bold text-gray-950">
+                            {activeSettingsSectionMeta.title}
+                        </p>
+                        <p className="mt-1 text-sm font-medium text-gray-700">
+                            {activeSettingsSectionMeta.description}
+                        </p>
+                    </div>
+                </section>
+
+                {activeSettingsSection === 'overview' && (
                 <section id="publication-section" className="space-y-4 rounded-2xl border p-4 sm:p-5">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div className="space-y-2">
@@ -1161,8 +1268,9 @@ export default function SettingsPage() {
                         </div>
                     </div>
                 </section>
+                )}
 
-                {subscription && (
+                {activeSettingsSection === 'overview' && subscription && (
                     <section className="space-y-4 rounded-2xl border p-4 sm:p-5">
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                             <div className="space-y-2">
@@ -1246,8 +1354,18 @@ export default function SettingsPage() {
                     </section>
                 )}
 
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {activeSettingsSection !== 'overview' && (
+                    <div
+                        className={
+                            usesTwoColumns
+                                ? 'grid grid-cols-1 gap-6 lg:grid-cols-2'
+                                : 'grid grid-cols-1 gap-6'
+                        }
+                    >
+                    {(activeSettingsSection === 'business' || activeSettingsSection === 'branding') && (
                     <section id="business-basics-section" className="space-y-6">
+                        {activeSettingsSection === 'business' && (
+                        <>
                         <div>
                             <Label htmlFor="name">Nombre del negocio</Label>
                             <Input
@@ -1548,6 +1666,11 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
+                        </>
+                        )}
+
+                        {activeSettingsSection === 'branding' && (
+                        <>
                         <div id="visual-identity-section" className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <Label>Logo del negocio</Label>
                             <Input
@@ -1601,9 +1724,17 @@ export default function SettingsPage() {
                                 </div>
                             )}
                         </div>
+                        </>
+                        )}
                     </section>
+                    )}
 
+                    {(activeSettingsSection === 'branding' ||
+                        activeSettingsSection === 'operations' ||
+                        activeSettingsSection === 'payments') && (
                     <section className="space-y-6">
+                        {activeSettingsSection === 'branding' && (
+                        <>
                         <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <Label>Textos principales del catálogo</Label>
                             <div>
@@ -1643,7 +1774,11 @@ export default function SettingsPage() {
                                 />
                             </div>
                         </div>
+                        </>
+                        )}
 
+                        {activeSettingsSection === 'operations' && (
+                        <>
                         <div id="hours-section" className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <div>
                                 <Label>Horarios de atención</Label>
@@ -1819,6 +1954,11 @@ export default function SettingsPage() {
                             </p>
                         </div>
 
+                        </>
+                        )}
+
+                        {activeSettingsSection === 'branding' && (
+                        <>
                         <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <Label>Colores del catálogo</Label>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -1920,6 +2060,11 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
+                        </>
+                        )}
+
+                        {activeSettingsSection === 'operations' && (
+                        <>
                         <div id="operations-section" className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <div>
                                 <Label>Envio</Label>
@@ -2036,7 +2181,11 @@ export default function SettingsPage() {
                                 </p>
                             </div>
                         </div>
+                        </>
+                        )}
 
+                        {activeSettingsSection === 'payments' && (
+                        <>
                         <div className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <Label>Redes sociales (opcional)</Label>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -2137,8 +2286,12 @@ export default function SettingsPage() {
                                 El sistema seguirá ofreciendo efectivo. La opción transferencia solo aparecerá cuando el alias o el CBU/CVU estén cargados.
                             </p>
                         </div>
+                        </>
+                        )}
                     </section>
+                    )}
                 </div>
+                )}
 
                 {error && <p className="text-sm text-red-600">{error}</p>}
 
