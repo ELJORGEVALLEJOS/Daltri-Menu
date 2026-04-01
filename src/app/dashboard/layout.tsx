@@ -66,9 +66,9 @@ export default function DashboardLayout({
     if (!authorized) return null;
 
     return (
-        <div className="min-h-screen bg-gray-100 md:grid md:grid-cols-[16rem_minmax(0,1fr)]">
+        <div className="min-h-screen overflow-x-hidden bg-gray-100 md:grid md:grid-cols-[16rem_minmax(0,1fr)]">
             <Sidebar />
-            <main className="min-w-0 p-3 sm:p-6 md:p-8">{children}</main>
+            <main className="min-w-0 overflow-x-hidden p-3 sm:p-6 md:p-8">{children}</main>
         </div>
     );
 }

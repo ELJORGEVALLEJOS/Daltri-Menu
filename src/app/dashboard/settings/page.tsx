@@ -858,7 +858,8 @@ export default function SettingsPage() {
                 return;
             }
 
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const top = target.getBoundingClientRect().top + window.scrollY - 24;
+            window.scrollTo({ top, left: 0, behavior: 'smooth' });
         });
     };
 
