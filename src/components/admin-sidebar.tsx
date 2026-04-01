@@ -17,7 +17,7 @@ export function Sidebar() {
     const pathname = usePathname();
 
     return (
-        <aside className="sticky top-0 z-40 w-full border-b bg-gray-900 text-white md:h-screen md:self-start md:border-b-0 md:border-r md:overflow-y-auto">
+        <aside className="sticky top-0 z-40 w-full border-b bg-gray-900 text-white md:fixed md:inset-y-0 md:left-0 md:w-64 md:border-b-0 md:border-r md:overflow-y-auto">
             <div className="flex h-14 sm:h-16 items-center gap-2 border-b border-gray-800 px-4 sm:px-6">
                 <BrandMark size={24} className="h-6 w-6" />
                 <span className="text-base sm:text-xl font-bold">Daltri Admin</span>
