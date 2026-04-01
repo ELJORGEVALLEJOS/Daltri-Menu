@@ -34,6 +34,7 @@ export default function MenuPage() {
     const [loading, setLoading] = useState(true);
     const [newCategoryName, setNewCategoryName] = useState('');
     const [formError, setFormError] = useState('');
+    const [formSuccess, setFormSuccess] = useState('');
     const router = useRouter();
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
@@ -72,6 +73,18 @@ export default function MenuPage() {
         loadMenu();
     }, [router]);
 
+    useEffect(() => {
+        if (!formSuccess) {
+            return;
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            setFormSuccess('');
+        }, 4500);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [formSuccess]);
+
     const handleCreateCategory = async () => {
         const categoryName = newCategoryName.trim();
         if (!categoryName) {
@@ -82,6 +95,7 @@ export default function MenuPage() {
         try {
             await createCategory(categoryName);
             setFormError('');
+            setFormSuccess('Categoría guardada correctamente.');
             setNewCategoryName('');
             loadMenu();
         } catch (error) {
@@ -100,6 +114,8 @@ export default function MenuPage() {
         try {
             await updateCategory(id, categoryEditName);
             setEditingCategory(null);
+            setFormError('');
+            setFormSuccess('Categoría actualizada correctamente.');
             loadMenu();
         } catch (error) {
             if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
@@ -118,6 +134,8 @@ export default function MenuPage() {
             await deleteCategory(id);
             setMenu((prev) => prev.filter((category) => category.id !== id));
             setExpandedCategories((prev) => prev.filter((categoryId) => categoryId !== id));
+            setFormError('');
+            setFormSuccess('Categoría eliminada correctamente.');
             loadMenu();
         } catch (error) {
             if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
@@ -126,7 +144,7 @@ export default function MenuPage() {
             }
             const message =
                 error instanceof Error ? error.message : 'No se pudo eliminar la categoría';
-            alert(message);
+            setFormError(message);
         }
     };
 
@@ -253,6 +271,11 @@ export default function MenuPage() {
         setAddingItemTo(null);
         setEditingItem(null);
         setItemData({ ...EMPTY_ITEM_DATA });
+        setFormSuccess(
+            editingItem
+                ? 'Producto actualizado correctamente.'
+                : 'Producto guardado correctamente.',
+        );
         loadMenu();
     };
 
@@ -276,6 +299,8 @@ export default function MenuPage() {
         if (!confirm('¿Seguro quieres eliminar este producto?')) return;
         try {
             await deleteProduct(id);
+            setFormError('');
+            setFormSuccess('Producto eliminado correctamente.');
             loadMenu();
         } catch (error) {
             if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
@@ -333,6 +358,11 @@ export default function MenuPage() {
             {formError && (
                 <div className="text-sm text-red-600 font-medium bg-red-50 border border-red-100 rounded-xl p-3">
                     {formError}
+                </div>
+            )}
+            {formSuccess && (
+                <div className="text-sm text-emerald-700 font-medium bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+                    {formSuccess}
                 </div>
             )}
 

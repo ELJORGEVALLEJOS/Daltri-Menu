@@ -415,6 +415,7 @@ export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
     const [locating, setLocating] = useState(false);
     const [publication, setPublication] = useState<Merchant['publication'] | null>(null);
@@ -557,6 +558,18 @@ export default function SettingsPage() {
             active = false;
         };
     }, [router]);
+
+    useEffect(() => {
+        if (!success) {
+            return;
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            setSuccess('');
+        }, 4500);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [success]);
 
     useEffect(() => {
         let active = true;
@@ -860,6 +873,7 @@ export default function SettingsPage() {
     const persistSettings = async (nextCatalogPublished = formData.catalogPublished) => {
         setSaving(true);
         setError('');
+        setSuccess('');
 
         const normalizedPhone = formData.whatsappPhone.trim();
         const normalizedAddress = formData.address.trim();
@@ -957,10 +971,10 @@ export default function SettingsPage() {
             setPublication(response.publication || null);
             setNearbyDiscovery(response.nearby_discovery || null);
             setPreviewUrl(response.preview_url || '');
-            alert(
+            setSuccess(
                 nextCatalogPublished
-                    ? 'Configuracion guardada y catálogo publicado.'
-                    : 'Configuracion guardada correctamente.',
+                    ? 'Configuración guardada y catálogo publicado correctamente.'
+                    : 'Configuración guardada correctamente.',
             );
         } catch (error) {
             if (error instanceof Error && error.message === AUTH_REQUIRED_ERROR) {
@@ -2294,6 +2308,11 @@ export default function SettingsPage() {
                 )}
 
                 {error && <p className="text-sm text-red-600">{error}</p>}
+                {success && (
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                        {success}
+                    </div>
+                )}
 
                 <div className="pt-2">
                     <Button type="submit" disabled={saving} className="w-full sm:w-auto">
