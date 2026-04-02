@@ -1,6 +1,4 @@
 'use client';
-
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { CardPayment, initMercadoPago } from '@mercadopago/sdk-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +7,7 @@ import {
     cancelSubscription,
     fetchBillingHistory,
     fetchBillingOverview,
+    resumeBillingSubscription,
     retryBillingPayment,
     startBillingTrial,
     updateSubscriptionPaymentMethod,
@@ -24,7 +23,7 @@ if (mpPublicKey) {
     initMercadoPago(mpPublicKey);
 }
 
-type BillingActionMode = 'start' | 'retry' | 'update';
+type BillingActionMode = 'start' | 'retry' | 'update' | 'resume';
 
 function formatBillingDate(value?: string | null) {
     if (!value) return 'Sin fecha';
@@ -58,6 +57,7 @@ function getActionMode(overview: MerchantBillingOverview | null): BillingActionM
     if (!overview) return null;
     if (overview.actions.can_start_trial) return 'start';
     if (overview.actions.can_retry_payment) return 'retry';
+    if (overview.actions.can_resume) return 'resume';
     if (overview.actions.can_update_card && overview.subscription?.status !== 'CANCELLED') {
         return 'update';
     }
@@ -168,6 +168,8 @@ export default function BillingPage() {
                     ? await startBillingTrial(payload)
                     : actionMode === 'retry'
                       ? await retryBillingPayment(payload)
+                      : actionMode === 'resume'
+                        ? await resumeBillingSubscription(payload)
                       : await updateSubscriptionPaymentMethod(payload);
 
             if ('blocked' in nextOverview) {
@@ -182,6 +184,8 @@ export default function BillingPage() {
                             ? 'La prueba gratuita quedó iniciada.'
                             : actionMode === 'retry'
                               ? 'Se actualizó la tarjeta y se reintentó el cobro.'
+                              : actionMode === 'resume'
+                                ? 'La suscripción volvió a quedar activa.'
                               : 'La tarjeta quedó actualizada.',
                     );
                     const nextHistory = await fetchBillingHistory();
@@ -341,6 +345,8 @@ export default function BillingPage() {
                                 ? 'Inicia la prueba gratuita y habilita el negocio registrando la tarjeta.'
                                 : actionMode === 'retry'
                                   ? 'Actualiza la tarjeta para regularizar el cobro y volver a operar.'
+                                  : actionMode === 'resume'
+                                    ? 'Ingresa la tarjeta para reactivar la renovación del plan y volver a dejar el cobro automático activo.'
                                   : actionMode === 'update'
                                     ? 'Cambia la tarjeta que Mercado Pago usará en próximos débitos.'
                                     : 'Tu plan no requiere una acción inmediata.'}
@@ -421,11 +427,8 @@ export default function BillingPage() {
                         <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
                             <p className="text-sm font-bold text-gray-950">La suscripción está cancelada.</p>
                             <p className="mt-1 text-sm font-medium text-gray-700">
-                                Si necesitas reactivar el negocio, por ahora debes comunicarte con soporte.
+                                Puedes volver a suscribirte desde esta misma pantalla registrando una tarjeta.
                             </p>
-                            <Button asChild type="button" variant="outline" className="mt-3">
-                                <Link href="mailto:soporte@daltrishop.com">Contactar soporte</Link>
-                            </Button>
                         </div>
                     )}
                 </div>

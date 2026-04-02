@@ -263,6 +263,7 @@ export type MerchantBillingOverview = {
         can_start_trial: boolean;
         can_retry_payment: boolean;
         can_update_card: boolean;
+        can_resume: boolean;
         can_cancel: boolean;
         can_access_dashboard: boolean;
     };
@@ -488,6 +489,27 @@ export async function retryBillingPayment(payload: {
     handleUnauthorized(res);
     if (!res.ok) {
         throw new Error(await parseError(res, 'No se pudo regularizar el pago'));
+    }
+
+    return (await res.json()) as MerchantBillingOverview;
+}
+
+export async function resumeBillingSubscription(payload: {
+    mp_card_token: string;
+    mp_payment_method_id?: string;
+    mp_payment_type_id?: string;
+    mp_card_last_four?: string;
+    mp_cardholder_name?: string;
+}) {
+    const res = await fetch(`${API_URL}/admin/billing/resume`, {
+        method: 'POST',
+        headers: getRequiredAuthHeaders(),
+        body: JSON.stringify(payload),
+    });
+
+    handleUnauthorized(res);
+    if (!res.ok) {
+        throw new Error(await parseError(res, 'No se pudo reactivar la suscripción'));
     }
 
     return (await res.json()) as MerchantBillingOverview;
