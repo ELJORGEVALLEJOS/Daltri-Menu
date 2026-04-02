@@ -50,7 +50,9 @@ type Merchant = {
     logoUrl?: string;
     logo_url?: string;
     cover_url?: string;
+    address?: string | null;
     business_type?: BusinessType;
+    shipping_type?: 'pickup' | 'free' | 'paid';
     social_links?: MerchantSocialLinks;
     theme_colors?: MerchantThemeColors;
     menu_copy?: {
@@ -157,6 +159,7 @@ export function MenuView({
         [openingHours],
     );
     const canReceiveOrders = !openingStatus.hasAnyEnabledDay || openingStatus.isOpenNow;
+    const pickupOnly = merchant.shipping_type === 'pickup';
     const handleCategorySelect = (categoryId: string) => {
         pendingScrollCategoryId.current = categoryId;
         setSelectedCategoryId(categoryId);
@@ -514,6 +517,28 @@ export function MenuView({
                             </div>
                         </button>
                     ))}
+                </div>
+
+                <div
+                    className="mt-6 rounded-[2rem] border p-5 shadow-premium"
+                    style={{ backgroundColor: theme.surface, borderColor: withAlpha(theme.text, 0.08) }}
+                >
+                    <p
+                        className="text-[10px] font-black uppercase tracking-[0.3em]"
+                        style={{ color: withAlpha(theme.text, 0.5) }}
+                    >
+                        Modalidad de pedido
+                    </p>
+                    <p className="mt-3 text-base font-black tracking-tight" style={{ color: theme.text }}>
+                        {pickupOnly ? 'Retiro por el local' : 'Retiro y envío'}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: withAlpha(theme.text, 0.72) }}>
+                        {pickupOnly
+                            ? merchant.address
+                                ? `Debes retirar tu pedido en ${merchant.address}.`
+                                : 'Este negocio entrega los pedidos solo con retiro por el local.'
+                            : 'Puedes coordinar retiro o envío según las condiciones del negocio.'}
+                    </p>
                 </div>
 
                 <SocialLinks links={merchant.social_links} />

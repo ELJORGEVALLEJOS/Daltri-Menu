@@ -62,10 +62,11 @@ export type PublicMerchant = {
     slug: string;
     whatsapp_phone: string;
     currency?: string;
+    address?: string | null;
     business_type?: BusinessType;
     logo_url?: string;
     cover_url?: string;
-    shipping_type?: 'free' | 'paid';
+    shipping_type?: 'pickup' | 'free' | 'paid';
     shipping_cost_cents?: number;
     free_shipping_over_cents?: number | null;
     social_links?: MerchantSocialLinks;

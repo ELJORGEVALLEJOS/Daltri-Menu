@@ -48,6 +48,8 @@ export default function CheckoutPage() {
 
     const shippingPreview = getShippingPreview(total, merchant);
     const shippingCost = shippingPreview.shippingCost;
+    const pickupOnly = shippingPreview.pickupOnly;
+    const merchantAddress = merchant?.address?.trim() || '';
     const finalTotal = total + shippingCost;
     const totalUnits = items.reduce((acc, item) => acc + item.quantity, 0);
     const maxUnitsPerOrder = Math.max(1, merchant?.max_units_per_order || 3);
@@ -91,6 +93,10 @@ export default function CheckoutPage() {
             );
             return;
         }
+        if (pickupOnly && !merchantAddress) {
+            alert('Este negocio todavía no cargó la dirección del local para el retiro.');
+            return;
+        }
         if (paymentMethod === 'transfer' && !transferEnabled) {
             alert('Este negocio no tiene datos de transferencia cargados.');
             return;
@@ -101,9 +107,9 @@ export default function CheckoutPage() {
             const orderData = {
                 customer_name: name.trim(),
                 customer_session_id: customerSessionId,
-                delivery: 'delivery' as const,
+                delivery: pickupOnly ? ('pickup' as const) : ('delivery' as const),
                 payment_method: paymentMethod,
-                delivery_address: trimmedAddress,
+                delivery_address: pickupOnly ? undefined : trimmedAddress,
                 items: items.map((item) => ({
                     product_id: item.itemId,
                     qty: item.quantity,
@@ -126,8 +132,18 @@ export default function CheckoutPage() {
                 });
 
                 message += `\nSubtotal: ${formatAmount(total)}\n`;
-                message += shippingCost > 0 ? `Envío: ${formatAmount(shippingCost)}\n` : 'Envío: GRATIS\n';
-                message += `Dirección: ${trimmedAddress}\n`;
+                message += pickupOnly
+                    ? 'Retiro: en el local\n'
+                    : shippingCost > 0
+                      ? `Envío: ${formatAmount(shippingCost)}\n`
+                      : 'Envío: GRATIS\n';
+                if (pickupOnly) {
+                    if (merchantAddress) {
+                        message += `Dirección del local: ${merchantAddress}\n`;
+                    }
+                } else {
+                    message += `Dirección: ${trimmedAddress}\n`;
+                }
                 message += `Pago: ${paymentMethod === 'transfer' ? 'Transferencia' : 'Efectivo'}\n`;
                 if (paymentMethod === 'transfer') {
                     if (transferAlias) {
@@ -188,8 +204,10 @@ export default function CheckoutPage() {
                                 <span>{formatAmount(total)}</span>
                             </div>
                             <div className="flex justify-between text-gray-600">
-                                <span>Envío</span>
-                                {shippingCost === 0 ? (
+                                <span>{pickupOnly ? 'Retiro' : 'Envío'}</span>
+                                {pickupOnly ? (
+                                    <span className="font-bold text-gray-900">En local</span>
+                                ) : shippingCost === 0 ? (
                                     <span className="text-green-600 font-bold">GRATIS</span>
                                 ) : (
                                     <span>{formatAmount(shippingCost)}</span>
@@ -199,12 +217,18 @@ export default function CheckoutPage() {
                                 <span>Unidades</span>
                                 <span>{totalUnits}</span>
                             </div>
-                            {shippingPreview.hasFreeShippingThreshold && (
+                            {shippingPreview.hasFreeShippingThreshold && !pickupOnly && (
                                 <p className="text-xs leading-relaxed text-gray-500">
                                     {shippingPreview.qualifiesForFreeShipping
                                         ? `Envío gratis aplicado por compras desde ${formatAmount(shippingPreview.freeShippingOverAmount || 0)}.`
                                         : `Te faltan ${formatAmount(shippingPreview.remainingForFreeShippingAmount)} para obtener envío gratis.`}
                                 </p>
+                            )}
+                            {pickupOnly && (
+                                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+                                    Debes retirar el pedido por el local.
+                                    {merchantAddress ? ` Dirección: ${merchantAddress}.` : ''}
+                                </div>
                             )}
                         </div>
 
@@ -236,16 +260,30 @@ export default function CheckoutPage() {
                                     placeholder="Ej: Juan Perez"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">Dirección de entrega</label>
-                                <input
-                                    type="text"
-                                    className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all text-gray-800 font-medium"
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    placeholder="Ej: Calle 123, depto 4, barrio..."
-                                />
-                            </div>
+                            {pickupOnly ? (
+                                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-700">
+                                        Retiro por el local
+                                    </p>
+                                    <p className="mt-2 text-sm font-medium text-amber-900">
+                                        Este negocio no hace envíos. Debes retirar el pedido por el local.
+                                    </p>
+                                    <p className="mt-2 text-sm font-semibold text-gray-900">
+                                        {merchantAddress || 'Dirección del local pendiente de carga.'}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div>
+                                    <label className="block text-[10px] font-bold mb-2 text-gray-400 uppercase tracking-[0.2em]">Dirección de entrega</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all text-gray-800 font-medium"
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                        placeholder="Ej: Calle 123, depto 4, barrio..."
+                                    />
+                                </div>
+                            )}
 
                             <div className="space-y-3">
                                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
@@ -373,7 +411,8 @@ export default function CheckoutPage() {
                                 !canReceiveOrders ||
                                 exceedsOrderUnitsLimit ||
                                 !name.trim() ||
-                                !address.trim() ||
+                                (pickupOnly && !merchantAddress) ||
+                                (!pickupOnly && !address.trim()) ||
                                 !merchant?.whatsapp_phone ||
                                 !slug ||
                                 (paymentMethod === 'transfer' && !transferEnabled)

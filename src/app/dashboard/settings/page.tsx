@@ -467,6 +467,8 @@ export default function SettingsPage() {
         ? `https://menu.daltrishop.com/m/${normalizedSlug}`
         : '';
     const qrLayoutConfig = QR_LAYOUTS[qrLayout];
+    const pickupOnly = formData.shippingType === 'pickup';
+    const visibleAddress = formData.address.trim();
 
     useEffect(() => {
         let active = true;
@@ -497,7 +499,12 @@ export default function SettingsPage() {
                     businessType,
                     logoUrl: data.logo_url || '',
                     coverUrl: data.cover_url || '',
-                    shippingType: data.shipping_type === 'paid' ? 'paid' : 'free',
+                    shippingType:
+                        data.shipping_type === 'pickup'
+                            ? 'pickup'
+                            : data.shipping_type === 'paid'
+                              ? 'paid'
+                              : 'free',
                     shippingCost:
                         data.shipping_type === 'paid'
                             ? String((data.shipping_cost_cents || 0) / 100)
@@ -709,7 +716,8 @@ export default function SettingsPage() {
         setFormData((prev) => ({
             ...prev,
             shippingType,
-            shippingCost: shippingType === 'free' ? '' : prev.shippingCost || '0',
+            shippingCost: shippingType === 'paid' ? prev.shippingCost || '0' : '',
+            freeShippingOver: shippingType === 'paid' ? prev.freeShippingOver : '',
         }));
     };
 
@@ -888,6 +896,13 @@ export default function SettingsPage() {
             setError('Completa latitud y longitud juntas, o deja ambas vacías.');
             return;
         }
+        if (formData.shippingType === 'pickup' && !normalizedAddress) {
+            setSaving(false);
+            setError(
+                'Si solo retiras por el local, completa la dirección visible para el cliente.',
+            );
+            return;
+        }
 
         const normalizedLocation =
             latitudeValue && longitudeValue
@@ -959,6 +974,12 @@ export default function SettingsPage() {
             setFormData((prev) => ({
                 ...prev,
                 address: response.address || prev.address,
+                shippingType:
+                    response.shipping_type === 'pickup'
+                        ? 'pickup'
+                        : response.shipping_type === 'paid'
+                          ? 'paid'
+                          : 'free',
                 locationLatitude:
                     typeof response.location?.latitude === 'number'
                         ? String(response.location.latitude)
@@ -2079,77 +2100,131 @@ export default function SettingsPage() {
                         <>
                         <div id="operations-section" className="space-y-4 rounded-2xl border p-4 sm:p-5">
                             <div>
-                                <Label>Envio</Label>
+                                <Label>¿Tu negocio hace envíos?</Label>
                                 <div className="mt-2 grid grid-cols-2 gap-3">
                                     <Button
                                         type="button"
-                                        variant={formData.shippingType === 'free' ? 'default' : 'outline'}
+                                        variant={!pickupOnly ? 'default' : 'outline'}
                                         onClick={() => handleShippingTypeChange('free')}
                                         className="h-10 w-full"
                                     >
-                                        Gratis
+                                        Sí, hago envíos
                                     </Button>
                                     <Button
                                         type="button"
-                                        variant={formData.shippingType === 'paid' ? 'default' : 'outline'}
-                                        onClick={() => handleShippingTypeChange('paid')}
+                                        variant={pickupOnly ? 'default' : 'outline'}
+                                        onClick={() => handleShippingTypeChange('pickup')}
                                         className="h-10 w-full"
                                     >
-                                        Pago
+                                        No, solo retiro
                                     </Button>
                                 </div>
-                            </div>
-
-                            <div>
-                                <Label htmlFor="shippingCost">Costo de envío (moneda local)</Label>
-                                <Input
-                                    id="shippingCost"
-                                    name="shippingCost"
-                                    type="number"
-                                    value={formData.shippingCost}
-                                    onChange={handleChange}
-                                    placeholder="0"
-                                    min={0}
-                                    step="1"
-                                    disabled={formData.shippingType === 'free'}
-                                    className="mt-2"
-                                />
-                                <p className="mt-1 text-xs font-medium text-gray-900">
-                                    Si eliges envío gratis, este valor no se usa.
+                                <p className="mt-2 text-xs font-medium text-gray-900">
+                                    Si eliges solo retiro, el cliente verá que debe pasar por el local y se mostrará tu dirección visible.
                                 </p>
                             </div>
 
-                            <div>
-                                <Label htmlFor="freeShippingOver">
-                                    Envío gratis desde (opcional)
-                                </Label>
-                                <Input
-                                    id="freeShippingOver"
-                                    name="freeShippingOver"
-                                    type="number"
-                                    value={formData.freeShippingOver}
-                                    onChange={handleChange}
-                                    placeholder="30000"
-                                    min={0}
-                                    step="1"
-                                    disabled={formData.shippingType === 'free'}
-                                    className="mt-2"
-                                />
-                                <p className="mt-1 text-xs font-medium text-gray-900">
-                                    Si el subtotal del pedido supera este monto, el envío pasa a ser gratis.
-                                </p>
-                                {formData.shippingType === 'paid' &&
-                                    Number(formData.freeShippingOver || 0) > 0 && (
-                                        <p className="mt-2 text-xs font-medium text-emerald-600">
-                                            Los pedidos desde{' '}
-                                            {formatMoney(Number(formData.freeShippingOver), {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 2,
-                                            })}{' '}
-                                            tendrán envío gratis.
+                            {pickupOnly ? (
+                                <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                                    <div>
+                                        <p className="text-sm font-semibold text-amber-900">
+                                            Este negocio solo trabaja con retiro por el local.
                                         </p>
-                                    )}
-                            </div>
+                                        <p className="mt-1 text-sm text-amber-800">
+                                            El cliente verá esta condición en el checkout y deberá pasar por la dirección visible del negocio.
+                                        </p>
+                                    </div>
+                                    <div className="rounded-2xl border border-amber-300 bg-white px-4 py-3">
+                                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
+                                            Dirección del local
+                                        </p>
+                                        {visibleAddress ? (
+                                            <p className="mt-2 text-sm font-semibold text-gray-900">
+                                                {visibleAddress}
+                                            </p>
+                                        ) : (
+                                            <p className="mt-2 text-sm font-semibold text-red-600">
+                                                Falta completar la dirección visible del local.
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div>
+                                        <Label>Tipo de envío</Label>
+                                        <div className="mt-2 grid grid-cols-2 gap-3">
+                                            <Button
+                                                type="button"
+                                                variant={formData.shippingType === 'free' ? 'default' : 'outline'}
+                                                onClick={() => handleShippingTypeChange('free')}
+                                                className="h-10 w-full"
+                                            >
+                                                Gratis
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant={formData.shippingType === 'paid' ? 'default' : 'outline'}
+                                                onClick={() => handleShippingTypeChange('paid')}
+                                                className="h-10 w-full"
+                                            >
+                                                Pago
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="shippingCost">Costo de envío (moneda local)</Label>
+                                        <Input
+                                            id="shippingCost"
+                                            name="shippingCost"
+                                            type="number"
+                                            value={formData.shippingCost}
+                                            onChange={handleChange}
+                                            placeholder="0"
+                                            min={0}
+                                            step="1"
+                                            disabled={formData.shippingType === 'free'}
+                                            className="mt-2"
+                                        />
+                                        <p className="mt-1 text-xs font-medium text-gray-900">
+                                            Si eliges envío gratis, este valor no se usa.
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="freeShippingOver">
+                                            Envío gratis desde (opcional)
+                                        </Label>
+                                        <Input
+                                            id="freeShippingOver"
+                                            name="freeShippingOver"
+                                            type="number"
+                                            value={formData.freeShippingOver}
+                                            onChange={handleChange}
+                                            placeholder="30000"
+                                            min={0}
+                                            step="1"
+                                            disabled={formData.shippingType === 'free'}
+                                            className="mt-2"
+                                        />
+                                        <p className="mt-1 text-xs font-medium text-gray-900">
+                                            Si el subtotal del pedido supera este monto, el envío pasa a ser gratis.
+                                        </p>
+                                        {formData.shippingType === 'paid' &&
+                                            Number(formData.freeShippingOver || 0) > 0 && (
+                                                <p className="mt-2 text-xs font-medium text-emerald-600">
+                                                    Los pedidos desde{' '}
+                                                    {formatMoney(Number(formData.freeShippingOver), {
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 2,
+                                                    })}{' '}
+                                                    tendrán envío gratis.
+                                                </p>
+                                            )}
+                                    </div>
+                                </>
+                            )}
 
                             <div>
                                 <Label htmlFor="maxPendingOrdersPerCustomer">

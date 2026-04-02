@@ -1,5 +1,5 @@
 type ShippingRules = {
-    shipping_type?: 'free' | 'paid';
+    shipping_type?: 'pickup' | 'free' | 'paid';
     shipping_cost_cents?: number;
     free_shipping_over_cents?: number | null;
 };
@@ -9,7 +9,12 @@ export function getShippingPreview(
     rules?: ShippingRules | null,
 ) {
     const subtotalCents = Math.max(0, Math.round((subtotalAmount || 0) * 100));
-    const shippingType = rules?.shipping_type === 'paid' ? 'paid' : 'free';
+    const shippingType =
+        rules?.shipping_type === 'pickup'
+            ? 'pickup'
+            : rules?.shipping_type === 'paid'
+              ? 'paid'
+              : 'free';
     const shippingCostCents =
         shippingType === 'paid' && typeof rules?.shipping_cost_cents === 'number'
             ? Math.max(0, Math.round(rules.shipping_cost_cents))
@@ -31,6 +36,9 @@ export function getShippingPreview(
             : 0;
 
     return {
+        shippingType,
+        pickupOnly: shippingType === 'pickup',
+        supportsDelivery: shippingType !== 'pickup',
         shippingCost: effectiveShippingCents / 100,
         shippingCostCents: effectiveShippingCents,
         hasFreeShippingThreshold: freeShippingOverCents !== null,

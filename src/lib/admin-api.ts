@@ -1,7 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://server.daltrishop.com';
 export const AUTH_REQUIRED_ERROR = 'AUTH_REQUIRED';
 
-export type MerchantShippingType = 'free' | 'paid';
+export type MerchantShippingType = 'pickup' | 'free' | 'paid';
 export type MerchantBusinessType =
     | 'generic'
     | 'restaurant'
