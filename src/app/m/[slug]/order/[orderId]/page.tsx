@@ -23,6 +23,10 @@ function formatMoney(cents: number, currency: string) {
     }
 }
 
+function getDeliveryLabel(delivery?: string) {
+    return delivery === 'pickup' ? 'Retiro en el local' : 'Envío';
+}
+
 export default async function PublicOrderPage({
     params,
 }: {
@@ -35,13 +39,21 @@ export default async function PublicOrderPage({
               status: string;
               created_at: string;
               payment_method?: 'cash' | 'transfer';
+              delivery?: 'pickup' | 'delivery';
+              delivery_address?: string | null;
               subtotal_cents: number;
               shipping_cents: number;
               total_cents: number;
-              restaurant?: { name?: string; menu_url?: string; currency?: string };
+              restaurant?: {
+                  name?: string;
+                  menu_url?: string;
+                  currency?: string;
+                  address?: string | null;
+              };
               items?: Array<{
                   id: string;
                   product_name: string;
+                  image_url?: string | null;
                   qty: number;
                   line_total_cents: number;
                   notes?: string;
@@ -56,6 +68,8 @@ export default async function PublicOrderPage({
     const items = order.items || [];
     const currency = order.restaurant?.currency || 'USD';
     const menuHref = `/m/${slug}`;
+    const pickupOnly = order.delivery === 'pickup';
+    const localAddress = order.restaurant?.address?.trim() || '';
 
     return (
         <div className="min-h-screen bg-gray-50 px-4 py-8">
@@ -69,20 +83,65 @@ export default async function PublicOrderPage({
                             Pago: {order.payment_method === 'transfer' ? 'Transferencia' : 'Efectivo'}
                         </p>
                     )}
+                    <p className="text-xs uppercase tracking-wider text-gray-400 mt-2">
+                        Entrega: {getDeliveryLabel(order.delivery)}
+                    </p>
+                    {pickupOnly ? (
+                        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                            <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-700">
+                                Retiro en local
+                            </p>
+                            <p className="mt-2 text-sm font-medium text-amber-900">
+                                Este pedido debe retirarse por el local.
+                            </p>
+                            {localAddress && (
+                                <p className="mt-2 text-sm font-semibold text-gray-900">
+                                    {localAddress}
+                                </p>
+                            )}
+                        </div>
+                    ) : order.delivery_address ? (
+                        <div className="mt-4 rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3">
+                            <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                                Dirección de entrega
+                            </p>
+                            <p className="mt-2 text-sm font-semibold text-gray-900">
+                                {order.delivery_address}
+                            </p>
+                        </div>
+                    ) : null}
                 </div>
 
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
                     <h2 className="text-lg font-bold text-gray-900 mb-4">Productos</h2>
                     <div className="space-y-3">
                         {items.map((item) => (
-                            <div key={item.id} className="flex justify-between gap-3 text-sm">
-                                <div className="min-w-0">
-                                    <p className="font-semibold text-gray-900 truncate">
-                                        {item.qty}x {item.product_name}
-                                    </p>
-                                    {item.notes && (
-                                        <p className="text-xs text-gray-500 truncate">{item.notes}</p>
-                                    )}
+                            <div
+                                key={item.id}
+                                className="flex items-start justify-between gap-3 rounded-2xl border border-gray-100 p-3 text-sm"
+                            >
+                                <div className="flex min-w-0 gap-3">
+                                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-gray-100">
+                                        {item.image_url ? (
+                                            <img
+                                                src={item.image_url}
+                                                alt={item.product_name}
+                                                className="h-full w-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="flex h-full w-full items-center justify-center text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">
+                                                Sin foto
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="font-semibold text-gray-900">
+                                            {item.qty}x {item.product_name}
+                                        </p>
+                                        {item.notes && (
+                                            <p className="mt-1 text-xs text-gray-500">{item.notes}</p>
+                                        )}
+                                    </div>
                                 </div>
                                 <span className="font-bold text-gray-900">
                                     {formatMoney(item.line_total_cents, currency)}
@@ -97,11 +156,13 @@ export default async function PublicOrderPage({
                             <span>{formatMoney(order.subtotal_cents, currency)}</span>
                         </div>
                         <div className="flex justify-between text-gray-600">
-                            <span>Envío</span>
+                            <span>{pickupOnly ? 'Retiro' : 'Envío'}</span>
                             <span>
-                                {order.shipping_cents > 0
-                                    ? formatMoney(order.shipping_cents, currency)
-                                    : 'Gratis'}
+                                {pickupOnly
+                                    ? 'En el local'
+                                    : order.shipping_cents > 0
+                                      ? formatMoney(order.shipping_cents, currency)
+                                      : 'Gratis'}
                             </span>
                         </div>
                         <div className="flex justify-between text-base font-black text-gray-900 pt-1">
