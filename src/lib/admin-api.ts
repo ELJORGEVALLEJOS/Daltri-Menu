@@ -515,6 +515,20 @@ export async function resumeBillingSubscription(payload: {
     return (await res.json()) as MerchantBillingOverview;
 }
 
+export async function resumeBillingSubscriptionWithCurrentCard() {
+    const res = await fetch(`${API_URL}/admin/billing/resume-current`, {
+        method: 'POST',
+        headers: getRequiredAuthHeaders(),
+    });
+
+    handleUnauthorized(res);
+    if (!res.ok) {
+        throw new Error(await parseError(res, 'No se pudo reanudar la suscripción'));
+    }
+
+    return (await res.json()) as MerchantBillingOverview;
+}
+
 export async function cancelSubscription() {
     const res = await fetch(`${API_URL}/admin/subscription/cancel`, {
         method: 'POST',

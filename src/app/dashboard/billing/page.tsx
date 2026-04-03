@@ -8,6 +8,7 @@ import {
     fetchBillingHistory,
     fetchBillingOverview,
     resumeBillingSubscription,
+    resumeBillingSubscriptionWithCurrentCard,
     retryBillingPayment,
     startBillingTrial,
     updateSubscriptionPaymentMethod,
@@ -75,6 +76,7 @@ export default function BillingPage() {
     const [cancelling, setCancelling] = useState(false);
     const [polling, setPolling] = useState(false);
     const [actionMode, setActionMode] = useState<BillingActionMode | null>(null);
+    const [showCardForm, setShowCardForm] = useState(false);
 
     const planAmount = useMemo(() => {
         if (overview?.subscription?.plan?.amount_cents) {
@@ -89,6 +91,7 @@ export default function BillingPage() {
     }, [overview]);
 
     const payerEmail = overview?.subscription?.payer_email || undefined;
+    const hasStoredCard = Boolean(overview?.subscription?.card_last_four);
 
     const loadBilling = async () => {
         setLoading(true);
@@ -118,6 +121,25 @@ export default function BillingPage() {
         void loadBilling();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        if (!actionMode) {
+            setShowCardForm(false);
+            return;
+        }
+
+        if (actionMode === 'start' || actionMode === 'retry') {
+            setShowCardForm(true);
+            return;
+        }
+
+        if (actionMode === 'resume' && !hasStoredCard) {
+            setShowCardForm(true);
+            return;
+        }
+
+        setShowCardForm(false);
+    }, [actionMode, hasStoredCard]);
 
     const pollUntilResolved = async () => {
         setPolling(true);
@@ -188,6 +210,7 @@ export default function BillingPage() {
                                 ? 'La suscripción volvió a quedar activa.'
                               : 'La tarjeta quedó actualizada.',
                     );
+                    setShowCardForm(false);
                     const nextHistory = await fetchBillingHistory();
                     setHistory(nextHistory);
                 }
@@ -211,6 +234,40 @@ export default function BillingPage() {
             }
 
             setError(actionError instanceof Error ? actionError.message : 'No se pudo procesar la acción de facturación.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleResumeWithCurrentCard = async () => {
+        setSubmitting(true);
+        setError('');
+        setSuccess('');
+
+        try {
+            const nextOverview = await resumeBillingSubscriptionWithCurrentCard();
+            setOverview(nextOverview);
+            setActionMode(getActionMode(nextOverview));
+
+            if (nextOverview.processing) {
+                setSuccess('Estamos confirmando la reactivación con Mercado Pago...');
+                await pollUntilResolved();
+            } else {
+                setSuccess('La suscripción volvió a quedar activa.');
+                const nextHistory = await fetchBillingHistory();
+                setHistory(nextHistory);
+            }
+        } catch (resumeError) {
+            if (resumeError instanceof Error && resumeError.message === AUTH_REQUIRED_ERROR) {
+                router.replace('/login');
+                return;
+            }
+
+            setError(
+                resumeError instanceof Error
+                    ? resumeError.message
+                    : 'No se pudo reanudar la suscripción con la tarjeta actual.',
+            );
         } finally {
             setSubmitting(false);
         }
@@ -346,46 +403,149 @@ export default function BillingPage() {
                                 : actionMode === 'retry'
                                   ? 'Actualiza la tarjeta para regularizar el cobro y volver a operar.'
                                   : actionMode === 'resume'
-                                    ? 'Ingresa la tarjeta para reactivar la renovación del plan y volver a dejar el cobro automático activo.'
+                                    ? hasStoredCard
+                                        ? 'Reanuda la suscripción con la tarjeta ya registrada o agrega un medio de pago nuevo.'
+                                        : 'Registra una tarjeta para reactivar la suscripción y volver a dejar el cobro automático activo.'
                                   : actionMode === 'update'
-                                    ? 'Cambia la tarjeta que Mercado Pago usará en próximos débitos.'
+                                    ? hasStoredCard
+                                        ? 'Tu tarjeta ya está guardada. Si quieres cambiarla, agrega un medio de pago nuevo.'
+                                        : 'Registra una tarjeta para que Mercado Pago cobre la suscripción.'
                                     : 'Tu plan no requiere una acción inmediata.'}
                         </p>
                     </div>
 
                     {actionMode && mpPublicKey ? (
-                        <CardPayment
-                            initialization={{
-                                amount: planAmount,
-                                ...(payerEmail ? { payer: { email: payerEmail } } : {}),
-                            }}
-                            customization={{
-                                paymentMethods: {
-                                    minInstallments: 1,
-                                    maxInstallments: 1,
-                                },
-                            }}
-                            locale="es-AR"
-                            onSubmit={async (paymentFormData, additionalData) => {
-                                await handleCardAction({
-                                    mp_card_token: paymentFormData.token,
-                                    mp_payment_method_id: paymentFormData.payment_method_id,
-                                    mp_payment_type_id:
-                                        additionalData?.paymentTypeId || undefined,
-                                    mp_card_last_four:
-                                        additionalData?.lastFourDigits || undefined,
-                                    mp_cardholder_name:
-                                        additionalData?.cardholderName || undefined,
-                                });
-                            }}
-                            onError={(brickError) => {
-                                const message =
-                                    typeof brickError?.message === 'string' && brickError.message.trim()
-                                        ? brickError.message
-                                        : 'No se pudo cargar el formulario de tarjeta.';
-                                setError(message);
-                            }}
-                        />
+                        showCardForm ? (
+                            <div className="space-y-4">
+                                {(actionMode === 'update' || (actionMode === 'resume' && hasStoredCard)) && (
+                                    <div className="flex flex-wrap gap-3">
+                                        {actionMode === 'resume' && hasStoredCard && (
+                                            <Button
+                                                type="button"
+                                                onClick={() => void handleResumeWithCurrentCard()}
+                                                disabled={submitting || polling}
+                                            >
+                                                {submitting ? 'Reanudando...' : 'Reanudar suscripción'}
+                                            </Button>
+                                        )}
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => setShowCardForm(false)}
+                                            disabled={submitting || polling}
+                                        >
+                                            Cancelar
+                                        </Button>
+                                    </div>
+                                )}
+                                <CardPayment
+                                    initialization={{
+                                        amount: planAmount,
+                                        ...(payerEmail ? { payer: { email: payerEmail } } : {}),
+                                    }}
+                                    customization={{
+                                        paymentMethods: {
+                                            minInstallments: 1,
+                                            maxInstallments: 1,
+                                        },
+                                    }}
+                                    locale="es-AR"
+                                    onSubmit={async (paymentFormData, additionalData) => {
+                                        await handleCardAction({
+                                            mp_card_token: paymentFormData.token,
+                                            mp_payment_method_id: paymentFormData.payment_method_id,
+                                            mp_payment_type_id:
+                                                additionalData?.paymentTypeId || undefined,
+                                            mp_card_last_four:
+                                                additionalData?.lastFourDigits || undefined,
+                                            mp_cardholder_name:
+                                                additionalData?.cardholderName || undefined,
+                                        });
+                                    }}
+                                    onError={(brickError) => {
+                                        const message =
+                                            typeof brickError?.message === 'string' && brickError.message.trim()
+                                                ? brickError.message
+                                                : 'No se pudo cargar el formulario de tarjeta.';
+                                        setError(message);
+                                    }}
+                                />
+                            </div>
+                        ) : actionMode === 'resume' && hasStoredCard ? (
+                            <div className="space-y-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                <p className="text-sm font-medium text-gray-700">
+                                    Usaremos la tarjeta terminada en{' '}
+                                    <span className="font-bold text-gray-950">{overview?.subscription?.card_last_four}</span>{' '}
+                                    para reactivar la suscripción.
+                                </p>
+                                <div className="flex flex-wrap gap-3">
+                                    <Button
+                                        type="button"
+                                        onClick={() => void handleResumeWithCurrentCard()}
+                                        disabled={submitting || polling}
+                                    >
+                                        {submitting ? 'Reanudando...' : 'Reanudar suscripción'}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setShowCardForm(true)}
+                                        disabled={submitting || polling}
+                                    >
+                                        Agregar medio de pago
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : actionMode === 'update' && hasStoredCard ? (
+                            <div className="space-y-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                <p className="text-sm font-medium text-gray-700">
+                                    Hoy Mercado Pago cobrará con la tarjeta terminada en{' '}
+                                    <span className="font-bold text-gray-950">{overview?.subscription?.card_last_four}</span>.
+                                </p>
+                                <div className="flex flex-wrap gap-3">
+                                    <Button
+                                        type="button"
+                                        onClick={() => setShowCardForm(true)}
+                                        disabled={submitting || polling}
+                                    >
+                                        Agregar medio de pago
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <CardPayment
+                                initialization={{
+                                    amount: planAmount,
+                                    ...(payerEmail ? { payer: { email: payerEmail } } : {}),
+                                }}
+                                customization={{
+                                    paymentMethods: {
+                                        minInstallments: 1,
+                                        maxInstallments: 1,
+                                    },
+                                }}
+                                locale="es-AR"
+                                onSubmit={async (paymentFormData, additionalData) => {
+                                    await handleCardAction({
+                                        mp_card_token: paymentFormData.token,
+                                        mp_payment_method_id: paymentFormData.payment_method_id,
+                                        mp_payment_type_id:
+                                            additionalData?.paymentTypeId || undefined,
+                                        mp_card_last_four:
+                                            additionalData?.lastFourDigits || undefined,
+                                        mp_cardholder_name:
+                                            additionalData?.cardholderName || undefined,
+                                    });
+                                }}
+                                onError={(brickError) => {
+                                    const message =
+                                        typeof brickError?.message === 'string' && brickError.message.trim()
+                                            ? brickError.message
+                                            : 'No se pudo cargar el formulario de tarjeta.';
+                                    setError(message);
+                                }}
+                            />
+                        )
                     ) : actionMode ? (
                         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
                             Falta configurar NEXT_PUBLIC_MP_PUBLIC_KEY para operar la facturación.
