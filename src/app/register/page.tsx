@@ -12,12 +12,6 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { BrandMark } from '@/components/brand-mark';
-import { CardPayment, initMercadoPago } from '@mercadopago/sdk-react';
-
-const mpPublicKey = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY?.trim();
-if (mpPublicKey) {
-    initMercadoPago(mpPublicKey);
-}
 
 type RegisteredMerchant = {
     name: string;
@@ -26,15 +20,12 @@ type RegisteredMerchant = {
     verification_required?: boolean;
     email_sent?: boolean;
     preview_url?: string;
-    subscription?: {
-        status: string;
-        trial_ends_at?: string;
-        plan?: {
-            name: string;
-            amount_cents: number;
-            currency: string;
-            trial_days: number;
-        };
+    subscription_required_after_login?: boolean;
+    subscription_offer?: {
+        name: string;
+        amount_cents: number;
+        currency: string;
+        trial_days: number;
     };
 };
 
@@ -71,13 +62,6 @@ function formatMoneyFromCents(value: number, currency = 'ARS') {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
     }).format((value || 0) / 100);
-}
-
-function formatDate(value?: string) {
-    if (!value) return 'Sin fecha';
-    return new Intl.DateTimeFormat('es-AR', {
-        dateStyle: 'medium',
-    }).format(new Date(value));
 }
 
 export default function RegisterPage() {
@@ -125,9 +109,9 @@ export default function RegisterPage() {
         };
     }, []);
 
-    const canRenderMercadoPagoBrick = useMemo(
-        () => subscriptionEnabled && Boolean(mpPublicKey),
-        [subscriptionEnabled],
+    const registrationRequiresBillingLater = useMemo(
+        () => subscriptionEnabled && Boolean(subscriptionPlan),
+        [subscriptionEnabled, subscriptionPlan],
     );
 
     const validateRegistrationForm = () => {
@@ -142,13 +126,7 @@ export default function RegisterPage() {
         return '';
     };
 
-    const submitRegistration = async (billingData?: {
-        mp_card_token?: string;
-        mp_payment_method_id?: string;
-        mp_payment_type_id?: string;
-        mp_card_last_four?: string;
-        mp_cardholder_name?: string;
-    }) => {
+    const submitRegistration = async () => {
         const validationError = validateRegistrationForm();
         if (validationError) {
             setError(validationError);
@@ -168,7 +146,6 @@ export default function RegisterPage() {
                 admin_email: formData.admin_email.trim().toLowerCase(),
                 admin_password: formData.admin_password,
                 admin_full_name: formData.owner_full_name.trim(),
-                ...billingData,
             });
             setRegisteredMerchant(result as RegisteredMerchant);
             setSuccess(true);
@@ -185,11 +162,6 @@ export default function RegisterPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (subscriptionEnabled) {
-            setError('Completa la tarjeta con Mercado Pago para iniciar la prueba gratuita.');
-            return;
-        }
-
         await submitRegistration();
     };
 
@@ -238,23 +210,25 @@ export default function RegisterPage() {
                         <p className="text-amber-500 font-mono text-sm break-all">{registeredMerchant.share_link}</p>
                     </div>
 
-                    {registeredMerchant.subscription?.plan && (
+                    {registeredMerchant.subscription_required_after_login && registeredMerchant.subscription_offer && (
                         <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-left">
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
-                                Suscripción activa
+                                Facturación pendiente
                             </p>
                             <p className="mt-2 text-sm font-semibold text-white">
-                                {registeredMerchant.subscription.plan.name}
+                                {registeredMerchant.subscription_offer.name}
                             </p>
                             <p className="mt-1 text-xs text-emerald-200">
-                                Prueba gratis por {registeredMerchant.subscription.plan.trial_days} días.
-                                Primer cobro estimado: {formatDate(registeredMerchant.subscription.trial_ends_at)}.
+                                Cuando verifiques tu cuenta y entres al panel, te pediremos una tarjeta para iniciar la prueba gratuita.
                             </p>
                             <p className="mt-1 text-xs text-emerald-200">
                                 Monto mensual: {formatMoneyFromCents(
-                                    registeredMerchant.subscription.plan.amount_cents,
-                                    registeredMerchant.subscription.plan.currency,
+                                    registeredMerchant.subscription_offer.amount_cents,
+                                    registeredMerchant.subscription_offer.currency,
                                 )}
+                            </p>
+                            <p className="mt-1 text-xs text-emerald-200">
+                                Prueba gratis: {registeredMerchant.subscription_offer.trial_days} días.
                             </p>
                         </div>
                     )}
@@ -264,7 +238,7 @@ export default function RegisterPage() {
                             {(() => {
                                 const hasPreviewUrl = Boolean(registeredMerchant.preview_url);
                                 const verificationMessage = registeredMerchant.email_sent
-                                    ? 'Revisa tu correo y verifica tu cuenta antes de entrar al panel de administracion.'
+                                    ? 'Revisa tu correo y verifica tu cuenta. La facturación se configura después, cuando entres al panel.'
                                     : hasPreviewUrl
                                         ? 'No se pudo enviar el correo automatico. Usa este enlace para verificar tu cuenta.'
                                         : 'No se pudo enviar el correo de verificacion. Reenviarlo desde login o contacta soporte.';
@@ -294,7 +268,7 @@ export default function RegisterPage() {
                     ) : (
                         <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                             <p className="text-xs text-emerald-400 font-medium">
-                                Tu cuenta quedo activa. Puedes entrar al panel con tu email y contrasena.
+                                Tu cuenta quedó activa. Cuando entres al panel configuraremos la facturación.
                             </p>
                         </div>
                     )}
@@ -486,9 +460,9 @@ export default function RegisterPage() {
                                     </div>
                                 </div>
                                 <p className="text-xs text-amber-100">
-                                    Registras la tarjeta ahora para iniciar la prueba gratis. La
-                                    cancelación recién se habilita después del primer cobro
-                                    exitoso.
+                                    La tarjeta ya no se pide en este paso. Primero creas la cuenta,
+                                    verificas el correo y, al entrar al panel, configuras la
+                                    facturación para iniciar la prueba gratis.
                                 </p>
                             </div>
                         ) : null}
@@ -509,77 +483,20 @@ export default function RegisterPage() {
                             </div>
                         )}
 
-                        {subscriptionEnabled ? (
-                            <div className="space-y-3 rounded-2xl border border-white/10 bg-black/30 p-4">
-                                <div className="space-y-1">
-                                    <p className="text-sm font-semibold text-white">
-                                        Método de pago con Mercado Pago
-                                    </p>
-                                    <p className="text-xs text-zinc-400">
-                                        Completa tu tarjeta para iniciar la prueba gratuita y dejar
-                                        activo el plan.
-                                    </p>
-                                </div>
-
-                                {canRenderMercadoPagoBrick ? (
-                                    <CardPayment
-                                        initialization={{
-                                            amount: Math.max(
-                                                1,
-                                                (subscriptionPlan?.amount_cents || 100) / 100,
-                                            ),
-                                            payer: {
-                                                email: formData.admin_email.trim() || undefined,
-                                            },
-                                        }}
-                                        customization={{
-                                            paymentMethods: {
-                                                minInstallments: 1,
-                                                maxInstallments: 1,
-                                            },
-                                        }}
-                                        locale="es-AR"
-                                        onSubmit={async (paymentFormData, additionalData) => {
-                                            await submitRegistration({
-                                                mp_card_token: paymentFormData.token,
-                                                mp_payment_method_id:
-                                                    paymentFormData.payment_method_id,
-                                                mp_payment_type_id:
-                                                    additionalData?.paymentTypeId ||
-                                                    undefined,
-                                                mp_card_last_four:
-                                                    additionalData?.lastFourDigits ||
-                                                    undefined,
-                                                mp_cardholder_name:
-                                                    additionalData?.cardholderName ||
-                                                    undefined,
-                                            });
-                                        }}
-                                        onError={(brickError) => {
-                                            const message =
-                                                typeof brickError?.message === 'string' &&
-                                                brickError.message.trim()
-                                                    ? brickError.message
-                                                    : 'No se pudo cargar el formulario de tarjeta.';
-                                            setError(message);
-                                        }}
-                                    />
-                                ) : (
-                                    <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-xs text-red-300">
-                                        Falta configurar NEXT_PUBLIC_MP_PUBLIC_KEY para mostrar el
-                                        formulario de tarjeta.
-                                    </div>
-                                )}
+                        {registrationRequiresBillingLater && (
+                            <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 p-4 text-xs text-blue-200">
+                                Después del registro, te pediremos una tarjeta al entrar al panel
+                                para iniciar la prueba gratuita y habilitar el negocio.
                             </div>
-                        ) : (
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full h-12 bg-white text-black hover:bg-zinc-200 font-bold rounded-xl mt-4 shadow-lg shadow-white/5 active:scale-[0.98] transition-all"
-                            >
-                                {loading ? 'Creando cuenta...' : 'Crear mi catálogo'}
-                            </Button>
                         )}
+
+                        <Button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full h-12 bg-white text-black hover:bg-zinc-200 font-bold rounded-xl mt-4 shadow-lg shadow-white/5 active:scale-[0.98] transition-all"
+                        >
+                            {loading ? 'Creando cuenta...' : 'Crear mi catálogo'}
+                        </Button>
                     </form>
                 </div>
             </main>
