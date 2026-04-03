@@ -2,6 +2,7 @@
 
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
+import { FallbackImage } from '@/components/ui/fallback-image';
 import { Plus } from 'lucide-react';
 import { formatMoney } from '@/lib/format';
 
@@ -70,10 +71,12 @@ export function ProductCard({
         >
             {item.imageUrl && (
                 <div className="w-full aspect-square rounded-xl overflow-hidden relative shadow-inner border border-gray-100">
-                    <img
+                    <FallbackImage
                         src={item.imageUrl}
                         alt={item.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        wrapperClassName="h-full w-full"
+                        fallbackLabel={item.name}
                     />
                 </div>
             )}

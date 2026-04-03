@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { fetchPublicOrder } from '@/lib/api';
+import { FallbackImage } from '@/components/ui/fallback-image';
 
 export const dynamic = 'force-dynamic';
 
@@ -123,10 +124,12 @@ export default async function PublicOrderPage({
                                 <div className="flex min-w-0 gap-3">
                                     <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-gray-100">
                                         {item.image_url ? (
-                                            <img
+                                            <FallbackImage
                                                 src={item.image_url}
                                                 alt={item.product_name}
                                                 className="h-full w-full object-cover"
+                                                wrapperClassName="h-full w-full"
+                                                fallbackLabel={item.product_name}
                                             />
                                         ) : (
                                             <div className="flex h-full w-full items-center justify-center text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">

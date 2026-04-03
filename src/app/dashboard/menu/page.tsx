@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { FallbackImage } from '@/components/ui/fallback-image';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -447,7 +448,13 @@ export default function MenuPage() {
                                             <div className="flex justify-between items-start mb-4">
                                                 <div className="h-14 w-14 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
                                                     {itemImageSrc ? (
-                                                        <img src={itemImageSrc} alt={item.name} className="h-full w-full object-cover" />
+                                                        <FallbackImage
+                                                            src={itemImageSrc}
+                                                            alt={item.name}
+                                                            className="h-full w-full object-cover"
+                                                            wrapperClassName="h-full w-full"
+                                                            fallbackLabel={item.name}
+                                                        />
                                                     ) : (
                                                         <ImageIcon className="h-6 w-6 text-gray-200" />
                                                     )}
